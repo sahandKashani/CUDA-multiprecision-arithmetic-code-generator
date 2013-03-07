@@ -1,77 +1,94 @@
 #include <stdio.h>
+#include <gmp.h>
+
+#define NUMBER_OF_TEST_VECTORS ((unsigned int) 1e6)
+#define SEED 12345
+#define RANDOM_NUMBER_BIT_RANGE 131
 
 /**
- * Structure to represent our 131-bit number. the letters form the number when
- * read alphabetically from left to right.
- *
- * Example: "abcde" is the number made by concatenating the string
- * representation of "a", "b", "c", "d" and "e". Therefore "e" contains the
- * least significant bits of the number, and "a" contains the most significant
- * bits.
+ * Structure to hold a test vector. A test vector contains 2 inputs and 1
+ * output. This can be used for testing addition and subtraction (with or
+ * without modulo arithmetic)
  */
 typedef struct
 {
-    unsigned int a;
-    unsigned int b;
-    unsigned int c;
-    unsigned int d;
-    unsigned int e;
-} uint_131;
+    mpz_t op1; // first  operand
+    mpz_t op2; // second operand
+    mpz_t rop; // result operand
+} test_vector;
 
-uint_131 add_uint_131(uint_131 operand_1, uint_131 operand_2)
+test_vector cpu_test_vectors[NUMBER_OF_TEST_VECTORS];
+
+/**
+ * Function which tests a binary operator over mpz_t (integers). It expects a
+ * pointer towards a binary function, and a char representing the printed form
+ * of the operation (for representation purposes).
+ */
+void binary_operator_test(void (*function)(mpz_t, const mpz_t, const mpz_t),
+                          char operator)
 {
-    uint_131 result;
+    // random number generator initialization
+    gmp_randstate_t random_state;
+    gmp_randinit_default(random_state);
+    // incorporated seed in generator
+    gmp_randseed_ui(random_state, SEED);
 
-    result.e = operand_1.e + operand_2.e;
-    result.d = operand_1.d + operand_2.d + (result.e < operand_1.e);
-    result.c = operand_1.c + operand_2.c + (result.d < operand_1.d);
-    result.b = operand_1.b + operand_2.b + (result.c < operand_1.c);
-    result.a = operand_1.a + operand_2.a + (result.b < operand_1.b);
-
-    return result;
-}
-
-unsigned int number_digits_length_base_10(unsigned int number)
-{
-    unsigned int i = 1;
-
-    while(number >= 10)
+    for(int i = 0; i < NUMBER_OF_TEST_VECTORS; i += 1)
     {
-        number /= 10;
-        i += 1;
+        // initialize test vector operands and result
+        mpz_init(cpu_test_vectors[i].op1);
+        mpz_init(cpu_test_vectors[i].op2);
+        mpz_init(cpu_test_vectors[i].rop);
+
+        // generate 2 random numbers as inputs
+        mpz_urandomb(cpu_test_vectors[i].op1,
+                     random_state,
+                     RANDOM_NUMBER_BIT_RANGE);
+        mpz_urandomb(cpu_test_vectors[i].op2,
+                     random_state,
+                     RANDOM_NUMBER_BIT_RANGE);
+
+        // apply function
+        function(cpu_test_vectors[i].rop,
+                cpu_test_vectors[i].op1,
+                cpu_test_vectors[i].op2);
+
+        // gmp_printf("%Zd %c %Zd = %Zd\n",
+        //            cpu_test_vectors[i].op1,
+        //            operator,
+        //            cpu_test_vectors[i].op2,
+        //            cpu_test_vectors[i].rop);
+
+        // get memory back from test vectors
+        mpz_clear(cpu_test_vectors[i].op1);
+        mpz_clear(cpu_test_vectors[i].op2);
+        mpz_clear(cpu_test_vectors[i].rop);
     }
 
-    return i;
+    // get memory back from gmp_randstate_t
+    gmp_randclear(random_state);
 }
 
-void print_uint_131(uint_131 number, char* end_of_line)
+/**
+ * Tests the addition operator
+ */
+void addition_test()
 {
-    unsigned int padding_a = 10 - number_digits_length_base_10(number.a);
-    unsigned int padding_b = 10 - number_digits_length_base_10(number.b);
-    unsigned int padding_c = 10 - number_digits_length_base_10(number.c);
-    unsigned int padding_d = 10 - number_digits_length_base_10(number.d);
-    unsigned int padding_e = 10 - number_digits_length_base_10(number.e);
-
-    printf("%0*u%0*u%0*u%0*u%0*u%s",
-           padding_a, number.a,
-           padding_b, number.b,
-           padding_c, number.c,
-           padding_d, number.d,
-           padding_e, number.e,
-           end_of_line);
+    binary_operator_test(&mpz_add, '+');
 }
 
-uint_131 str_to_uint_131(char* str)
+/**
+ * Tests the subtraction operator
+ */
+void subtraction_test()
 {
-    uint_131 number;
+    binary_operator_test(&mpz_sub, '-');
 }
 
 int main(void)
 {
-    uint_131 bignum   = {0x7FFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF};
-    uint_131 smallnum = {0x7FFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF};
+    addition_test();
+    subtraction_test();
 
-    uint_131 result = add_uint_131(bignum, smallnum);
-
-    print_uint_131(result, "\n");
+    return 0;
 }
