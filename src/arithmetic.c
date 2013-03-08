@@ -1,31 +1,19 @@
 #include <stdio.h>
 #include <gmp.h>
 
-#define NUMBER_OF_TEST_VECTORS ((unsigned int) 1e6)
-#define SEED 12345
-#define RANDOM_NUMBER_BIT_RANGE 131
+#define NUMBER_OF_TESTS ((unsigned int) 1e1)
+#define SEED ((unsigned int) 12345)
+#define RANDOM_NUMBER_BIT_RANGE ((unsigned int) 3)
+#define MODULO ((unsigned int) 12)
 
-/**
- * Structure to hold a test vector. A test vector contains 2 inputs and 1
- * output. This can be used for testing addition and subtraction (with or
- * without modulo arithmetic)
- */
 typedef struct
 {
-    mpz_t op1; // first  operand
-    mpz_t op2; // second operand
-    mpz_t rop; // result operand
-} test_vector;
+    mpz_t rop;
+    mpz_t op1;
+    mpz_t op2;
+} addition_operands;
 
-test_vector cpu_test_vectors[NUMBER_OF_TEST_VECTORS];
-
-/**
- * Function which tests a binary operator over mpz_t (integers). It expects a
- * pointer towards a binary function, and a char representing the printed form
- * of the operation (for representation purposes).
- */
-void binary_operator_test(void (*function)(mpz_t, const mpz_t, const mpz_t),
-                          char operator)
+void operator_test(void (*function)(mpz_t rop, const mpz_t op1, const mpz_t op2))
 {
     // random number generator initialization
     gmp_randstate_t random_state;
@@ -33,62 +21,64 @@ void binary_operator_test(void (*function)(mpz_t, const mpz_t, const mpz_t),
     // incorporated seed in generator
     gmp_randseed_ui(random_state, SEED);
 
-    for(int i = 0; i < NUMBER_OF_TEST_VECTORS; i += 1)
-    {
-        // initialize test vector operands and result
-        mpz_init(cpu_test_vectors[i].op1);
-        mpz_init(cpu_test_vectors[i].op2);
-        mpz_init(cpu_test_vectors[i].rop);
+    // initialize test vector operands and result
+    mpz_t op1;
+    mpz_t op2;
+    mpz_t rop;
+    mpz_init(op1);
+    mpz_init(op2);
+    mpz_init(rop);
 
+    for(int i = 0; i < NUMBER_OF_TESTS; i += 1)
+    {
         // generate 2 random numbers as inputs
-        mpz_urandomb(cpu_test_vectors[i].op1,
-                     random_state,
-                     RANDOM_NUMBER_BIT_RANGE);
-        mpz_urandomb(cpu_test_vectors[i].op2,
-                     random_state,
-                     RANDOM_NUMBER_BIT_RANGE);
+        mpz_urandomb(op1, random_state, RANDOM_NUMBER_BIT_RANGE);
+        mpz_urandomb(op2, random_state, RANDOM_NUMBER_BIT_RANGE);
 
         // apply function
-        function(cpu_test_vectors[i].rop,
-                cpu_test_vectors[i].op1,
-                cpu_test_vectors[i].op2);
-
-        // gmp_printf("%Zd %c %Zd = %Zd\n",
-        //            cpu_test_vectors[i].op1,
-        //            operator,
-        //            cpu_test_vectors[i].op2,
-        //            cpu_test_vectors[i].rop);
-
-        // get memory back from test vectors
-        mpz_clear(cpu_test_vectors[i].op1);
-        mpz_clear(cpu_test_vectors[i].op2);
-        mpz_clear(cpu_test_vectors[i].rop);
+        function(rop, op1, op2);
     }
+
+    // get memory back from operands and results
+    mpz_clear(op1);
+    mpz_clear(op2);
+    mpz_clear(rop);
 
     // get memory back from gmp_randstate_t
     gmp_randclear(random_state);
 }
 
-/**
- * Tests the addition operator
- */
-void addition_test()
+void addition(mpz_t rop, const mpz_t op1, const mpz_t op2)
 {
-    binary_operator_test(&mpz_add, '+');
+    mpz_add(rop, op1, op2);
+    // gmp_printf("%Zd + %Zd = %Zd\n", op1, op2, rop);
 }
 
-/**
- * Tests the subtraction operator
- */
-void subtraction_test()
+void modular_addition(mpz_t rop, const mpz_t op1, const mpz_t op2)
 {
-    binary_operator_test(&mpz_sub, '-');
+    mpz_t mod;
+    mpz_init_set_ui(mod, MODULO);
+
+    // perform modular addition
+    mpz_add(rop, op1, op2);
+    mpz_cdiv_r(rop, rop, mod);
+
+    // might have to adjust the remainder to be positive, because gmp only
+    // guarantees that n = q*d + r, with 0 <= |r| <= |d|
+    int negative_remainder = mpz_cmp(mod, rop);
+    if(negative_remainder)
+    {
+        mpz_add(rop, rop, mod);
+    }
+
+    // gmp_printf("(%Zd + %Zd) mod %Zd = %Zd\n", op1, op2, mod, rop);
+
+    mpz_clear(mod);
 }
 
 int main(void)
 {
-    addition_test();
-    subtraction_test();
-
+    operator_test(&addition);
+    operator_test(&modular_addition);
     return 0;
 }
