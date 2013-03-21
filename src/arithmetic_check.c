@@ -1,7 +1,9 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <gmp.h>
 
-#define NUMBER_OF_TESTS ((unsigned int) 1e7)
+#define NUMBER_OF_TESTS ((unsigned int) 3)
 #define SEED ((unsigned int) 12345)
 #define RANDOM_NUMBER_BIT_RANGE ((unsigned int) 131)
 #define MODULO ((unsigned int) 12)
@@ -44,13 +46,29 @@ void operator_test(void (*function)(mpz_t rop, const mpz_t op1, const mpz_t op2)
 void addition(mpz_t rop, const mpz_t op1, const mpz_t op2)
 {
     mpz_add(rop, op1, op2);
-    // gmp_printf("%Zd + %Zd = %Zd\n", op1, op2, rop);
+    gmp_printf("%Zd + %Zd = %Zd\n", op1, op2, rop);
+
+    char* op1_binary_string = mpz_get_str(NULL, 2, op1);
+    char* op2_binary_string = mpz_get_str(NULL, 2, op2);
+    char* rop_binary_string = mpz_get_str(NULL, 2, rop);
+    printf("op1 = \"%s\" (length = %d)\n", op1_binary_string,
+           (int) strlen(op1_binary_string));
+    printf("op2 = \"%s\" (length = %d)\n", op2_binary_string,
+           (int) strlen(op2_binary_string));
+    printf("rop = \"%s\" (length = %d)\n", rop_binary_string,
+           (int) strlen(rop_binary_string));
+
+    free(op1_binary_string);
+    free(op2_binary_string);
+    free(rop_binary_string);
+
+    printf("\n");
 }
 
 void subtraction(mpz_t rop, const mpz_t op1, const mpz_t op2)
 {
     mpz_sub(rop, op1, op2);
-    // gmp_printf("%Zd - %Zd = %Zd\n", op1, op2, rop);
+    gmp_printf("%Zd - %Zd = %Zd\n", op1, op2, rop);
 }
 
 void modular_addition(mpz_t rop, const mpz_t op1, const mpz_t op2)
@@ -70,7 +88,7 @@ void modular_addition(mpz_t rop, const mpz_t op1, const mpz_t op2)
         mpz_add(rop, rop, mod);
     }
 
-    // gmp_printf("(%Zd + %Zd) mod %Zd = %Zd\n", op1, op2, mod, rop);
+    gmp_printf("(%Zd + %Zd) mod %Zd = %Zd\n", op1, op2, mod, rop);
 
     mpz_clear(mod);
 }
@@ -92,7 +110,7 @@ void modular_subtraction(mpz_t rop, const mpz_t op1, const mpz_t op2)
         mpz_add(rop, rop, mod);
     }
 
-    // gmp_printf("(%Zd - %Zd) mod %Zd = %Zd\n", op1, op2, mod, rop);
+    gmp_printf("(%Zd - %Zd) mod %Zd = %Zd\n", op1, op2, mod, rop);
 
     mpz_clear(mod);
 }
@@ -100,8 +118,8 @@ void modular_subtraction(mpz_t rop, const mpz_t op1, const mpz_t op2)
 int main(void)
 {
     operator_test(&addition);
-    operator_test(&subtraction);
-    operator_test(&modular_addition);
-    operator_test(&modular_subtraction);
+    // operator_test(&subtraction);
+    // operator_test(&modular_addition);
+    // operator_test(&modular_subtraction);
     return 0;
 }
