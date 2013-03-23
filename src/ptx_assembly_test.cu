@@ -1,22 +1,39 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
 #include <gmp.h>
 
-// bignum array size in words
-#define BIGNUM_SIZE 5
+#define BITS_PER_WORD 32
+#define BIGNUM_NUMBER_OF_WORDS 5
+#define TOTAL_BIT_LENGTH BIGNUM_NUMBER_OF_WORDS * BITS_PER_WORD
 #define SEED ((unsigned int) 12345)
 #define RANDOM_NUMBER_BIT_RANGE ((unsigned int) 131)
+#define BASE 2
 
-// most significant bits come in bignum[4] and least significant bits come in
-// bignum[0]
-typedef unsigned int bignum[BIGNUM_SIZE];
+// Note : strings are written as they are read, from left to right with MSB on
+// the left and LSB on the right. They are not divided into
+// BIGNUM_NUMBER_OF_WORDS parts, each of which is BITS_PER_WORD bits long. The
+// strings are actually TOTAL_BIT_LENGTH in length.
+
+// little endian: most significant bits come in bignum[4] and least significant
+// bits come in bignum[0]
+typedef unsigned int bignum[BIGNUM_NUMBER_OF_WORDS];
 
 /////////////////////////
 // Function Prototypes //
 /////////////////////////
-__global__ void test_kernel(int* dev_c, int a, int b);
-void string_to_bignum(char* str, bignum number);
+// __global__ void test_kernel(int* dev_c, int a, int b);
+char* bignum_to_string(bignum number);
 void print_bignum(bignum number);
-char* generate_random_number();
+void pad_string_with_zeros(char** old_str);
+char** cut_string_to_multiple_words(char* str);
+void free_string_words(char*** words);
+void string_to_bignum(char* str, bignum number);
+char* unsigned_int_to_string(unsigned int number);
+unsigned int string_to_unsigned_int(char* str);
+char* generate_random_number(unsigned int index, unsigned int seed,
+                             unsigned int bits, unsigned int base);
 
 //////////////
 // Launcher //
@@ -25,37 +42,14 @@ int main(void)
 {
     printf("Testing inline PTX\n");
 
-    // // 846668913323474690677881083138300645367 (length = 130-bit)
-    // char op1[] = "00000000000000000000000000000010"
-    //              "01111100111101101000000001010110"
-    //              "00110000100001100001011011010000"
-    //              "10111101100000101011011100011000"
-    //              "11111100101100110000111111110111";
+    int i = 0;
+    char* number_str;
 
-    // // 2029881613101810887805297702190481787852 (length = 131-bit)
-    // char op2[] = "00000000000000000000000000000101"
-    //              "11110111000111001111101001101100"
-    //              "11011001000000111101101101110100"
-    //              "00100100111000111111001100100000"
-    //              "10001100010110011100101111001100";
+    number_str = generate_random_number(i++, SEED, RANDOM_NUMBER_BIT_RANGE, BASE);
 
-    // // 2876550526425285578483178785328782433219 (length = 132-bit)
-    // char rop[] = "00000000000000000000000000001000"
-    //              "01110100000100110111101011000011"
-    //              "00001001100010011111001001000100"
-    //              "11100010011001101010101000111001"
-    //              "10001001000011001101101111000011";
-
-    // bignum a;
-    // bignum b;
-    // bignum c;
-    // string_to_bignum(op1, a);
-    // string_to_bignum(op2, b);
-    // string_to_bignum(rop, c);
-
-    // print_bignum(a);
-
-    generate_random_number();
+    bignum a;
+    string_to_bignum(number_str, a);
+    free(number_str);
 
     // cudaMalloc((void**) &dev_c, sizeof(int));
     // test_kernel<<<1, 1>>>(dev_c, a, b);
@@ -65,74 +59,180 @@ int main(void)
     // cudaFree(dev_c);
 }
 
-void print_bignum(bignum number)
+char* unsigned_int_to_string(unsigned int number)
 {
-    for (int i = 0; i < BIGNUM_SIZE; i++)
+    char* str = calloc(BITS_PER_WORD + 1, sizeof(char));
+    str[BITS_PER_WORD] = '\0';
+
+    for (int i = 0; i < BITS_PER_WORD; i++)
     {
-        printf("%u", number[i]);
+        unsigned int masked_number = number & (1 << i);
+        str[BITS_PER_WORD - 1 - i] = (masked_number != 0) ? '1' : '0';
     }
 
-    printf("\n");
+    return str;
+}
+
+char* bignum_to_string(bignum number)
+{
+    char** words = calloc(BIGNUM_NUMBER_OF_WORDS + 1, sizeof(char*));
+    words[BIGNUM_NUMBER_OF_WORDS] = NULL;
+
+    for (int i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+    {
+        words[i] = calloc(BITS_PER_WORD + 1, sizeof(char));
+        words[i][BITS_PER_WORD] = '\0';
+
+        words[i] = unsigned_int_to_string(number[i]);
+    }
+
+    // concatenate the words together to form a TOTAL_BIT_LENGTH long string
+    char* final_str = calloc(TOTAL_BIT_LENGTH + 1, sizeof(char));
+    final_str[TOTAL_BIT_LENGTH] = '\0';
+
+    char* src;
+    char* dest = final_str;
+    for (int i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+    {
+        src = words[BIGNUM_NUMBER_OF_WORDS - i - 1];
+        strncpy(dest, src, BITS_PER_WORD);
+
+        dest += i * BITS_PER_WORD;
+    }
+
+    free_string_words(&words);
+
+    return final_str;
+}
+
+void pad_string_with_zeros(char** old_str)
+{
+    char* new_str = calloc(TOTAL_BIT_LENGTH + 1, sizeof(char));
+    new_str[TOTAL_BIT_LENGTH] = '\0';
+    for (int i = 0; i < TOTAL_BIT_LENGTH; i++)
+    {
+        new_str[i] = '0';
+    }
+
+    unsigned int old_str_length = strlen(*old_str);
+
+    for (int i = 0; i < old_str_length; i++)
+    {
+        new_str[(TOTAL_BIT_LENGTH - old_str_length) + i] = (*old_str)[i];
+    }
+
+    free(*old_str);
+    *old_str = new_str;
+}
+
+char** cut_string_to_multiple_words(char* str)
+{
+    // cut str into BIGNUM_NUMBER_OF_WORDS pieces, each of which is
+    // BITS_PER_WORD long
+
+    // array of BITS_PER_WORD length strings
+    char** str_words = calloc(BIGNUM_NUMBER_OF_WORDS + 1, sizeof(char*));
+    str_words[BIGNUM_NUMBER_OF_WORDS] = NULL;
+
+    // allocate each one of the strings and fill them up
+    for (int i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+    {
+        str_words[i] = calloc(BITS_PER_WORD + 1, sizeof(char));
+        str_words[i][BITS_PER_WORD] = '\0';
+
+        for (int j = 0; j < BITS_PER_WORD; j++)
+        {
+            str_words[i][j] = str[i * BITS_PER_WORD + j];
+        }
+    }
+
+    // until now, the strings have been cut in big-endian form, but we want
+    // little endian for indexing, so we have to invert the array.
+    char* tmp;
+    int middle_of_array = ceil(BIGNUM_NUMBER_OF_WORDS / 2);
+    for (int i = 0; i < middle_of_array; i++)
+    {
+        tmp = str_words[i];
+        str_words[i] = str_words[BIGNUM_NUMBER_OF_WORDS - 1 - i];
+        str_words[BIGNUM_NUMBER_OF_WORDS - 1 - i] = tmp;
+    }
+
+    return str_words;
+}
+
+void free_string_words(char*** words)
+{
+    for (int i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+    {
+        // free each word
+        free((*words)[i]);
+        (*words)[i] = NULL;
+    }
+
+    // free the char** pointing to the words
+    free(*words);
+    *words = NULL;
+}
+
+unsigned int string_to_unsigned_int(char* str)
+{
+    unsigned int number = 0;
+
+    for (int i = 0; i < BITS_PER_WORD; i++)
+    {
+        unsigned int bit_value = str[BITS_PER_WORD - 1 - i] == '1' ? 1 : 0;
+        number |= bit_value << i;
+    }
+
+    return number;
 }
 
 void string_to_bignum(char* str, bignum number)
 {
-    unsigned int length = strlen(str);
+    char** words = cut_string_to_multiple_words(str);
 
-    // clear the number
-    for (int i = 0; i < BIGNUM_SIZE; i++)
+    // set the number
+    for (int i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
-        number[i] = 0;
+        number[i] = string_to_unsigned_int(words[i]);
     }
 
-    // fill the number
-    for (int i = 0; i < length; i++)
-    {
-        // "bit" to be added to number
-        unsigned int to_add = (unsigned int) str[length - 1 - i] << (i % 32);
-
-        if (i < 32)
-        {
-            number[4] += to_add;
-        }
-
-        if (i < 64)
-        {
-            number[3] += to_add;
-        }
-
-        if (i < 96)
-        {
-            number[2] += to_add;
-        }
-
-        if (i < 128)
-        {
-            number[1] += to_add;
-        }
-
-        if (i < 160)
-        {
-            number[0] += to_add;
-        }
-    }
+    free_string_words(&words);
 }
 
-char* generate_random_number()
+/**
+ * Generates the i'th random number from the seed, where "i" is the "index"
+ * value passed as a parameter. Remember to call free() on the returned string
+ * once you don't need it anymore.
+ * @param  index "Index" of the random number.
+ * @param  seed  Seed of the random number generator.
+ * @param  bits  Bit precision requested.
+ * @param  base  Base of the number returned in the string (2 until 62)
+ * @return       String representing the binary version of the number.
+ */
+char* generate_random_number(unsigned int index, unsigned int seed,
+                             unsigned int bits, unsigned int base)
 {
     // random number generator initialization
     gmp_randstate_t random_state;
     gmp_randinit_default(random_state);
     // incorporated seed in generator
-    gmp_randseed_ui(random_state, SEED);
+    gmp_randseed_ui(random_state, seed);
 
     // initialize test vector operands and result
     mpz_t number;
     mpz_init(number);
 
-    mpz_urandomb(number, random_state, RANDOM_NUMBER_BIT_RANGE);
+    // generate random number
+    mpz_urandomb(number, random_state, bits);
+    for (int i = 0; i < index; i++)
+    {
+        mpz_urandomb(number, random_state, bits);
+    }
 
-    gmp_print("random number = %Zd\n", number);
+    // get binary string version
+    char* str_number = mpz_get_str(NULL, base, number);
+    pad_string_with_zeros(&str_number);
 
     // get memory back from operands and results
     mpz_clear(number);
@@ -140,20 +240,18 @@ char* generate_random_number()
     // get memory back from gmp_randstate_t
     gmp_randclear(random_state);
 
-    return NULL;
+    return str_number;
 }
 
-__global__ void test_kernel(int* dev_c, int a, int b)
-{
-    // *dev_c = a + b;
+// __global__ void test_kernel(int* dev_c, int a, int b)
+// {
+//     int c;
 
-    int c;
+//     asm("{"
+//         "    add.u32 %0, %1, %2;"
+//         "}"
+//         : "=r"(c) : "r"(a), "r"(b)
+//         );
 
-    asm("{"
-        "    add.u32 %0, %1, %2;"
-        "}"
-        : "=r"(c) : "r"(a), "r"(b)
-        );
-
-    *dev_c = c;
-}
+//     *dev_c = c;
+// }
