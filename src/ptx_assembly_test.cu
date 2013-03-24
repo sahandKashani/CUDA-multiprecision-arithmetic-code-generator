@@ -14,7 +14,8 @@ int main(void)
     int i = 0;
     char* number_str;
 
-    number_str = generate_random_number(i++, SEED, RANDOM_NUMBER_BIT_RANGE, BASE);
+    number_str = generate_random_number(i++, SEED, RANDOM_NUMBER_BIT_RANGE,
+                                        BASE);
 
     bignum a;
     string_to_bignum(number_str, a);

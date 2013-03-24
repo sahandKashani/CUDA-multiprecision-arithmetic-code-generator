@@ -105,7 +105,8 @@ char** cut_string_to_multiple_words(char* str)
     // BITS_PER_WORD long
 
     // array of BITS_PER_WORD length strings
-    char** str_words = (char**) calloc(BIGNUM_NUMBER_OF_WORDS + 1, sizeof(char*));
+    char** str_words = (char**) calloc(BIGNUM_NUMBER_OF_WORDS + 1,
+                                       sizeof(char*));
     str_words[BIGNUM_NUMBER_OF_WORDS] = NULL;
 
     // allocate each one of the strings and fill them up
