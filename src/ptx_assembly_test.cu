@@ -3,30 +3,51 @@
 #include <stdlib.h>
 #include <gmp.h>
 
-// __global__ void test_kernel(int* dev_c, int a, int b);
-char* generate_random_number(unsigned int index, unsigned int seed,
-                             unsigned int bits, unsigned int base);
+#define NUMBER_OF_TESTS 100
+
+__global__ void test_kernel(int* dev_c, int a, int b);
+char* generate_random_bignum_str(unsigned int index, unsigned int seed,
+                                 unsigned int bits, unsigned int base);
+void generate_random_bignum(unsigned int index, unsigned int seed,
+                            unsigned int bits, unsigned int base, bignum number);
 
 int main(void)
 {
     printf("Testing inline PTX\n");
 
-    int i = 0;
-    char* number_str;
+    bignum random_numbers[NUMBER_OF_TESTS];
+    for (int i = 0; i < NUMBER_OF_TESTS; i++)
+    {
+        generate_random_bignum(i, SEED, RANDOM_NUMBER_BIT_RANGE, BASE,
+                               random_numbers[i]);
+    }
 
-    number_str = generate_random_number(i++, SEED, RANDOM_NUMBER_BIT_RANGE,
-                                        BASE);
+    bignum* dev_random_numbers;
+    cudaMalloc((void**) &dev_random_numbers, NUMBER_OF_TESTS * sizeof(bignum));
+    cudaMemcpy(dev_random_numbers, random_numbers,
+               NUMBER_OF_TESTS * sizeof(bignum), cudaMemcpyHostToDevice);
 
-    bignum a;
-    string_to_bignum(number_str, a);
-    free(number_str);
-
-    // cudaMalloc((void**) &dev_c, sizeof(int));
     // test_kernel<<<1, 1>>>(dev_c, a, b);
-    // cudaMemcpy(&c, dev_c, sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(random_numbers, dev_random_numbers,
+               NUMBER_OF_TESTS * sizeof(bignum), cudaMemcpyDeviceToHost);
+    cudaFree(dev_random_numbers);
+}
 
-    // printf("%d + %d = %d\n", a, b, c);
-    // cudaFree(dev_c);
+/**
+ * Generates the i'th random number from the seed, where "i" is the "index"
+ * value passed as a parameter.
+ * @param  index  "Index" of the random number.
+ * @param  seed   Seed of the random number generator.
+ * @param  bits   Bit precision requested.
+ * @param  base   Base of the number returned in the string (2 until 62)
+ * @param  number bignum to hold the generated random number.
+ */
+void generate_random_bignum(unsigned int index, unsigned int seed,
+                            unsigned int bits, unsigned int base, bignum number)
+{
+    char* number_str = generate_random_bignum_str(index, seed, bits, base);
+    string_to_bignum(number_str, number);
+    free(number_str);
 }
 
 /**
@@ -39,8 +60,8 @@ int main(void)
  * @param  base  Base of the number returned in the string (2 until 62)
  * @return       String representing the binary version of the number.
  */
-char* generate_random_number(unsigned int index, unsigned int seed,
-                             unsigned int bits, unsigned int base)
+char* generate_random_bignum_str(unsigned int index, unsigned int seed,
+                                 unsigned int bits, unsigned int base)
 {
     // random number generator initialization
     gmp_randstate_t random_state;
@@ -72,7 +93,7 @@ char* generate_random_number(unsigned int index, unsigned int seed,
     return str_number;
 }
 
-// __global__ void test_kernel(int* dev_c, int a, int b)
+// __global__ void test_kernel(int* dev_number, int a, int b)
 // {
 //     int c;
 
