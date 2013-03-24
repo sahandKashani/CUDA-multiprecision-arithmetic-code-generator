@@ -16,8 +16,7 @@ char* unsigned_int_to_string(unsigned int number)
     char* str = (char*) calloc(BITS_PER_WORD + 1, sizeof(char));
     str[BITS_PER_WORD] = '\0';
 
-    int i = 0;
-    for (i = 0; i < BITS_PER_WORD; i++)
+    for (int i = 0; i < BITS_PER_WORD; i++)
     {
         unsigned int masked_number = number & (1 << i);
         str[BITS_PER_WORD - 1 - i] = (masked_number != 0) ? '1' : '0';
@@ -39,8 +38,7 @@ char* bignum_to_string(bignum number)
     char** words = (char**) calloc(BIGNUM_NUMBER_OF_WORDS + 1, sizeof(char*));
     words[BIGNUM_NUMBER_OF_WORDS] = NULL;
 
-    int i = 0;
-    for (i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+    for (int i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
         words[i] = (char*) calloc(BITS_PER_WORD + 1, sizeof(char));
         words[i][BITS_PER_WORD] = '\0';
@@ -55,7 +53,7 @@ char* bignum_to_string(bignum number)
 
     char* src;
     char* dest = final_str;
-    for (i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+    for (int i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
         src = words[BIGNUM_NUMBER_OF_WORDS - i - 1];
         strncpy(dest, src, BITS_PER_WORD);
@@ -77,15 +75,14 @@ void pad_string_with_zeros(char** old_str)
 {
     char* new_str = (char*) calloc(TOTAL_BIT_LENGTH + 1, sizeof(char));
     new_str[TOTAL_BIT_LENGTH] = '\0';
-    int i = 0;
-    for (i = 0; i < TOTAL_BIT_LENGTH; i++)
+    for (int i = 0; i < TOTAL_BIT_LENGTH; i++)
     {
         new_str[i] = '0';
     }
 
     unsigned int old_str_length = strlen(*old_str);
 
-    for (i = 0; i < old_str_length; i++)
+    for (int i = 0; i < old_str_length; i++)
     {
         new_str[(TOTAL_BIT_LENGTH - old_str_length) + i] = (*old_str)[i];
     }
@@ -112,14 +109,12 @@ char** cut_string_to_multiple_words(char* str)
     str_words[BIGNUM_NUMBER_OF_WORDS] = NULL;
 
     // allocate each one of the strings and fill them up
-    int i = 0;
-    int j = 0;
-    for (i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+    for (int i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
         str_words[i] = (char*) calloc(BITS_PER_WORD + 1, sizeof(char));
         str_words[i][BITS_PER_WORD] = '\0';
 
-        for (j = 0; j < BITS_PER_WORD; j++)
+        for (int j = 0; j < BITS_PER_WORD; j++)
         {
             str_words[i][j] = str[i * BITS_PER_WORD + j];
         }
@@ -129,7 +124,7 @@ char** cut_string_to_multiple_words(char* str)
     // little endian for indexing, so we have to invert the array.
     char* tmp;
     int middle_of_array = ceil(BIGNUM_NUMBER_OF_WORDS / 2);
-    for (i = 0; i < middle_of_array; i++)
+    for (int i = 0; i < middle_of_array; i++)
     {
         tmp = str_words[i];
         str_words[i] = str_words[BIGNUM_NUMBER_OF_WORDS - 1 - i];
@@ -147,8 +142,7 @@ void free_string_words(char*** words)
 {
     if (*words != NULL)
     {
-        int i = 0;
-        for (i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+        for (int i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
         {
             if ((*words)[i] != NULL)
             {
@@ -173,8 +167,7 @@ unsigned int string_to_unsigned_int(char* str)
 {
     unsigned int number = 0;
 
-    int i = 0;
-    for (i = 0; i < BITS_PER_WORD; i++)
+    for (int i = 0; i < BITS_PER_WORD; i++)
     {
         unsigned int bit_value = str[BITS_PER_WORD - 1 - i] == '1' ? 1 : 0;
         number |= bit_value << i;
@@ -194,8 +187,7 @@ void string_to_bignum(char* str, bignum number)
     char** words = cut_string_to_multiple_words(str);
 
     // set the number
-    int i = 0;
-    for (i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+    for (int i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
         number[i] = string_to_unsigned_int(words[i]);
     }
