@@ -53,7 +53,8 @@ char* generate_random_number(unsigned int index, unsigned int seed,
 
     // generate random number
     mpz_urandomb(number, random_state, bits);
-    for (int i = 0; i < index; i++)
+    int i = 0;
+    for (i = 0; i < index; i++)
     {
         mpz_urandomb(number, random_state, bits);
     }
