@@ -5,7 +5,7 @@
 
 #define NUMBER_OF_TESTS 100
 
-__global__ void test_kernel(int* dev_c, int a, int b);
+// __global__ void test_kernel(int* dev_c, int a, int b);
 char* generate_random_bignum_str(unsigned int index, unsigned int seed,
                                  unsigned int bits, unsigned int base);
 void generate_random_bignum(unsigned int index, unsigned int seed,
@@ -28,6 +28,7 @@ int main(void)
                NUMBER_OF_TESTS * sizeof(bignum), cudaMemcpyHostToDevice);
 
     // test_kernel<<<1, 1>>>(dev_c, a, b);
+
     cudaMemcpy(random_numbers, dev_random_numbers,
                NUMBER_OF_TESTS * sizeof(bignum), cudaMemcpyDeviceToHost);
     cudaFree(dev_random_numbers);
