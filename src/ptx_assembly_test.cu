@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <gmp.h>
 
-#define NUMBER_OF_TESTS 100
+#define NUMBER_OF_TESTS 2
 
 // __global__ void test_kernel(int* dev_c, int a, int b);
 char* generate_random_bignum_str(unsigned int index, unsigned int seed,
@@ -20,18 +20,21 @@ int main(void)
     {
         generate_random_bignum(i, SEED, RANDOM_NUMBER_BIT_RANGE, BASE,
                                random_numbers[i]);
+        char* random = bignum_to_string(random_numbers[i]);
+        printf("random = %s\n", random);
+        free(random);
     }
 
-    bignum* dev_random_numbers;
-    cudaMalloc((void**) &dev_random_numbers, NUMBER_OF_TESTS * sizeof(bignum));
-    cudaMemcpy(dev_random_numbers, random_numbers,
-               NUMBER_OF_TESTS * sizeof(bignum), cudaMemcpyHostToDevice);
+    // bignum* dev_random_numbers;
+    // cudaMalloc((void**) &dev_random_numbers, NUMBER_OF_TESTS * sizeof(bignum));
+    // cudaMemcpy(dev_random_numbers, random_numbers,
+    //            NUMBER_OF_TESTS * sizeof(bignum), cudaMemcpyHostToDevice);
 
     // test_kernel<<<1, 1>>>(dev_c, a, b);
 
-    cudaMemcpy(random_numbers, dev_random_numbers,
-               NUMBER_OF_TESTS * sizeof(bignum), cudaMemcpyDeviceToHost);
-    cudaFree(dev_random_numbers);
+    // cudaMemcpy(random_numbers, dev_random_numbers,
+    //            NUMBER_OF_TESTS * sizeof(bignum), cudaMemcpyDeviceToHost);
+    // cudaFree(dev_random_numbers);
 }
 
 /**

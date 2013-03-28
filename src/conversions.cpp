@@ -58,7 +58,7 @@ char* bignum_to_string(bignum number)
         src = words[BIGNUM_NUMBER_OF_WORDS - i - 1];
         strncpy(dest, src, BITS_PER_WORD);
 
-        dest += i * BITS_PER_WORD;
+        dest += BITS_PER_WORD;
     }
 
     free_string_words(&words);
