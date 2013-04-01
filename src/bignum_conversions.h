@@ -1,12 +1,7 @@
-#ifndef CONVERSIONS_H
-#define CONVERSIONS_H
+#ifndef BIGNUM_CONVERSIONS_H
+#define BIGNUM_CONVERSIONS_H
 
-#define BITS_PER_WORD 32
-#define BIGNUM_NUMBER_OF_WORDS 5
-#define TOTAL_BIT_LENGTH BIGNUM_NUMBER_OF_WORDS * BITS_PER_WORD
-#define SEED ((unsigned int) 12345)
-#define RANDOM_NUMBER_BIT_RANGE ((unsigned int) 131)
-#define BASE 2
+#include "bignum_type.h"
 
 // Note: all functions work on little endian word representations (not byte
 // representation).
@@ -18,10 +13,6 @@
 // the left and LSB on the right. They are not divided into
 // BIGNUM_NUMBER_OF_WORDS parts, each of which is BITS_PER_WORD bits long. The
 // strings are actually TOTAL_BIT_LENGTH in length.
-
-// little endian: most significant bits come in bignum[4] and least significant
-// bits come in bignum[0]
-typedef unsigned int bignum[BIGNUM_NUMBER_OF_WORDS];
 
 char* unsigned_int_to_string(unsigned int number);
 char* bignum_to_string(bignum number);
