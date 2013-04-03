@@ -8,11 +8,14 @@
 
 #define NUMBER_OF_TESTS ((unsigned long int) 1e4)
 
-__global__ void test_kernel(bignum* dev_c, bignum* dev_a, bignum* dev_b);
+void generate_operands(bignum* host_a, bignum* host_b);
+void check_results(bignum* host_c, bignum* host_a, bignum* host_b);
+void execute_normal_addition_on_device();
+__global__ void normal_addition(bignum* dev_c, bignum* dev_a, bignum* dev_b);
 
 int main(void)
 {
-    printf("Testing inline PTX\n");
+    printf("Testing PTX\n");
 
     // host operands
     bignum* host_a = (bignum*) calloc(NUMBER_OF_TESTS, sizeof(bignum));
@@ -21,14 +24,17 @@ int main(void)
     bignum* host_c = (bignum*) calloc(NUMBER_OF_TESTS, sizeof(bignum));
 
     // generate random numbers for the tests
-    start_random_number_generator();
-    for (int i = 0; i < NUMBER_OF_TESTS; i++)
-    {
-        generate_random_bignum(host_a[i]);
-        generate_random_bignum(host_b[i]);
-    }
-    stop_random_number_generator();
+    generate_operands(host_a, host_b);
 
+    check_results(host_c, host_a, host_b);
+
+    free(host_a);
+    free(host_b);
+    free(host_c);
+}
+
+void execute_normal_addition_on_device()
+{
     // device operands
     bignum* dev_a;
     bignum* dev_b;
@@ -46,7 +52,7 @@ int main(void)
     cudaMemcpy(dev_b, host_b, NUMBER_OF_TESTS * sizeof(bignum),
                cudaMemcpyHostToDevice);
 
-    test_kernel<<<1, 1>>>(dev_c, dev_a, dev_b);
+    normal_addition<<<1, 1>>>(dev_c, dev_a, dev_b);
 
     // copy results back to host
     cudaMemcpy(host_c, dev_c, NUMBER_OF_TESTS * sizeof(bignum),
@@ -56,8 +62,25 @@ int main(void)
     cudaFree(dev_a);
     cudaFree(dev_b);
     cudaFree(dev_c);
+}
 
+void generate_operands(bignum* host_a, bignum* host_b)
+{
+    start_random_number_generator();
+
+    for (int i = 0; i < NUMBER_OF_TESTS; i++)
+    {
+        generate_random_bignum(host_a[i]);
+        generate_random_bignum(host_b[i]);
+    }
+
+    stop_random_number_generator();
+}
+
+void check_results(bignum* host_c, bignum* host_a, bignum* host_b)
+{
     bool results_correct = true;
+
     for (int i = 0; results_correct && i < NUMBER_OF_TESTS; i++)
     {
         char* bignum_a_str = bignum_to_string(host_a[i]);
@@ -78,7 +101,7 @@ int main(void)
         char* gmp_bignum_c_str = mpz_get_str(NULL, 2, gmp_bignum_c);
         pad_string_with_zeros(&gmp_bignum_c_str);
 
-        if(strcmp(gmp_bignum_c_str, bignum_c_str) != 0)
+        if (strcmp(gmp_bignum_c_str, bignum_c_str) != 0)
         {
             printf("incorrect calculation at iteration %d\n", i);
             results_correct = false;
@@ -98,11 +121,7 @@ int main(void)
         mpz_clear(gmp_bignum_c);
     }
 
-    free(host_a);
-    free(host_b);
-    free(host_c);
-
-    if(results_correct)
+    if (results_correct)
     {
         printf("all correct\n");
     }
@@ -112,7 +131,7 @@ int main(void)
     }
 }
 
-__global__ void test_kernel(bignum* dev_c, bignum* dev_a, bignum* dev_b)
+__global__ void normal_addition(bignum* dev_c, bignum* dev_a, bignum* dev_b)
 {
     for (int i = 0; i < NUMBER_OF_TESTS; i++)
     {
