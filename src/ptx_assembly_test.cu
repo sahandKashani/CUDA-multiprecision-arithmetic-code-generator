@@ -3,9 +3,10 @@
 #include "bignum_conversions.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <gmp.h>
 
-#define NUMBER_OF_TESTS ((unsigned long int) 1e3)
+#define NUMBER_OF_TESTS ((unsigned long int) 1e4)
 
 __global__ void test_kernel(bignum* dev_c, bignum* dev_a, bignum* dev_b);
 
@@ -13,27 +14,25 @@ int main(void)
 {
     printf("Testing inline PTX\n");
 
-    // operands
-    bignum host_a[NUMBER_OF_TESTS];
-    bignum host_b[NUMBER_OF_TESTS];
-    // results
-    bignum host_c[NUMBER_OF_TESTS];
+    // host operands
+    bignum* host_a = (bignum*) calloc(NUMBER_OF_TESTS, sizeof(bignum));
+    bignum* host_b = (bignum*) calloc(NUMBER_OF_TESTS, sizeof(bignum));
+    // host results
+    bignum* host_c = (bignum*) calloc(NUMBER_OF_TESTS, sizeof(bignum));
 
-    // these are binary operators, so we have to generate 2 * NUMBER_OF_TESTS
-    // random numbers to test NUMBER_OF_TESTS tests
-    for (int i = 0; i < 2 * NUMBER_OF_TESTS; i += 2)
+    // generate random numbers for the tests
+    start_random_number_generator();
+    for (int i = 0; i < NUMBER_OF_TESTS; i++)
     {
-        generate_random_bignum(i, SEED, RANDOM_NUMBER_BIT_RANGE, BASE,
-                               host_a[i]);
-        generate_random_bignum(i + 1, SEED, RANDOM_NUMBER_BIT_RANGE, BASE,
-                               host_b[i]);
+        generate_random_bignum(host_a[i]);
+        generate_random_bignum(host_b[i]);
     }
+    stop_random_number_generator();
 
-    // pointers to device memory for arrays "host_a" and "host_b"
-    // operands
+    // device operands
     bignum* dev_a;
     bignum* dev_b;
-    // results
+    // device results
     bignum* dev_c;
 
     // allocate memory on device
@@ -69,14 +68,14 @@ int main(void)
         mpz_t gmp_bignum_b;
         mpz_t gmp_bignum_c;
 
-        mpz_init_set_str(gmp_bignum_a, bignum_a_str, BASE);
-        mpz_init_set_str(gmp_bignum_b, bignum_b_str, BASE);
+        mpz_init_set_str(gmp_bignum_a, bignum_a_str, 2);
+        mpz_init_set_str(gmp_bignum_b, bignum_b_str, 2);
         mpz_init(gmp_bignum_c);
 
         mpz_add(gmp_bignum_c, gmp_bignum_a, gmp_bignum_b);
 
         // get binary string result
-        char* gmp_bignum_c_str = mpz_get_str(NULL, BASE, gmp_bignum_c);
+        char* gmp_bignum_c_str = mpz_get_str(NULL, 2, gmp_bignum_c);
         pad_string_with_zeros(&gmp_bignum_c_str);
 
         if(strcmp(gmp_bignum_c_str, bignum_c_str) != 0)
@@ -98,6 +97,19 @@ int main(void)
         mpz_clear(gmp_bignum_b);
         mpz_clear(gmp_bignum_c);
     }
+
+    free(host_a);
+    free(host_b);
+    free(host_c);
+
+    if(results_correct)
+    {
+        printf("all correct\n");
+    }
+    else
+    {
+        printf("something wrong\n");
+    }
 }
 
 __global__ void test_kernel(bignum* dev_c, bignum* dev_a, bignum* dev_b)
@@ -111,35 +123,15 @@ __global__ void test_kernel(bignum* dev_c, bignum* dev_a, bignum* dev_b)
             "    addc.cc.u32 %3, %8, %13;"
             "    addc.u32    %4, %9, %14;"
             "}"
+
             : "=r"(dev_c[i][0]), "=r"(dev_c[i][1]), "=r"(dev_c[i][2]),
               "=r"(dev_c[i][3]), "=r"(dev_c[i][4])
+
             : "r"(dev_a[i][0]), "r"(dev_a[i][1]), "r"(dev_a[i][2]),
               "r"(dev_a[i][3]), "r"(dev_a[i][4]),
+
               "r"(dev_b[i][0]), "r"(dev_b[i][1]), "r"(dev_b[i][2]),
               "r"(dev_b[i][3]), "r"(dev_b[i][4])
             );
-
-        // asm("{"
-        //     "    add.cc.u32 %0, %1, %2;"
-        //     "}"
-        //     : "=r"(dev_c[i][0]) : "r"(dev_a[i][0]), "r"(dev_b[i][0])
-        //     );
-
-        // for (int j = 1; j < BIGNUM_NUMBER_OF_WORDS - 1; j++)
-        // {
-        //     asm("{"
-        //         "    addc.cc.u32 %0, %1, %2;"
-        //         "}"
-        //         : "=r"(dev_c[i][j]) : "r"(dev_a[i][j]), "r"(dev_b[i][j])
-        //         );
-        // }
-
-        // asm("{"
-        //     "    addc.u32 %0, %1, %2;"
-        //     "}"
-        //     : "=r"(dev_c[i][BIGNUM_NUMBER_OF_WORDS - 1])
-        //     : "r"(dev_a[i][BIGNUM_NUMBER_OF_WORDS - 1])
-        //     , "r"(dev_b[i][BIGNUM_NUMBER_OF_WORDS - 1])
-        //     );
     }
 }

@@ -5,13 +5,10 @@
 
 #define SEED ((unsigned int) 12345)
 #define RANDOM_NUMBER_BIT_RANGE ((unsigned int) 131)
-#define BASE 2
 
-char* generate_random_bignum_str(unsigned int index, unsigned int seed,
-                                 unsigned int bits, unsigned int base);
-
-void generate_random_bignum(unsigned int index, unsigned int seed,
-                            unsigned int bits, unsigned int base,
-                            bignum number);
+char* generate_random_bignum_str();
+void generate_random_bignum(bignum number);
+void start_random_number_generator();
+void stop_random_number_generator();
 
 #endif
