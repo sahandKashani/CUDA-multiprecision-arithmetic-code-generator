@@ -22,7 +22,9 @@ void execute_normal_addition_on_device(bignum* host_c, bignum* host_a,
     cudaMemcpy(dev_b, host_b, NUMBER_OF_TESTS * sizeof(bignum),
                cudaMemcpyHostToDevice);
 
+    printf("executing normal addition ... ");
     normal_addition<<<256, 256>>>(dev_c, dev_a, dev_b);
+    printf("done\n");
 
     // copy results back to host
     cudaMemcpy(host_c, dev_c, NUMBER_OF_TESTS * sizeof(bignum),
@@ -81,6 +83,7 @@ __global__ void normal_addition(bignum* dev_c, bignum* dev_a, bignum* dev_b)
 void check_normal_addition_results(bignum* host_c, bignum* host_a,
                                    bignum* host_b)
 {
+    printf("checking results ... ");
     bool results_correct = true;
 
     for (int i = 0; results_correct && i < NUMBER_OF_TESTS; i++)

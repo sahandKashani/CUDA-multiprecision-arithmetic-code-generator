@@ -53,7 +53,9 @@ void execute_interleaved_addition_on_device(bignum* host_c, bignum* host_a,
     // free host_interleaved_operands which we no longer need.
     free(host_interleaved_operands);
 
+    printf("executing interleaved addition ... ");
     interleaved_addition<<<256, 256>>>(dev_results, dev_interleaved_operands);
+    printf("done\n");
 
     // copy results back to host
     cudaMemcpy(host_c, dev_results, NUMBER_OF_TESTS * sizeof(bignum),
@@ -112,6 +114,7 @@ __global__ void interleaved_addition(bignum* dev_results,
 void check_interleaved_addition_results(bignum* host_c, bignum* host_a,
                                         bignum* host_b)
 {
+    printf("checking resuts ... ");
     bool results_correct = true;
 
     for (int i = 0; results_correct && i < NUMBER_OF_TESTS; i++)

@@ -49,6 +49,7 @@ int main(void)
  */
 void generate_operands(bignum* host_a, bignum* host_b)
 {
+    printf("generating operands ... ");
     start_random_number_generator();
 
     for (int i = 0; i < NUMBER_OF_TESTS; i++)
@@ -58,4 +59,5 @@ void generate_operands(bignum* host_a, bignum* host_b)
     }
 
     stop_random_number_generator();
+    printf("done\n");
 }

@@ -3,8 +3,9 @@
 
 #include "bignum_type.h"
 #include "coalesced_bignum_type.h"
+#include "coalesced_bignum_result_type.h"
 
-__global__ void coalesced_addition(bignum* dev_results,
+__global__ void coalesced_addition(coalesced_bignum_result* dev_results,
                                    coalesced_bignum* dev_coalesced_operands);
 
 void execute_coalesced_addition_on_device(bignum* host_c, bignum* host_a,

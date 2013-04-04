@@ -40,11 +40,12 @@ void execute_coalesced_addition_on_device(bignum* host_c, bignum* host_a,
 
     // device operands (dev_coalesced_operands) and results (dev_results)
     coalesced_bignum* dev_coalesced_operands;
-    bignum* dev_results;
+    coalesced_bignum_result* dev_results;
 
     cudaMalloc((void**) &dev_coalesced_operands,
                BIGNUM_NUMBER_OF_WORDS * sizeof(coalesced_bignum));
-    cudaMalloc((void**) &dev_results, NUMBER_OF_TESTS * sizeof(bignum));
+    cudaMalloc((void**) &dev_results,
+               BIGNUM_NUMBER_OF_WORDS * sizeof(coalesced_bignum_result));
 
     // copy operands to device memory
     cudaMemcpy(dev_coalesced_operands, coalesced_operands,
@@ -53,18 +54,36 @@ void execute_coalesced_addition_on_device(bignum* host_c, bignum* host_a,
 
     free(coalesced_operands);
 
+    printf("executing coalesced addition ... ");
     coalesced_addition<<<256, 256>>>(dev_results, dev_coalesced_operands);
+    printf("done\n");
+
+    void* host_results_tmp = calloc(BIGNUM_NUMBER_OF_WORDS,
+                                    sizeof(coalesced_bignum_result));
+    coalesced_bignum_result* host_results = (coalesced_bignum_result*) host_results_tmp;
+    host_results_tmp = NULL;
 
     // copy results back to host
-    cudaMemcpy(host_c, dev_results, NUMBER_OF_TESTS * sizeof(bignum),
+    cudaMemcpy(host_results, dev_results, NUMBER_OF_TESTS * sizeof(bignum),
                cudaMemcpyDeviceToHost);
+
+    // rearrange result values into host_c
+    for (int i = 0; i < COALESCED_BIGNUM_RESULT_NUMBER_OF_WORDS; i++)
+    {
+        for (int j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
+        {
+            host_c[i][j] = host_results[j][i];
+        }
+    }
+
+    free(host_results);
 
     // free device memory
     cudaFree(dev_coalesced_operands);
     cudaFree(dev_results);
 }
 
-__global__ void coalesced_addition(bignum* dev_results,
+__global__ void coalesced_addition(coalesced_bignum_result* dev_results,
                                    coalesced_bignum* dev_coalesced_operands)
 {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
@@ -79,11 +98,11 @@ __global__ void coalesced_addition(bignum* dev_results,
             "    addc.u32    %4, %9, %14;"
             "}"
 
-            : "=r"(dev_results[tid][0]),
-              "=r"(dev_results[tid][1]),
-              "=r"(dev_results[tid][2]),
-              "=r"(dev_results[tid][3]),
-              "=r"(dev_results[tid][4])
+            : "=r"(dev_results[0][tid]),
+              "=r"(dev_results[1][tid]),
+              "=r"(dev_results[2][tid]),
+              "=r"(dev_results[3][tid]),
+              "=r"(dev_results[4][tid])
 
             : "r"(dev_coalesced_operands[0][col]),
               "r"(dev_coalesced_operands[1][col]),
@@ -113,6 +132,7 @@ __global__ void coalesced_addition(bignum* dev_results,
 void check_coalesced_addition_results(bignum* host_c, bignum* host_a,
                                       bignum* host_b)
 {
+    printf("checking results ... ");
     bool results_correct = true;
 
     for (int i = 0; results_correct && i < NUMBER_OF_TESTS; i++)

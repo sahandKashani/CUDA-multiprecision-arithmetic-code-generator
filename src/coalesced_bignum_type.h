@@ -3,10 +3,10 @@
 
 #include "test_constants.h"
 
-#define COALESCED_BIGNUM_NUMBER_OF_WORDS 2 * NUMBER_OF_TESTS
+#define COALESCED_BIGNUM_NUMBER_OF_WORDS (2 * NUMBER_OF_TESTS)
 
 // assume you have 2 bignum ARRAYS "a" and "b", then the data in
-// interleaved_bignum "c" would be:
+// coalesced_bignum "c" would be:
 
 // The "height" of the array should be BIGNUM_NUMBER_OF_WORDS
 
@@ -17,7 +17,7 @@
 // a[0][3], b[0][3], a[1][3], b[1][3], ..., a[N-1][3], b[N-1][3]
 // a[0][4], b[0][4], a[1][4], b[1][4], ..., a[N-1][4], b[N-1][4]
 
-// coalesced bignum would represent one "line" of the array given above.
+// coalesced_bignum would represent one "line" of the array given above.
 
 typedef unsigned int coalesced_bignum[COALESCED_BIGNUM_NUMBER_OF_WORDS];
 
