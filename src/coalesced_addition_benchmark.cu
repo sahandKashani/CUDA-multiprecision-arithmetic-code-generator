@@ -20,7 +20,7 @@ void execute_coalesced_addition_on_device(bignum* host_c, bignum* host_a,
     // a[0][4], b[0][4], a[1][4], b[1][4], ..., a[N-1][4], b[N-1][4]
 
     // Therefore, for best performance, you must choose a TOTAL number of
-    // threads close to N
+    // threads close to NUMBER_OF_TESTS
 
     // our results will be stocked sequentially as for normal addition.
 
@@ -67,38 +67,39 @@ void execute_coalesced_addition_on_device(bignum* host_c, bignum* host_a,
 __global__ void coalesced_addition(bignum* dev_results,
                                    coalesced_bignum* dev_coalesced_operands)
 {
-    // int tid = blockIdx.x * blockDim.x + threadIdx.x;
-    // while (tid < NUMBER_OF_TESTS)
-    // {
-    //     asm("{"
-    //         "    add.cc.u32  %0, %5, %10;"
-    //         "    addc.cc.u32 %1, %6, %11;"
-    //         "    addc.cc.u32 %2, %7, %12;"
-    //         "    addc.cc.u32 %3, %8, %13;"
-    //         "    addc.u32    %4, %9, %14;"
-    //         "}"
+    int tid = blockIdx.x * blockDim.x + threadIdx.x;
+    while (tid < NUMBER_OF_TESTS)
+    {
+        int col = 2 * tid;
+        asm("{"
+            "    add.cc.u32  %0, %5, %10;"
+            "    addc.cc.u32 %1, %6, %11;"
+            "    addc.cc.u32 %2, %7, %12;"
+            "    addc.cc.u32 %3, %8, %13;"
+            "    addc.u32    %4, %9, %14;"
+            "}"
 
-    //         : "=r"(dev_c[tid][0]),
-    //           "=r"(dev_c[tid][1]),
-    //           "=r"(dev_c[tid][2]),
-    //           "=r"(dev_c[tid][3]),
-    //           "=r"(dev_c[tid][4])
+            : "=r"(dev_results[tid][0]),
+              "=r"(dev_results[tid][1]),
+              "=r"(dev_results[tid][2]),
+              "=r"(dev_results[tid][3]),
+              "=r"(dev_results[tid][4])
 
-    //         : "r"(dev_a[tid][0]),
-    //           "r"(dev_a[tid][1]),
-    //           "r"(dev_a[tid][2]),
-    //           "r"(dev_a[tid][3]),
-    //           "r"(dev_a[tid][4]),
+            : "r"(dev_coalesced_operands[0][col]),
+              "r"(dev_coalesced_operands[1][col]),
+              "r"(dev_coalesced_operands[2][col]),
+              "r"(dev_coalesced_operands[3][col]),
+              "r"(dev_coalesced_operands[4][col]),
 
-    //           "r"(dev_b[tid][0]),
-    //           "r"(dev_b[tid][1]),
-    //           "r"(dev_b[tid][2]),
-    //           "r"(dev_b[tid][3]),
-    //           "r"(dev_b[tid][4])
-    //         );
+              "r"(dev_coalesced_operands[0][col + 1]),
+              "r"(dev_coalesced_operands[1][col + 1]),
+              "r"(dev_coalesced_operands[2][col + 1]),
+              "r"(dev_coalesced_operands[3][col + 1]),
+              "r"(dev_coalesced_operands[4][col + 1])
+            );
 
-    //     tid += blockDim.x * gridDim.x;
-    // }
+        tid += blockDim.x * gridDim.x;
+    }
 }
 
 /**
