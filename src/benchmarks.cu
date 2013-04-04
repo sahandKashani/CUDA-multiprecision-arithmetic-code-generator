@@ -4,6 +4,7 @@
 #include "test_constants.h"
 #include "normal_addition_benchmark.cuh"
 #include "interleaved_addition_benchmark.cuh"
+#include "coalesced_addition_benchmark.cuh"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,6 +32,9 @@ int main(void)
 
     execute_interleaved_addition_on_device(host_c, host_a, host_b);
     check_interleaved_addition_results(host_c, host_a, host_b);
+
+    execute_coalesced_addition_on_device(host_c, host_a, host_b);
+    check_coalesced_addition_results(host_c, host_a, host_b);
 
     free(host_a);
     free(host_b);
