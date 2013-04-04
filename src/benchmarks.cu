@@ -33,8 +33,8 @@ int main(void)
     execute_interleaved_addition_on_device(host_c, host_a, host_b);
     check_interleaved_addition_results(host_c, host_a, host_b);
 
-    execute_coalesced_addition_on_device(host_c, host_a, host_b);
-    check_coalesced_addition_results(host_c, host_a, host_b);
+    // execute_coalesced_addition_on_device(host_c, host_a, host_b);
+    // check_coalesced_addition_results(host_c, host_a, host_b);
 
     free(host_a);
     free(host_b);

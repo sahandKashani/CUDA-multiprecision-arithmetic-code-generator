@@ -7,7 +7,7 @@
 void execute_interleaved_addition_on_device(bignum* host_c, bignum* host_a,
                                             bignum* host_b)
 {
-    // for this coalescing addition, we are going to interleave the values of
+    // for this interleaved addition, we are going to interleave the values of
     // the 2 operands host_a and host_b.
     // Our operands will look like the following:
 
@@ -18,21 +18,21 @@ void execute_interleaved_addition_on_device(bignum* host_c, bignum* host_a,
     // our results will be stocked sequentially as for normal addition.
 
     void* host_ops = calloc(NUMBER_OF_TESTS, sizeof(interleaved_bignum));
-    interleaved_bignum* interleaved_operands = (interleaved_bignum*) host_ops;
+    interleaved_bignum* host_interleaved_operands = (interleaved_bignum*) host_ops;
     host_ops = NULL;
 
-    // interleave values of host_a and host_b in interleaved_operands.
+    // interleave values of host_a and host_b in host_interleaved_operands.
     for (int i = 0; i < NUMBER_OF_TESTS; i++)
     {
         for (int j = 0; j < INTERLEAVED_BIGNUM_NUMBER_OF_WORDS; j++)
         {
             if (j % 2 == 0)
             {
-                interleaved_operands[i][j] = host_a[i][j / 2];
+                host_interleaved_operands[i][j] = host_a[i][j / 2];
             }
             else
             {
-                interleaved_operands[i][j] = host_b[i][j / 2];
+                host_interleaved_operands[i][j] = host_b[i][j / 2];
             }
         }
     }
@@ -46,12 +46,12 @@ void execute_interleaved_addition_on_device(bignum* host_c, bignum* host_a,
     cudaMalloc((void**) &dev_results, NUMBER_OF_TESTS * sizeof(bignum));
 
     // copy operands to device memory
-    cudaMemcpy(dev_interleaved_operands, interleaved_operands,
+    cudaMemcpy(dev_interleaved_operands, host_interleaved_operands,
                NUMBER_OF_TESTS * sizeof(interleaved_bignum),
                cudaMemcpyHostToDevice);
 
-    // free interleaved_operands which we no longer need.
-    free(interleaved_operands);
+    // free host_interleaved_operands which we no longer need.
+    free(host_interleaved_operands);
 
     interleaved_addition<<<256, 256>>>(dev_results, dev_interleaved_operands);
 

@@ -7,67 +7,98 @@
 void execute_coalesced_addition_on_device(bignum* host_c, bignum* host_a,
                                           bignum* host_b)
 {
-    // device operands (dev_a, dev_b) and results (dev_c)
-    bignum* dev_a;
-    bignum* dev_b;
-    bignum* dev_c;
+    // for this coalesced addition, we are going to store the values of the 2
+    // operands host_a and host_b in a special way such that each thread in a
+    // block can access its iterative operands with a single global memory
+    // operation. Our operands will look like the following:
 
-    cudaMalloc((void**) &dev_a, NUMBER_OF_TESTS * sizeof(bignum));
-    cudaMalloc((void**) &dev_b, NUMBER_OF_TESTS * sizeof(bignum));
-    cudaMalloc((void**) &dev_c, NUMBER_OF_TESTS * sizeof(bignum));
+    // assuming N = 2 * NUMBER_OF_TESTS
+    // a[0][0], b[0][0], a[1][0], b[1][0], ..., a[N-1][0], b[N-1][0]
+    // a[0][1], b[0][1], a[1][1], b[1][1], ..., a[N-1][1], b[N-1][1]
+    // a[0][2], b[0][2], a[1][2], b[1][2], ..., a[N-1][2], b[N-1][2]
+    // a[0][3], b[0][3], a[1][3], b[1][3], ..., a[N-1][3], b[N-1][3]
+    // a[0][4], b[0][4], a[1][4], b[1][4], ..., a[N-1][4], b[N-1][4]
+
+    // Therefore, for best performance, you must choose a TOTAL number of
+    // threads close to N
+
+    // our results will be stocked sequentially as for normal addition.
+
+    void* host_ops = calloc(BIGNUM_NUMBER_OF_WORDS, sizeof(coalesced_bignum));
+    coalesced_bignum* coalesced_operands = (coalesced_bignum*) host_ops;
+    host_ops = NULL;
+
+    // arrange values of host_a and host_b in coalesced_operands.
+    for (int i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+    {
+        for (int j = 0; j < COALESCED_BIGNUM_NUMBER_OF_WORDS; j += 2)
+        {
+            coalesced_operands[i][j] = host_a[j/2][i];
+            coalesced_operands[i][j + 1] = host_b[j/2][i];
+        }
+    }
+
+    // device operands (dev_coalesced_operands) and results (dev_results)
+    coalesced_bignum* dev_coalesced_operands;
+    bignum* dev_results;
+
+    cudaMalloc((void**) &dev_coalesced_operands,
+               BIGNUM_NUMBER_OF_WORDS * sizeof(coalesced_bignum));
+    cudaMalloc((void**) &dev_results, NUMBER_OF_TESTS * sizeof(bignum));
 
     // copy operands to device memory
-    cudaMemcpy(dev_a, host_a, NUMBER_OF_TESTS * sizeof(bignum),
-               cudaMemcpyHostToDevice);
-    cudaMemcpy(dev_b, host_b, NUMBER_OF_TESTS * sizeof(bignum),
+    cudaMemcpy(dev_coalesced_operands, coalesced_operands,
+               BIGNUM_NUMBER_OF_WORDS * sizeof(coalesced_bignum),
                cudaMemcpyHostToDevice);
 
-    coalesced_addition<<<256, 256>>>(dev_c, dev_a, dev_b);
+    free(coalesced_operands);
+
+    coalesced_addition<<<256, 256>>>(dev_results, dev_coalesced_operands);
 
     // copy results back to host
-    cudaMemcpy(host_c, dev_c, NUMBER_OF_TESTS * sizeof(bignum),
+    cudaMemcpy(host_c, dev_results, NUMBER_OF_TESTS * sizeof(bignum),
                cudaMemcpyDeviceToHost);
 
     // free device memory
-    cudaFree(dev_a);
-    cudaFree(dev_b);
-    cudaFree(dev_c);
+    cudaFree(dev_coalesced_operands);
+    cudaFree(dev_results);
 }
 
-__global__ void coalesced_addition(bignum* dev_c, bignum* dev_a, bignum* dev_b)
+__global__ void coalesced_addition(bignum* dev_results,
+                                   coalesced_bignum* dev_coalesced_operands)
 {
-    int tid = blockIdx.x * blockDim.x + threadIdx.x;
-    while (tid < NUMBER_OF_TESTS)
-    {
-        asm("{"
-            "    add.cc.u32  %0, %5, %10;"
-            "    addc.cc.u32 %1, %6, %11;"
-            "    addc.cc.u32 %2, %7, %12;"
-            "    addc.cc.u32 %3, %8, %13;"
-            "    addc.u32    %4, %9, %14;"
-            "}"
+    // int tid = blockIdx.x * blockDim.x + threadIdx.x;
+    // while (tid < NUMBER_OF_TESTS)
+    // {
+    //     asm("{"
+    //         "    add.cc.u32  %0, %5, %10;"
+    //         "    addc.cc.u32 %1, %6, %11;"
+    //         "    addc.cc.u32 %2, %7, %12;"
+    //         "    addc.cc.u32 %3, %8, %13;"
+    //         "    addc.u32    %4, %9, %14;"
+    //         "}"
 
-            : "=r"(dev_c[tid][0]),
-              "=r"(dev_c[tid][1]),
-              "=r"(dev_c[tid][2]),
-              "=r"(dev_c[tid][3]),
-              "=r"(dev_c[tid][4])
+    //         : "=r"(dev_c[tid][0]),
+    //           "=r"(dev_c[tid][1]),
+    //           "=r"(dev_c[tid][2]),
+    //           "=r"(dev_c[tid][3]),
+    //           "=r"(dev_c[tid][4])
 
-            : "r"(dev_a[tid][0]),
-              "r"(dev_a[tid][1]),
-              "r"(dev_a[tid][2]),
-              "r"(dev_a[tid][3]),
-              "r"(dev_a[tid][4]),
+    //         : "r"(dev_a[tid][0]),
+    //           "r"(dev_a[tid][1]),
+    //           "r"(dev_a[tid][2]),
+    //           "r"(dev_a[tid][3]),
+    //           "r"(dev_a[tid][4]),
 
-              "r"(dev_b[tid][0]),
-              "r"(dev_b[tid][1]),
-              "r"(dev_b[tid][2]),
-              "r"(dev_b[tid][3]),
-              "r"(dev_b[tid][4])
-            );
+    //           "r"(dev_b[tid][0]),
+    //           "r"(dev_b[tid][1]),
+    //           "r"(dev_b[tid][2]),
+    //           "r"(dev_b[tid][3]),
+    //           "r"(dev_b[tid][4])
+    //         );
 
-        tid += blockDim.x * gridDim.x;
-    }
+    //     tid += blockDim.x * gridDim.x;
+    // }
 }
 
 /**
