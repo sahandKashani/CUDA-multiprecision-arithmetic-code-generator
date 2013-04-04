@@ -70,32 +70,36 @@ __global__ void interleaved_addition(bignum* dev_results,
                                     interleaved_bignum* dev_interleaved_operands)
 {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
+
     while (tid < NUMBER_OF_TESTS)
     {
-        asm("{"
-            "    add.cc.u32  %0, %5, %10;"
-            "    addc.cc.u32 %1, %6, %11;"
-            "    addc.cc.u32 %2, %7, %12;"
-            "    addc.cc.u32 %3, %8, %13;"
-            "    addc.u32    %4, %9, %14;"
-            "}"
-
-            : "=r"(dev_results[tid][0]),
-              "=r"(dev_results[tid][1]),
-              "=r"(dev_results[tid][2]),
-              "=r"(dev_results[tid][3]),
-              "=r"(dev_results[tid][4])
-
+        asm("add.cc.u32  %0, %1, %2;"
+            : "=r"(dev_results[tid][0])
             : "r"(dev_interleaved_operands[tid][0]),
-              "r"(dev_interleaved_operands[tid][2]),
-              "r"(dev_interleaved_operands[tid][4]),
-              "r"(dev_interleaved_operands[tid][6]),
-              "r"(dev_interleaved_operands[tid][8]),
+              "r"(dev_interleaved_operands[tid][1])
+            );
 
-              "r"(dev_interleaved_operands[tid][1]),
-              "r"(dev_interleaved_operands[tid][3]),
-              "r"(dev_interleaved_operands[tid][5]),
-              "r"(dev_interleaved_operands[tid][7]),
+        asm("addc.cc.u32 %0, %1, %2;"
+            : "=r"(dev_results[tid][1])
+            : "r"(dev_interleaved_operands[tid][2]),
+              "r"(dev_interleaved_operands[tid][3])
+            );
+
+        asm("addc.cc.u32 %0, %1, %2;"
+            : "=r"(dev_results[tid][2])
+            : "r"(dev_interleaved_operands[tid][4]),
+              "r"(dev_interleaved_operands[tid][5])
+            );
+
+        asm("addc.cc.u32 %0, %1, %2;"
+            : "=r"(dev_results[tid][3])
+            : "r"(dev_interleaved_operands[tid][6]),
+              "r"(dev_interleaved_operands[tid][7])
+            );
+
+        asm("addc.u32    %0, %1, %2;"
+            : "=r"(dev_results[tid][4])
+            : "r"(dev_interleaved_operands[tid][8]),
               "r"(dev_interleaved_operands[tid][9])
             );
 

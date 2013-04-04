@@ -39,32 +39,36 @@ void execute_normal_addition_on_device(bignum* host_c, bignum* host_a,
 __global__ void normal_addition(bignum* dev_c, bignum* dev_a, bignum* dev_b)
 {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
+
     while (tid < NUMBER_OF_TESTS)
     {
-        asm("{"
-            "    add.cc.u32  %0, %5, %10;"
-            "    addc.cc.u32 %1, %6, %11;"
-            "    addc.cc.u32 %2, %7, %12;"
-            "    addc.cc.u32 %3, %8, %13;"
-            "    addc.u32    %4, %9, %14;"
-            "}"
-
-            : "=r"(dev_c[tid][0]),
-              "=r"(dev_c[tid][1]),
-              "=r"(dev_c[tid][2]),
-              "=r"(dev_c[tid][3]),
-              "=r"(dev_c[tid][4])
-
+        asm("add.cc.u32  %0, %1, %2;"
+            : "=r"(dev_c[tid][0])
             : "r"(dev_a[tid][0]),
-              "r"(dev_a[tid][1]),
-              "r"(dev_a[tid][2]),
-              "r"(dev_a[tid][3]),
-              "r"(dev_a[tid][4]),
+              "r"(dev_b[tid][0])
+            );
 
-              "r"(dev_b[tid][0]),
-              "r"(dev_b[tid][1]),
-              "r"(dev_b[tid][2]),
-              "r"(dev_b[tid][3]),
+        asm("addc.cc.u32 %0, %1, %2;"
+            : "=r"(dev_c[tid][1])
+            : "r"(dev_a[tid][1]),
+              "r"(dev_b[tid][1])
+            );
+
+        asm("addc.cc.u32 %0, %1, %2;"
+            : "=r"(dev_c[tid][2])
+            : "r"(dev_a[tid][2]),
+              "r"(dev_b[tid][2])
+            );
+
+        asm("addc.cc.u32 %0, %1, %2;"
+            : "=r"(dev_c[tid][3])
+            : "r"(dev_a[tid][3]),
+              "r"(dev_b[tid][3])
+            );
+
+        asm("addc.u32    %0, %1, %2;"
+            : "=r"(dev_c[tid][4])
+            : "r"(dev_a[tid][4]),
               "r"(dev_b[tid][4])
             );
 

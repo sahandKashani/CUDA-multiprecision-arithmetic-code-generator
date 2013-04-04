@@ -87,33 +87,38 @@ __global__ void coalesced_addition(coalesced_bignum_result* dev_results,
                                    coalesced_bignum* dev_coalesced_operands)
 {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
+
     while (tid < NUMBER_OF_TESTS)
     {
         int col = 2 * tid;
-        asm("{"
-            "    add.cc.u32  %0, %5, %10;"
-            "    addc.cc.u32 %1, %6, %11;"
-            "    addc.cc.u32 %2, %7, %12;"
-            "    addc.cc.u32 %3, %8, %13;"
-            "    addc.u32    %4, %9, %14;"
-            "}"
 
-            : "=r"(dev_results[0][tid]),
-              "=r"(dev_results[1][tid]),
-              "=r"(dev_results[2][tid]),
-              "=r"(dev_results[3][tid]),
-              "=r"(dev_results[4][tid])
-
+        asm("add.cc.u32  %0, %1, %2;"
+            : "=r"(dev_results[0][tid])
             : "r"(dev_coalesced_operands[0][col]),
-              "r"(dev_coalesced_operands[1][col]),
-              "r"(dev_coalesced_operands[2][col]),
-              "r"(dev_coalesced_operands[3][col]),
-              "r"(dev_coalesced_operands[4][col]),
+              "r"(dev_coalesced_operands[0][col + 1])
+            );
 
-              "r"(dev_coalesced_operands[0][col + 1]),
-              "r"(dev_coalesced_operands[1][col + 1]),
-              "r"(dev_coalesced_operands[2][col + 1]),
-              "r"(dev_coalesced_operands[3][col + 1]),
+        asm("addc.cc.u32 %0, %1, %2;"
+            : "=r"(dev_results[1][tid])
+            : "r"(dev_coalesced_operands[1][col]),
+              "r"(dev_coalesced_operands[1][col + 1])
+            );
+
+        asm("addc.cc.u32 %0, %1, %2;"
+            : "=r"(dev_results[2][tid])
+            : "r"(dev_coalesced_operands[2][col]),
+              "r"(dev_coalesced_operands[2][col + 1])
+            );
+
+        asm("addc.cc.u32 %0, %1, %2;"
+            : "=r"(dev_results[3][tid])
+            : "r"(dev_coalesced_operands[3][col]),
+              "r"(dev_coalesced_operands[3][col + 1])
+            );
+
+        asm("addc.u32    %0, %1, %2;"
+            : "=r"(dev_results[4][tid])
+            : "r"(dev_coalesced_operands[4][col]),
               "r"(dev_coalesced_operands[4][col + 1])
             );
 
