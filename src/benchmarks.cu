@@ -1,10 +1,9 @@
 #include "bignum_type.h"
-#include "interleaved_bignum_type.h"
 #include "random_bignum_generator.h"
 #include "test_constants.h"
 #include "normal_addition_benchmark.cuh"
 #include "interleaved_addition_benchmark.cuh"
-#include "coalesced_addition_benchmark.cuh"
+#include "coalesced_interleaved_addition_benchmark.cuh"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,14 +26,24 @@ int main(void)
     // results and put them in host_c. This is done by the code which calls the
     // kernels. They are the "execute_xxx_on_device" functions.
 
-    execute_normal_addition_on_device(host_c, host_a, host_b);
-    check_normal_addition_results(host_c, host_a, host_b);
+    for (int blocks = 1; blocks < 65536; blocks *= 2)
+    {
+        for (int threads = 1; threads < 2048; threads *= 2)
+        {
+            execute_normal_addition_on_device(host_c, host_a, host_b, blocks,
+                                              threads);
+            check_normal_addition_results(host_c, host_a, host_b);
 
-    execute_interleaved_addition_on_device(host_c, host_a, host_b);
-    check_interleaved_addition_results(host_c, host_a, host_b);
+            execute_interleaved_addition_on_device(host_c, host_a, host_b,
+                                                   blocks, threads);
+            check_interleaved_addition_results(host_c, host_a, host_b);
 
-    execute_coalesced_addition_on_device(host_c, host_a, host_b);
-    check_coalesced_addition_results(host_c, host_a, host_b);
+            execute_coalesced_interleaved_addition_on_device(host_c, host_a,
+                                                             host_b, blocks,
+                                                             threads);
+            check_coalesced_interleaved_addition_results(host_c, host_a, host_b);
+        }
+    }
 
     free(host_a);
     free(host_b);
@@ -49,7 +58,8 @@ int main(void)
  */
 void generate_operands(bignum* host_a, bignum* host_b)
 {
-    printf("generating operands ... ");
+    printf("generating operands ... "); fflush(stdout);
+
     start_random_number_generator();
 
     for (int i = 0; i < NUMBER_OF_TESTS; i++)
@@ -59,5 +69,6 @@ void generate_operands(bignum* host_a, bignum* host_b)
     }
 
     stop_random_number_generator();
-    printf("done\n");
+
+    printf("done\n"); fflush(stdout);
 }

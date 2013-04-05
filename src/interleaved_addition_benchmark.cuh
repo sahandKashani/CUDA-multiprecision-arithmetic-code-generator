@@ -8,7 +8,9 @@ __global__ void interleaved_addition(bignum* dev_results,
                                      interleaved_bignum* dev_interleaved_operands);
 
 void execute_interleaved_addition_on_device(bignum* host_c, bignum* host_a,
-                                            bignum* host_b);
+                                            bignum* host_b,
+                                            int threads_per_block,
+                                            int blocks_per_grid);
 
 void check_interleaved_addition_results(bignum* host_c, bignum* host_a,
                                         bignum* host_b);

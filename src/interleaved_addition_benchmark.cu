@@ -5,7 +5,9 @@
 #include <gmp.h>
 
 void execute_interleaved_addition_on_device(bignum* host_c, bignum* host_a,
-                                            bignum* host_b)
+                                            bignum* host_b,
+                                            int threads_per_block,
+                                            int blocks_per_grid)
 {
     // for this interleaved addition, we are going to interleave the values of
     // the 2 operands host_a and host_b.
@@ -17,9 +19,8 @@ void execute_interleaved_addition_on_device(bignum* host_c, bignum* host_a,
 
     // our results will be stocked sequentially as for normal addition.
 
-    void* host_ops = calloc(NUMBER_OF_TESTS, sizeof(interleaved_bignum));
-    interleaved_bignum* host_interleaved_operands = (interleaved_bignum*) host_ops;
-    host_ops = NULL;
+    interleaved_bignum* host_interleaved_operands =
+        (interleaved_bignum*) calloc(NUMBER_OF_TESTS, sizeof(interleaved_bignum));
 
     // interleave values of host_a and host_b in host_interleaved_operands.
     for (int i = 0; i < NUMBER_OF_TESTS; i++)
@@ -53,9 +54,8 @@ void execute_interleaved_addition_on_device(bignum* host_c, bignum* host_a,
     // free host_interleaved_operands which we no longer need.
     free(host_interleaved_operands);
 
-    printf("executing interleaved addition ... ");
-    interleaved_addition<<<256, 256>>>(dev_results, dev_interleaved_operands);
-    printf("done\n");
+    interleaved_addition<<<blocks_per_grid, threads_per_block>>>
+        (dev_results, dev_interleaved_operands);
 
     // copy results back to host
     cudaMemcpy(host_c, dev_results, NUMBER_OF_TESTS * sizeof(bignum),
@@ -67,7 +67,7 @@ void execute_interleaved_addition_on_device(bignum* host_c, bignum* host_a,
 }
 
 __global__ void interleaved_addition(bignum* dev_results,
-                                    interleaved_bignum* dev_interleaved_operands)
+                                     interleaved_bignum* dev_interleaved_operands)
 {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -118,7 +118,6 @@ __global__ void interleaved_addition(bignum* dev_results,
 void check_interleaved_addition_results(bignum* host_c, bignum* host_a,
                                         bignum* host_b)
 {
-    printf("checking resuts ... ");
     bool results_correct = true;
 
     for (int i = 0; results_correct && i < NUMBER_OF_TESTS; i++)

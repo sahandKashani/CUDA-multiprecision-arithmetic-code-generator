@@ -1,11 +1,14 @@
-#include "coalesced_addition_benchmark.cuh"
+#include "coalesced_interleaved_addition_benchmark.cuh"
 #include "test_constants.h"
 #include "bignum_conversions.h"
 
 #include <gmp.h>
 
-void execute_coalesced_addition_on_device(bignum* host_c, bignum* host_a,
-                                          bignum* host_b)
+void execute_coalesced_interleaved_addition_on_device(bignum* host_c,
+                                                      bignum* host_a,
+                                                      bignum* host_b,
+                                                      int threads_per_block,
+                                                      int blocks_per_grid)
 {
     // for this coalesced addition, we are going to store the values of the 2
     // operands host_a and host_b in a special way such that each thread in a
@@ -24,67 +27,69 @@ void execute_coalesced_addition_on_device(bignum* host_c, bignum* host_a,
 
     // our results will be stocked sequentially as for normal addition.
 
-    void* host_ops = calloc(BIGNUM_NUMBER_OF_WORDS, sizeof(coalesced_bignum));
-    coalesced_bignum* coalesced_operands = (coalesced_bignum*) host_ops;
-    host_ops = NULL;
+    coalesced_interleaved_bignum* coalesced_interleaved_operands =
+        (coalesced_interleaved_bignum*)
+            calloc(BIGNUM_NUMBER_OF_WORDS, sizeof(coalesced_interleaved_bignum));
 
-    // arrange values of host_a and host_b in coalesced_operands.
+    // arrange values of host_a and host_b in coalesced_interleaved_operands.
     for (int i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
-        for (int j = 0; j < COALESCED_BIGNUM_NUMBER_OF_WORDS; j += 2)
+        for (int j = 0; j < COALESCED_INTERLEAVED_BIGNUM_NUMBER_OF_WORDS; j += 2)
         {
-            coalesced_operands[i][j] = host_a[j/2][i];
-            coalesced_operands[i][j + 1] = host_b[j/2][i];
+            coalesced_interleaved_operands[i][j]     = host_a[j / 2][i];
+            coalesced_interleaved_operands[i][j + 1] = host_b[j / 2][i];
         }
     }
 
-    // device operands (dev_coalesced_operands) and results (dev_results)
-    coalesced_bignum* dev_coalesced_operands;
-    coalesced_bignum_result* dev_results;
+    // device operands (dev_coalesced_interleaved_operands) and results
+    // (dev_coalesced_results)
+    coalesced_interleaved_bignum* dev_coalesced_interleaved_operands;
+    coalesced_bignum* dev_coalesced_results;
 
-    cudaMalloc((void**) &dev_coalesced_operands,
+    cudaMalloc((void**) &dev_coalesced_interleaved_operands,
+               BIGNUM_NUMBER_OF_WORDS * sizeof(coalesced_interleaved_bignum));
+    cudaMalloc((void**) &dev_coalesced_results,
                BIGNUM_NUMBER_OF_WORDS * sizeof(coalesced_bignum));
-    cudaMalloc((void**) &dev_results,
-               BIGNUM_NUMBER_OF_WORDS * sizeof(coalesced_bignum_result));
 
     // copy operands to device memory
-    cudaMemcpy(dev_coalesced_operands, coalesced_operands,
-               BIGNUM_NUMBER_OF_WORDS * sizeof(coalesced_bignum),
+    cudaMemcpy(dev_coalesced_interleaved_operands,
+               coalesced_interleaved_operands,
+               BIGNUM_NUMBER_OF_WORDS * sizeof(coalesced_interleaved_bignum),
                cudaMemcpyHostToDevice);
 
-    free(coalesced_operands);
+    free(coalesced_interleaved_operands);
 
-    printf("executing coalesced addition ... ");
-    coalesced_addition<<<256, 256>>>(dev_results, dev_coalesced_operands);
-    printf("done\n");
+    coalesced_interleaved_addition<<<blocks_per_grid, threads_per_block>>>
+        (dev_coalesced_results, dev_coalesced_interleaved_operands);
 
-    void* host_results_tmp = calloc(BIGNUM_NUMBER_OF_WORDS,
-                                    sizeof(coalesced_bignum_result));
-    coalesced_bignum_result* host_results = (coalesced_bignum_result*) host_results_tmp;
-    host_results_tmp = NULL;
+    coalesced_bignum* host_coalesced_results =
+        (coalesced_bignum*) calloc(BIGNUM_NUMBER_OF_WORDS,
+                                   sizeof(coalesced_bignum));
 
     // copy results back to host
-    cudaMemcpy(host_results, dev_results, NUMBER_OF_TESTS * sizeof(bignum),
+    cudaMemcpy(host_coalesced_results, dev_coalesced_results,
+               BIGNUM_NUMBER_OF_WORDS * sizeof(coalesced_bignum),
                cudaMemcpyDeviceToHost);
 
     // rearrange result values into host_c
-    for (int i = 0; i < COALESCED_BIGNUM_RESULT_NUMBER_OF_WORDS; i++)
+    for (int i = 0; i < COALESCED_BIGNUM_NUMBER_OF_WORDS; i++)
     {
         for (int j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
         {
-            host_c[i][j] = host_results[j][i];
+            host_c[i][j] = host_coalesced_results[j][i];
         }
     }
 
-    free(host_results);
+    free(host_coalesced_results);
 
     // free device memory
-    cudaFree(dev_coalesced_operands);
-    cudaFree(dev_results);
+    cudaFree(dev_coalesced_interleaved_operands);
+    cudaFree(dev_coalesced_results);
 }
 
-__global__ void coalesced_addition(coalesced_bignum_result* dev_results,
-                                   coalesced_bignum* dev_coalesced_operands)
+__global__ void coalesced_interleaved_addition(
+    coalesced_bignum* dev_coalesced_results,
+    coalesced_interleaved_bignum* dev_coalesced_interleaved_operands)
 {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -93,33 +98,33 @@ __global__ void coalesced_addition(coalesced_bignum_result* dev_results,
         int col = 2 * tid;
 
         asm("add.cc.u32  %0, %1, %2;"
-            : "=r"(dev_results[0][tid])
-            : "r"(dev_coalesced_operands[0][col]),
-              "r"(dev_coalesced_operands[0][col + 1])
+            : "=r"(dev_coalesced_results[0][tid])
+            : "r"(dev_coalesced_interleaved_operands[0][col]),
+              "r"(dev_coalesced_interleaved_operands[0][col + 1])
             );
 
         asm("addc.cc.u32 %0, %1, %2;"
-            : "=r"(dev_results[1][tid])
-            : "r"(dev_coalesced_operands[1][col]),
-              "r"(dev_coalesced_operands[1][col + 1])
+            : "=r"(dev_coalesced_results[1][tid])
+            : "r"(dev_coalesced_interleaved_operands[1][col]),
+              "r"(dev_coalesced_interleaved_operands[1][col + 1])
             );
 
         asm("addc.cc.u32 %0, %1, %2;"
-            : "=r"(dev_results[2][tid])
-            : "r"(dev_coalesced_operands[2][col]),
-              "r"(dev_coalesced_operands[2][col + 1])
+            : "=r"(dev_coalesced_results[2][tid])
+            : "r"(dev_coalesced_interleaved_operands[2][col]),
+              "r"(dev_coalesced_interleaved_operands[2][col + 1])
             );
 
         asm("addc.cc.u32 %0, %1, %2;"
-            : "=r"(dev_results[3][tid])
-            : "r"(dev_coalesced_operands[3][col]),
-              "r"(dev_coalesced_operands[3][col + 1])
+            : "=r"(dev_coalesced_results[3][tid])
+            : "r"(dev_coalesced_interleaved_operands[3][col]),
+              "r"(dev_coalesced_interleaved_operands[3][col + 1])
             );
 
         asm("addc.u32    %0, %1, %2;"
-            : "=r"(dev_results[4][tid])
-            : "r"(dev_coalesced_operands[4][col]),
-              "r"(dev_coalesced_operands[4][col + 1])
+            : "=r"(dev_coalesced_results[4][tid])
+            : "r"(dev_coalesced_interleaved_operands[4][col]),
+              "r"(dev_coalesced_interleaved_operands[4][col + 1])
             );
 
         tid += blockDim.x * gridDim.x;
@@ -134,10 +139,10 @@ __global__ void coalesced_addition(coalesced_bignum_result* dev_results,
  * @param host_a First operands.
  * @param host_b Second operands.
  */
-void check_coalesced_addition_results(bignum* host_c, bignum* host_a,
-                                      bignum* host_b)
+void check_coalesced_interleaved_addition_results(bignum* host_c,
+                                                  bignum* host_a,
+                                                  bignum* host_b)
 {
-    printf("checking results ... ");
     bool results_correct = true;
 
     for (int i = 0; results_correct && i < NUMBER_OF_TESTS; i++)
