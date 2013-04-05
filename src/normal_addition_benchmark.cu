@@ -5,8 +5,9 @@
 #include <gmp.h>
 
 void execute_normal_addition_on_device(bignum* host_c, bignum* host_a,
-                                       bignum* host_b, int threads_per_block,
-                                       int blocks_per_grid)
+                                       bignum* host_b,
+                                       uint32_t threads_per_block,
+                                       uint32_t blocks_per_grid)
 {
     // device operands (dev_a, dev_b) and results (dev_c)
     bignum* dev_a;
@@ -37,7 +38,7 @@ void execute_normal_addition_on_device(bignum* host_c, bignum* host_a,
 
 __global__ void normal_addition(bignum* dev_c, bignum* dev_a, bignum* dev_b)
 {
-    int tid = blockIdx.x * blockDim.x + threadIdx.x;
+    uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
 
     while (tid < NUMBER_OF_TESTS)
     {
@@ -88,7 +89,7 @@ void check_normal_addition_results(bignum* host_c, bignum* host_a,
 {
     bool results_correct = true;
 
-    for (int i = 0; results_correct && i < NUMBER_OF_TESTS; i++)
+    for (uint32_t i = 0; results_correct && i < NUMBER_OF_TESTS; i++)
     {
         char* bignum_a_str = bignum_to_string(host_a[i]);
         char* bignum_b_str = bignum_to_string(host_b[i]);

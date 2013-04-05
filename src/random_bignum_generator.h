@@ -3,8 +3,8 @@
 
 #include "bignum_type.h"
 
-#define SEED ((unsigned int) 12345)
-#define RANDOM_NUMBER_BIT_RANGE ((unsigned int) 131)
+#define SEED ((uint32_t) 12345)
+#define RANDOM_NUMBER_BIT_RANGE ((uint32_t) 131)
 
 char* generate_random_bignum_str();
 void generate_random_bignum(bignum number);

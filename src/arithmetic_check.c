@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <gmp.h>
 
-#define NUMBER_OF_TESTS ((unsigned int) 3)
-#define SEED ((unsigned int) 12345)
-#define RANDOM_NUMBER_BIT_RANGE ((unsigned int) 131)
-#define MODULO ((unsigned int) 12)
+#define NUMBER_OF_TESTS ((uint32_t) 3)
+#define SEED ((uint32_t) 12345)
+#define RANDOM_NUMBER_BIT_RANGE ((uint32_t) 131)
+#define MODULO ((uint32_t) 12)
 
 void operator_test(void (*function)(mpz_t rop, const mpz_t op1, const mpz_t op2))
 {
@@ -24,7 +25,7 @@ void operator_test(void (*function)(mpz_t rop, const mpz_t op1, const mpz_t op2)
     mpz_init(op2);
     mpz_init(rop);
 
-    for(int i = 0; i < NUMBER_OF_TESTS; i += 1)
+    for(uint32_t i = 0; i < NUMBER_OF_TESTS; i += 1)
     {
         // generate 2 random numbers as inputs
         mpz_urandomb(op1, random_state, RANDOM_NUMBER_BIT_RANGE);
@@ -52,11 +53,11 @@ void addition(mpz_t rop, const mpz_t op1, const mpz_t op2)
     char* op2_binary_string = mpz_get_str(NULL, 2, op2);
     char* rop_binary_string = mpz_get_str(NULL, 2, rop);
     printf("op1 = \"%s\" (length = %d)\n", op1_binary_string,
-           (int) strlen(op1_binary_string));
+           (uint32_t) strlen(op1_binary_string));
     printf("op2 = \"%s\" (length = %d)\n", op2_binary_string,
-           (int) strlen(op2_binary_string));
+           (uint32_t) strlen(op2_binary_string));
     printf("rop = \"%s\" (length = %d)\n", rop_binary_string,
-           (int) strlen(rop_binary_string));
+           (uint32_t) strlen(rop_binary_string));
 
     free(op1_binary_string);
     free(op2_binary_string);
@@ -82,7 +83,7 @@ void modular_addition(mpz_t rop, const mpz_t op1, const mpz_t op2)
 
     // might have to adjust the remainder to be positive, because gmp only
     // guarantees that n = q*d + r, with 0 <= |r| <= |d|
-    int positive_remainder = mpz_cmp_ui(rop, 0);
+    uint32_t positive_remainder = mpz_cmp_ui(rop, 0);
     if(positive_remainder == -1)
     {
         mpz_add(rop, rop, mod);
@@ -104,7 +105,7 @@ void modular_subtraction(mpz_t rop, const mpz_t op1, const mpz_t op2)
 
     // might have to adjust the remainder to be positive, because gmp only
     // guarantees that n = q*d + r, with 0 <= |r| <= |d|
-    int positive_remainder = mpz_cmp_ui(rop, 0);
+    uint32_t positive_remainder = mpz_cmp_ui(rop, 0);
     if(positive_remainder == -1)
     {
         mpz_add(rop, rop, mod);
@@ -115,7 +116,7 @@ void modular_subtraction(mpz_t rop, const mpz_t op1, const mpz_t op2)
     mpz_clear(mod);
 }
 
-int main(void)
+uint32_t main(void)
 {
     operator_test(&addition);
     // operator_test(&subtraction);

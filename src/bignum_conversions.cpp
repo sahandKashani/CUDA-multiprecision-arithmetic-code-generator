@@ -5,19 +5,19 @@
 #include <math.h>
 
 /**
- * Returns an binary string representation of an unsigned integer. The string
- * returned is of length BITS_PER_WORD.
- * @param  number Unsigned integer to be converted.
- * @return        String with the binary representation of number
+ * Returns an binary string representation of a uint32_t. The string returned is
+ * of length BITS_PER_WORD.
+ * @param  number uint32_t to be converted.
+ * @return        String with the binary representation of number.
  */
-char* unsigned_int_to_string(unsigned int number)
+char* unsigned_int_to_string(uint32_t number)
 {
     char* str = (char*) calloc(BITS_PER_WORD + 1, sizeof(char));
     str[BITS_PER_WORD] = '\0';
 
-    for (int i = 0; i < BITS_PER_WORD; i++)
+    for (uint32_t i = 0; i < BITS_PER_WORD; i++)
     {
-        unsigned int masked_number = number & (1 << i);
+        uint32_t masked_number = number & (1 << i);
         str[BITS_PER_WORD - 1 - i] = (masked_number != 0) ? '1' : '0';
     }
 
@@ -37,7 +37,7 @@ char* bignum_to_string(bignum number)
     char** words = (char**) calloc(BIGNUM_NUMBER_OF_WORDS + 1, sizeof(char*));
     words[BIGNUM_NUMBER_OF_WORDS] = NULL;
 
-    for (int i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+    for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
         words[i] = (char*) calloc(BITS_PER_WORD + 1, sizeof(char));
         words[i][BITS_PER_WORD] = '\0';
@@ -52,7 +52,7 @@ char* bignum_to_string(bignum number)
 
     char* src;
     char* dest = final_str;
-    for (int i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+    for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
         src = words[BIGNUM_NUMBER_OF_WORDS - i - 1];
         strncpy(dest, src, BITS_PER_WORD);
@@ -68,20 +68,20 @@ char* bignum_to_string(bignum number)
 
 /**
  * Pads the binary string with zeros until it is TOTAL_BIT_LENGTH long.
- * @param old_str [description]
+ * @param old_str string to be padded with zeros
  */
 void pad_string_with_zeros(char** old_str)
 {
     char* new_str = (char*) calloc(TOTAL_BIT_LENGTH + 1, sizeof(char));
     new_str[TOTAL_BIT_LENGTH] = '\0';
-    for (int i = 0; i < TOTAL_BIT_LENGTH; i++)
+    for (uint32_t i = 0; i < TOTAL_BIT_LENGTH; i++)
     {
         new_str[i] = '0';
     }
 
-    unsigned int old_str_length = strlen(*old_str);
+    uint32_t old_str_length = strlen(*old_str);
 
-    for (int i = 0; i < old_str_length; i++)
+    for (uint32_t i = 0; i < old_str_length; i++)
     {
         new_str[(TOTAL_BIT_LENGTH - old_str_length) + i] = (*old_str)[i];
     }
@@ -109,12 +109,12 @@ char** cut_string_to_multiple_words(char* str)
     str_words[BIGNUM_NUMBER_OF_WORDS] = NULL;
 
     // allocate each one of the strings and fill them up
-    for (int i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+    for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
         str_words[i] = (char*) calloc(BITS_PER_WORD + 1, sizeof(char));
         str_words[i][BITS_PER_WORD] = '\0';
 
-        for (int j = 0; j < BITS_PER_WORD; j++)
+        for (uint32_t j = 0; j < BITS_PER_WORD; j++)
         {
             str_words[i][j] = str[i * BITS_PER_WORD + j];
         }
@@ -123,8 +123,8 @@ char** cut_string_to_multiple_words(char* str)
     // until now, the strings have been cut in big-endian form, but we want
     // little endian for indexing, so we have to invert the array.
     char* tmp;
-    int middle_of_array = ceil(BIGNUM_NUMBER_OF_WORDS / 2);
-    for (int i = 0; i < middle_of_array; i++)
+    uint32_t middle_of_array = ceil(BIGNUM_NUMBER_OF_WORDS / 2);
+    for (uint32_t i = 0; i < middle_of_array; i++)
     {
         tmp = str_words[i];
         str_words[i] = str_words[BIGNUM_NUMBER_OF_WORDS - 1 - i];
@@ -142,7 +142,7 @@ void free_string_words(char*** words)
 {
     if (*words != NULL)
     {
-        for (int i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+        for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
         {
             if ((*words)[i] != NULL)
             {
@@ -158,18 +158,18 @@ void free_string_words(char*** words)
 }
 
 /**
- * Returns an unsigned integer representation of the binary string of length
+ * Returns a uint32_t representation of the binary string of length
  * BITS_PER_WORD passed as a parameter.
  * @param  str String to be converted.
  * @return     Converted value.
  */
-unsigned int string_to_unsigned_int(char* str)
+uint32_t string_to_unsigned_int(char* str)
 {
-    unsigned int number = 0;
+    uint32_t number = 0;
 
-    for (int i = 0; i < BITS_PER_WORD; i++)
+    for (uint32_t i = 0; i < BITS_PER_WORD; i++)
     {
-        unsigned int bit_value = str[BITS_PER_WORD - 1 - i] == '1' ? 1 : 0;
+        uint32_t bit_value = str[BITS_PER_WORD - 1 - i] == '1' ? 1 : 0;
         number |= bit_value << i;
     }
 
@@ -187,7 +187,7 @@ void string_to_bignum(char* str, bignum number)
     char** words = cut_string_to_multiple_words(str);
 
     // set the number
-    for (int i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+    for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
         number[i] = string_to_unsigned_int(words[i]);
     }

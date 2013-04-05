@@ -6,8 +6,8 @@
 
 void execute_coalesced_normal_addition_on_device(bignum* host_c, bignum* host_a,
                                                  bignum* host_b,
-                                                 int threads_per_block,
-                                                 int blocks_per_grid)
+                                                 uint32_t threads_per_block,
+                                                 uint32_t blocks_per_grid)
 {
     // for this coalesced normal addition, we are going to store the values of
     // host_a, host_b and host_c in a coalesced way, but each in their own
@@ -28,9 +28,9 @@ void execute_coalesced_normal_addition_on_device(bignum* host_c, bignum* host_a,
                                    sizeof(coalesced_bignum));
 
     // arrange values of each of the arrays in a coalesced way
-    for (int i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+    for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
-        for (int j = 0; j < COALESCED_BIGNUM_NUMBER_OF_WORDS; j++)
+        for (uint32_t j = 0; j < COALESCED_BIGNUM_NUMBER_OF_WORDS; j++)
         {
             host_coalesced_a[i][j] = host_a[j][i];
             host_coalesced_b[i][j] = host_b[j][i];
@@ -74,9 +74,9 @@ void execute_coalesced_normal_addition_on_device(bignum* host_c, bignum* host_a,
                cudaMemcpyDeviceToHost);
 
     // rearrange results into host_c
-    for (int i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+    for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
-        for (int j = 0; j < COALESCED_BIGNUM_NUMBER_OF_WORDS; j++)
+        for (uint32_t j = 0; j < COALESCED_BIGNUM_NUMBER_OF_WORDS; j++)
         {
             host_c[j][i] = host_coalesced_c[i][j];
         }
@@ -94,7 +94,7 @@ __global__ void coalesced_normal_addition(coalesced_bignum* dev_coalesced_c,
                                           coalesced_bignum* dev_coalesced_a,
                                           coalesced_bignum* dev_coalesced_b)
 {
-    int tid = blockIdx.x * blockDim.x + threadIdx.x;
+    uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
 
     while (tid < NUMBER_OF_TESTS)
     {
@@ -145,7 +145,7 @@ void check_coalesced_normal_addition_results(bignum* host_c, bignum* host_a,
 {
     bool results_correct = true;
 
-    for (int i = 0; results_correct && i < NUMBER_OF_TESTS; i++)
+    for (uint32_t i = 0; results_correct && i < NUMBER_OF_TESTS; i++)
     {
         char* bignum_a_str = bignum_to_string(host_a[i]);
         char* bignum_b_str = bignum_to_string(host_b[i]);

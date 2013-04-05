@@ -27,9 +27,9 @@ int main(void)
     // results and put them in host_c. This is done by the code which calls the
     // kernels. They are the "execute_xxx_on_device" functions.
 
-    for (int blocks = 1; blocks < 65536; blocks *= 2)
+    for (uint32_t blocks = 1; blocks < 65536; blocks *= 2)
     {
-        for (int threads = 1; threads < 2048; threads *= 2)
+        for (uint32_t threads = 1; threads < 2048; threads *= 2)
         {
             execute_normal_addition_on_device(host_c, host_a, host_b, blocks,
                                               threads);
@@ -67,7 +67,7 @@ void generate_operands(bignum* host_a, bignum* host_b)
 
     start_random_number_generator();
 
-    for (int i = 0; i < NUMBER_OF_TESTS; i++)
+    for (uint32_t i = 0; i < NUMBER_OF_TESTS; i++)
     {
         generate_random_bignum(host_a[i]);
         generate_random_bignum(host_b[i]);

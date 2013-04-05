@@ -7,8 +7,8 @@
 void execute_coalesced_interleaved_addition_on_device(bignum* host_c,
                                                       bignum* host_a,
                                                       bignum* host_b,
-                                                      int threads_per_block,
-                                                      int blocks_per_grid)
+                                                      uint32_t threads_per_block,
+                                                      uint32_t blocks_per_grid)
 {
     // for this coalesced interleaved addition, we are going to store the values
     // of the 2 operands host_a and host_b in a special way such that each
@@ -32,9 +32,9 @@ void execute_coalesced_interleaved_addition_on_device(bignum* host_c,
             calloc(BIGNUM_NUMBER_OF_WORDS, sizeof(coalesced_interleaved_bignum));
 
     // arrange values of host_a and host_b in coalesced_interleaved_operands.
-    for (int i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+    for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
-        for (int j = 0; j < COALESCED_INTERLEAVED_BIGNUM_NUMBER_OF_WORDS; j += 2)
+        for (uint32_t j = 0; j < COALESCED_INTERLEAVED_BIGNUM_NUMBER_OF_WORDS; j += 2)
         {
             coalesced_interleaved_operands[i][j]     = host_a[j / 2][i];
             coalesced_interleaved_operands[i][j + 1] = host_b[j / 2][i];
@@ -72,9 +72,9 @@ void execute_coalesced_interleaved_addition_on_device(bignum* host_c,
                cudaMemcpyDeviceToHost);
 
     // rearrange result values into host_c
-    for (int i = 0; i < COALESCED_BIGNUM_NUMBER_OF_WORDS; i++)
+    for (uint32_t i = 0; i < COALESCED_BIGNUM_NUMBER_OF_WORDS; i++)
     {
-        for (int j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
+        for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
         {
             host_c[i][j] = host_coalesced_results[j][i];
         }
@@ -91,11 +91,11 @@ __global__ void coalesced_interleaved_addition(
     coalesced_bignum* dev_coalesced_results,
     coalesced_interleaved_bignum* dev_coalesced_interleaved_operands)
 {
-    int tid = blockIdx.x * blockDim.x + threadIdx.x;
+    uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
 
     while (tid < NUMBER_OF_TESTS)
     {
-        int col = 2 * tid;
+        uint32_t col = 2 * tid;
 
         asm("add.cc.u32  %0, %1, %2;"
             : "=r"(dev_coalesced_results[0][tid])
@@ -145,7 +145,7 @@ void check_coalesced_interleaved_addition_results(bignum* host_c,
 {
     bool results_correct = true;
 
-    for (int i = 0; results_correct && i < NUMBER_OF_TESTS; i++)
+    for (uint32_t i = 0; results_correct && i < NUMBER_OF_TESTS; i++)
     {
         char* bignum_a_str = bignum_to_string(host_a[i]);
         char* bignum_b_str = bignum_to_string(host_b[i]);

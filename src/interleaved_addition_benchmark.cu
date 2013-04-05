@@ -6,8 +6,8 @@
 
 void execute_interleaved_addition_on_device(bignum* host_c, bignum* host_a,
                                             bignum* host_b,
-                                            int threads_per_block,
-                                            int blocks_per_grid)
+                                            uint32_t threads_per_block,
+                                            uint32_t blocks_per_grid)
 {
     // for this interleaved addition, we are going to interleave the values of
     // the 2 operands host_a and host_b.
@@ -23,9 +23,9 @@ void execute_interleaved_addition_on_device(bignum* host_c, bignum* host_a,
         (interleaved_bignum*) calloc(NUMBER_OF_TESTS, sizeof(interleaved_bignum));
 
     // interleave values of host_a and host_b in host_interleaved_operands.
-    for (int i = 0; i < NUMBER_OF_TESTS; i++)
+    for (uint32_t i = 0; i < NUMBER_OF_TESTS; i++)
     {
-        for (int j = 0; j < INTERLEAVED_BIGNUM_NUMBER_OF_WORDS; j++)
+        for (uint32_t j = 0; j < INTERLEAVED_BIGNUM_NUMBER_OF_WORDS; j++)
         {
             if (j % 2 == 0)
             {
@@ -69,7 +69,7 @@ void execute_interleaved_addition_on_device(bignum* host_c, bignum* host_a,
 __global__ void interleaved_addition(bignum* dev_results,
                                      interleaved_bignum* dev_interleaved_operands)
 {
-    int tid = blockIdx.x * blockDim.x + threadIdx.x;
+    uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
 
     while (tid < NUMBER_OF_TESTS)
     {
@@ -120,7 +120,7 @@ void check_interleaved_addition_results(bignum* host_c, bignum* host_a,
 {
     bool results_correct = true;
 
-    for (int i = 0; results_correct && i < NUMBER_OF_TESTS; i++)
+    for (uint32_t i = 0; results_correct && i < NUMBER_OF_TESTS; i++)
     {
         char* bignum_a_str = bignum_to_string(host_a[i]);
         char* bignum_b_str = bignum_to_string(host_b[i]);

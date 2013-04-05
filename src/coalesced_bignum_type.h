@@ -19,6 +19,6 @@
 
 // coalesced_bignum would represent one "line" of the array given above.
 
-typedef unsigned int coalesced_bignum[COALESCED_BIGNUM_NUMBER_OF_WORDS];
+typedef uint32_t coalesced_bignum[COALESCED_BIGNUM_NUMBER_OF_WORDS];
 
 #endif
