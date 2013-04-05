@@ -10,10 +10,10 @@ void execute_coalesced_interleaved_addition_on_device(bignum* host_c,
                                                       int threads_per_block,
                                                       int blocks_per_grid)
 {
-    // for this coalesced addition, we are going to store the values of the 2
-    // operands host_a and host_b in a special way such that each thread in a
-    // block can access its iterative operands with a single global memory
-    // operation. Our operands will look like the following:
+    // for this coalesced interleaved addition, we are going to store the values
+    // of the 2 operands host_a and host_b in a special way such that each
+    // thread in a block can access its iterative operands with a single global
+    // memory operation. Our operands will look like the following:
 
     // assuming N = 2 * NUMBER_OF_TESTS
     // a[0][0], b[0][0], a[1][0], b[1][0], ..., a[N-1][0], b[N-1][0]
@@ -59,8 +59,8 @@ void execute_coalesced_interleaved_addition_on_device(bignum* host_c,
 
     free(coalesced_interleaved_operands);
 
-    coalesced_interleaved_addition<<<blocks_per_grid, threads_per_block>>>
-        (dev_coalesced_results, dev_coalesced_interleaved_operands);
+    coalesced_interleaved_addition<<<blocks_per_grid, threads_per_block>>>(
+        dev_coalesced_results, dev_coalesced_interleaved_operands);
 
     coalesced_bignum* host_coalesced_results =
         (coalesced_bignum*) calloc(BIGNUM_NUMBER_OF_WORDS,

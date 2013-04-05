@@ -3,6 +3,7 @@
 #include "test_constants.h"
 #include "normal_addition_benchmark.cuh"
 #include "interleaved_addition_benchmark.cuh"
+#include "coalesced_normal_addition_benchmark.cuh"
 #include "coalesced_interleaved_addition_benchmark.cuh"
 
 #include <stdio.h>
@@ -26,24 +27,37 @@ int main(void)
     // results and put them in host_c. This is done by the code which calls the
     // kernels. They are the "execute_xxx_on_device" functions.
 
-    for (int blocks = 1; blocks < 65536; blocks *= 2)
-    {
-        for (int threads = 1; threads < 2048; threads *= 2)
-        {
-            execute_normal_addition_on_device(host_c, host_a, host_b, blocks,
-                                              threads);
-            check_normal_addition_results(host_c, host_a, host_b);
+    // for (int blocks = 1; blocks < 65536; blocks *= 2)
+    // {
+    //     for (int threads = 1; threads < 2048; threads *= 2)
+    //     {
+    //         execute_normal_addition_on_device(host_c, host_a, host_b, blocks,
+    //                                           threads);
+    //         // check_normal_addition_results(host_c, host_a, host_b);
 
-            execute_interleaved_addition_on_device(host_c, host_a, host_b,
-                                                   blocks, threads);
-            check_interleaved_addition_results(host_c, host_a, host_b);
+    //         execute_interleaved_addition_on_device(host_c, host_a, host_b,
+    //                                                blocks, threads);
+    //         // check_interleaved_addition_results(host_c, host_a, host_b);
 
-            execute_coalesced_interleaved_addition_on_device(host_c, host_a,
-                                                             host_b, blocks,
-                                                             threads);
-            check_coalesced_interleaved_addition_results(host_c, host_a, host_b);
-        }
-    }
+    //         execute_coalesced_interleaved_addition_on_device(host_c, host_a,
+    //                                                          host_b, blocks,
+    //                                                          threads);
+    //         // check_coalesced_interleaved_addition_results(host_c, host_a, host_b);
+
+    //         execute_coalesced_normal_addition_on_device(host_c, host_a, host_b,
+    //                                                     blocks, threads);
+    //         // check_coalesced_normal_addition_results(host_c, host_a, host_b);
+    //     }
+    // }
+
+    int blocks = 256;
+    int threads = 256;
+
+    execute_normal_addition_on_device(host_c, host_a, host_b, blocks, threads);
+    execute_interleaved_addition_on_device(host_c, host_a, host_b, blocks, threads);
+    execute_coalesced_interleaved_addition_on_device(host_c, host_a, host_b, blocks, threads);
+    execute_coalesced_normal_addition_on_device(host_c, host_a, host_b, blocks, threads);
+    check_coalesced_normal_addition_results(host_c, host_a, host_b);
 
     free(host_a);
     free(host_b);

@@ -54,8 +54,8 @@ void execute_interleaved_addition_on_device(bignum* host_c, bignum* host_a,
     // free host_interleaved_operands which we no longer need.
     free(host_interleaved_operands);
 
-    interleaved_addition<<<blocks_per_grid, threads_per_block>>>
-        (dev_results, dev_interleaved_operands);
+    interleaved_addition<<<blocks_per_grid, threads_per_block>>>(
+        dev_results, dev_interleaved_operands);
 
     // copy results back to host
     cudaMemcpy(host_c, dev_results, NUMBER_OF_TESTS * sizeof(bignum),
