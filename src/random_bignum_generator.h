@@ -1,7 +1,8 @@
 #ifndef RANDOM_BIGNUM_GENERATOR_H
 #define RANDOM_BIGNUM_GENERATOR_H
 
-#include "bignum_type.h"
+#include <stdint.h>
+#include "bignum_types.h"
 
 #define SEED ((uint32_t) 12345)
 #define RANDOM_NUMBER_BIT_RANGE ((uint32_t) 131)

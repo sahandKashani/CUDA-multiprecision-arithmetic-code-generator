@@ -1,9 +1,3 @@
-#include "coalesced_interleaved_addition_benchmark.cuh"
-#include "test_constants.h"
-#include "bignum_conversions.h"
-
-#include <gmp.h>
-
 void execute_coalesced_interleaved_addition_on_device(bignum* host_c,
                                                       bignum* host_a,
                                                       bignum* host_b,
@@ -17,7 +11,7 @@ void execute_coalesced_interleaved_addition_on_device(bignum* host_c,
     // arrange values of host_a and host_b in coalesced_interleaved_operands.
     for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
-        for (uint32_t j = 0; j < 2 * NUMBER_OF_TESTS; j += 2)
+        for (uint32_t j = 0; j < 2 * TOTAL_NUMBER_OF_THREADS; j += 2)
         {
             coalesced_interleaved_operands[i][j]     = host_a[j / 2][i];
             coalesced_interleaved_operands[i][j + 1] = host_b[j / 2][i];
@@ -55,7 +49,7 @@ void execute_coalesced_interleaved_addition_on_device(bignum* host_c,
                cudaMemcpyDeviceToHost);
 
     // rearrange result values into host_c
-    for (uint32_t i = 0; i < NUMBER_OF_TESTS; i++)
+    for (uint32_t i = 0; i < TOTAL_NUMBER_OF_THREADS; i++)
     {
         for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
         {
@@ -77,7 +71,7 @@ __global__ void coalesced_interleaved_addition(
     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
     uint32_t tid_increment = blockDim.x * gridDim.x;
 
-    while (tid < NUMBER_OF_TESTS)
+    while (tid < TOTAL_NUMBER_OF_THREADS)
     {
         uint32_t i = 0;
         uint32_t col = 2 * tid;

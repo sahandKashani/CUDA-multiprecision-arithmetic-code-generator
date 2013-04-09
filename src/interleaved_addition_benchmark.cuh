@@ -1,9 +1,6 @@
 #ifndef INTERLEAVED_ADDITION_BENCHMARK_CUH
 #define INTERLEAVED_ADDITION_BENCHMARK_CUH
 
-#include "bignum_type.h"
-#include "interleaved_bignum_type.h"
-
 __global__ void interleaved_addition(bignum* dev_results,
                                      interleaved_bignum* dev_interleaved_operands);
 

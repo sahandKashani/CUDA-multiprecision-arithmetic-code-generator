@@ -1,9 +1,6 @@
 #ifndef COALESCED_NORMAL_ADDITION_BENCHMARK_CUH
 #define COALESCED_NORMAL_ADDITION_BENCHMARK_CUH
 
-#include "bignum_type.h"
-#include "coalesced_bignum_type.h"
-
 __global__ void coalesced_normal_addition(coalesced_bignum* dev_coalesced_c,
                                           coalesced_bignum* dev_coalesced_a,
                                           coalesced_bignum* dev_coalesced_b);

@@ -2,9 +2,7 @@
 #define BIGNUM_CONVERSIONS_H
 
 #include <stdint.h>
-
-#include "bignum_type.h"
-#include "coalesced_bignum_type.h"
+#include "bignum_types.h"
 
 // Note: all functions work on little endian word representations (not byte
 // representation).
@@ -13,9 +11,7 @@
 // endianness, we are talking about word endianness, and not byte endianness.
 
 // Note: strings are written as they are read, from left to right with MSB on
-// the left and LSB on the right. They are not divided into
-// BIGNUM_NUMBER_OF_WORDS parts, each of which is BITS_PER_WORD bits long. The
-// strings are actually TOTAL_BIT_LENGTH in length.
+// the left and LSB on the right. The strings have length TOTAL_BIT_LENGTH
 
 char* uint32_t_to_string(uint32_t number);
 char* bignum_to_string(bignum number);
@@ -28,7 +24,16 @@ void string_to_bignum(char* str, bignum number);
 
 uint32_t string_to_uint32_t(char* str);
 
-bignum* coalesced_bignum_to_bignum(coalesced_bignum** a);
-coalesced_bignum* bignum_to_coalesced_bignum(bignum** a);
+coalesced_bignum* bignum_to_coalesced_bignum(bignum** in);
+bignum* coalesced_bignum_to_bignum(coalesced_bignum** in);
+
+interleaved_bignum* bignums_to_interleaved_bignum(bignum** in_1, bignum** in_2);
+void interleaved_bignum_to_bignums(bignum** out_1, bignum** out_2,
+                                   interleaved_bignum** in);
+
+coalesced_interleaved_bignum* bignums_to_coalesced_interleaved_bignum(bignum** in_1,
+                                                                      bignum** in_2);
+void coalesced_interleaved_bignum_to_bignums(bignum** out_1, bignum** out_2,
+                                             coalesced_interleaved_bignum** in);
 
 #endif

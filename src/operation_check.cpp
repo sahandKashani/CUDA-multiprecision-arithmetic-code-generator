@@ -1,16 +1,17 @@
 #include "operation_check.h"
-#include "test_constants.h"
+
+#include <stdio.h>
+#include <string.h>
+#include <stdint.h>
+#include <gmp.h>
+#include "bignum_types.h"
 #include "bignum_conversions.h"
 
-#include <string.h>
-#include <stdlib.h>
-#include <gmp.h>
-
 /**
- * Checks if host_a op host_b == host_c, where host_c is to be tested against
+ * Checks if host_a + host_b == host_c, where host_c is to be tested against
  * values computed by gmp. If you have data in any other formats than these, you
  * will have to "rearrange" them to meet this pattern for the check to work.
- * @param host_c Values we have computed with our algorithms.
+ * @param host_c Values we have computed with our gpu algorithms.
  * @param host_a First operands.
  * @param host_b Second operands.
  */
@@ -18,7 +19,7 @@ void addition_check(bignum* host_c, bignum* host_a, bignum* host_b)
 {
     bool results_correct = true;
 
-    for (uint32_t i = 0; results_correct && i < NUMBER_OF_TESTS; i++)
+    for (uint32_t i = 0; results_correct && i < TOTAL_NUMBER_OF_THREADS; i++)
     {
         char* bignum_a_str = bignum_to_string(host_a[i]);
         char* bignum_b_str = bignum_to_string(host_b[i]);
@@ -62,10 +63,10 @@ void addition_check(bignum* host_c, bignum* host_a, bignum* host_b)
 
     if (results_correct)
     {
-        printf("no error found\n");
+        printf("additions correct\n");
     }
     else
     {
-        printf("errors found\n");
+        printf("additions incorrect\n");
     }
 }

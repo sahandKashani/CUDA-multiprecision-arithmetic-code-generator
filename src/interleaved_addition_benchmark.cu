@@ -1,19 +1,13 @@
-#include "interleaved_addition_benchmark.cuh"
-#include "test_constants.h"
-#include "bignum_conversions.h"
-
-#include <gmp.h>
-
 void execute_interleaved_addition_on_device(bignum* host_c, bignum* host_a,
                                             bignum* host_b,
                                             uint32_t threads_per_block,
                                             uint32_t blocks_per_grid)
 {
     interleaved_bignum* host_interleaved_operands =
-        (interleaved_bignum*) calloc(NUMBER_OF_TESTS, sizeof(interleaved_bignum));
+        (interleaved_bignum*) calloc(TOTAL_NUMBER_OF_THREADS, sizeof(interleaved_bignum));
 
     // interleave values of host_a and host_b in host_interleaved_operands.
-    for (uint32_t i = 0; i < NUMBER_OF_TESTS; i++)
+    for (uint32_t i = 0; i < TOTAL_NUMBER_OF_THREADS; i++)
     {
         for (uint32_t j = 0; j < 2 * BIGNUM_NUMBER_OF_WORDS; j++)
         {
@@ -33,12 +27,12 @@ void execute_interleaved_addition_on_device(bignum* host_c, bignum* host_a,
     bignum* dev_results;
 
     cudaMalloc((void**) &dev_interleaved_operands,
-               NUMBER_OF_TESTS * sizeof(interleaved_bignum));
-    cudaMalloc((void**) &dev_results, NUMBER_OF_TESTS * sizeof(bignum));
+               TOTAL_NUMBER_OF_THREADS * sizeof(interleaved_bignum));
+    cudaMalloc((void**) &dev_results, TOTAL_NUMBER_OF_THREADS * sizeof(bignum));
 
     // copy operands to device memory
     cudaMemcpy(dev_interleaved_operands, host_interleaved_operands,
-               NUMBER_OF_TESTS * sizeof(interleaved_bignum),
+               TOTAL_NUMBER_OF_THREADS * sizeof(interleaved_bignum),
                cudaMemcpyHostToDevice);
 
     // free host_interleaved_operands which we no longer need.
@@ -48,7 +42,7 @@ void execute_interleaved_addition_on_device(bignum* host_c, bignum* host_a,
         dev_results, dev_interleaved_operands);
 
     // copy results back to host
-    cudaMemcpy(host_c, dev_results, NUMBER_OF_TESTS * sizeof(bignum),
+    cudaMemcpy(host_c, dev_results, TOTAL_NUMBER_OF_THREADS * sizeof(bignum),
                cudaMemcpyDeviceToHost);
 
     // free device memory
@@ -62,7 +56,7 @@ __global__ void interleaved_addition(bignum* dev_results,
     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
     uint32_t tid_increment = blockDim.x * gridDim.x;
 
-    while (tid < NUMBER_OF_TESTS)
+    while (tid < TOTAL_NUMBER_OF_THREADS)
     {
         uint32_t i = 0;
         uint32_t col = 2 * i;

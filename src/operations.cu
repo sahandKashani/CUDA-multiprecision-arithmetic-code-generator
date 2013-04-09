@@ -1,5 +1,6 @@
-#include "test_constants.h"
-#include "coalesced_bignum_type.h"
+#include <stdint.h>
+#include "bignum_types.h"
+#include "constants.h"
 
 __device__ void add(coalesced_bignum* c,
                     coalesced_bignum* a,
@@ -8,7 +9,7 @@ __device__ void add(coalesced_bignum* c,
     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
     uint32_t tid_increment = blockDim.x * gridDim.x;
 
-    while (tid < NUMBER_OF_TESTS)
+    while (tid < TOTAL_NUMBER_OF_THREADS)
     {
         asm("add.cc.u32 %0, %1, %2;"
             : "=r"(c[0][tid])

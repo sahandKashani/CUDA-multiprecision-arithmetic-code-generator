@@ -1,55 +1,23 @@
-#include "bignum_type.h"
-#include "random_bignum_generator.h"
-#include "test_constants.h"
-#include "normal_addition_benchmark.cuh"
-#include "interleaved_addition_benchmark.cuh"
-#include "coalesced_normal_addition_benchmark.cuh"
-#include "coalesced_interleaved_addition_benchmark.cuh"
-#include "operation_check.h"
-
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include "bignum_types.h"
+#include "random_bignum_generator.h"
 
 void generate_operands(bignum* host_a, bignum* host_b);
 
 int main(void)
 {
     printf("Benchmarking PTX\n");
+    fflush(stdout);
 
     // host operands (host_a, host_b) and results (host_c)
-    bignum* host_a = (bignum*) calloc(NUMBER_OF_TESTS, sizeof(bignum));
-    bignum* host_b = (bignum*) calloc(NUMBER_OF_TESTS, sizeof(bignum));
-    bignum* host_c = (bignum*) calloc(NUMBER_OF_TESTS, sizeof(bignum));
+    bignum* host_a = (bignum*) calloc(TOTAL_NUMBER_OF_THREADS, sizeof(bignum));
+    bignum* host_b = (bignum*) calloc(TOTAL_NUMBER_OF_THREADS, sizeof(bignum));
+    bignum* host_c = (bignum*) calloc(TOTAL_NUMBER_OF_THREADS, sizeof(bignum));
 
     // generate random numbers for the tests
     generate_operands(host_a, host_b);
-
-    // once the operations are executed on the device, we need to extract the
-    // results and put them in host_c. This is done by the code which calls the
-    // kernels. They are the "execute_xxx_on_device" functions.
-
-    // for (uint32_t blocks = 1; blocks < 65536; blocks *= 2)
-    // {
-    //     for (uint32_t threads = 1; threads < 2048; threads *= 2)
-    //     {
-    //         execute_normal_addition_on_device(host_c, host_a, host_b, blocks,
-    //                                           threads);
-    //         // addition_check(host_c, host_a, host_b);
-
-    //         execute_interleaved_addition_on_device(host_c, host_a, host_b,
-    //                                                blocks, threads);
-    //         // addition_check(host_c, host_a, host_b);
-
-    //         execute_coalesced_interleaved_addition_on_device(host_c, host_a,
-    //                                                          host_b, blocks,
-    //                                                          threads);
-    //         // addition_check(host_c, host_a, host_b);
-
-    //         execute_coalesced_normal_addition_on_device(host_c, host_a, host_b,
-    //                                                     blocks, threads);
-    //         // addition_check(host_c, host_a, host_b);
-    //     }
-    // }
 
     uint32_t blocks = 256;
     uint32_t threads = 256;
@@ -79,11 +47,12 @@ int main(void)
  */
 void generate_operands(bignum* host_a, bignum* host_b)
 {
-    printf("generating operands ... "); fflush(stdout);
+    printf("generating operands ... ");
+    fflush(stdout);
 
     start_random_number_generator();
 
-    for (uint32_t i = 0; i < NUMBER_OF_TESTS; i++)
+    for (uint32_t i = 0; i < TOTAL_NUMBER_OF_THREADS; i++)
     {
         generate_random_bignum(host_a[i]);
         generate_random_bignum(host_b[i]);
@@ -91,5 +60,6 @@ void generate_operands(bignum* host_a, bignum* host_b)
 
     stop_random_number_generator();
 
-    printf("done\n"); fflush(stdout);
+    printf("done\n");
+    fflush(stdout);
 }

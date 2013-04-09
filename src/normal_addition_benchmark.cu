@@ -1,9 +1,3 @@
-#include "normal_addition_benchmark.cuh"
-#include "test_constants.h"
-#include "bignum_conversions.h"
-
-#include <gmp.h>
-
 void execute_normal_addition_on_device(bignum* host_c, bignum* host_a,
                                        bignum* host_b,
                                        uint32_t threads_per_block,
@@ -14,20 +8,20 @@ void execute_normal_addition_on_device(bignum* host_c, bignum* host_a,
     bignum* dev_b;
     bignum* dev_c;
 
-    cudaMalloc((void**) &dev_a, NUMBER_OF_TESTS * sizeof(bignum));
-    cudaMalloc((void**) &dev_b, NUMBER_OF_TESTS * sizeof(bignum));
-    cudaMalloc((void**) &dev_c, NUMBER_OF_TESTS * sizeof(bignum));
+    cudaMalloc((void**) &dev_a, TOTAL_NUMBER_OF_THREADS * sizeof(bignum));
+    cudaMalloc((void**) &dev_b, TOTAL_NUMBER_OF_THREADS * sizeof(bignum));
+    cudaMalloc((void**) &dev_c, TOTAL_NUMBER_OF_THREADS * sizeof(bignum));
 
     // copy operands to device memory
-    cudaMemcpy(dev_a, host_a, NUMBER_OF_TESTS * sizeof(bignum),
+    cudaMemcpy(dev_a, host_a, TOTAL_NUMBER_OF_THREADS * sizeof(bignum),
                cudaMemcpyHostToDevice);
-    cudaMemcpy(dev_b, host_b, NUMBER_OF_TESTS * sizeof(bignum),
+    cudaMemcpy(dev_b, host_b, TOTAL_NUMBER_OF_THREADS * sizeof(bignum),
                cudaMemcpyHostToDevice);
 
     normal_addition<<<blocks_per_grid, threads_per_block>>>(dev_c, dev_a, dev_b);
 
     // copy results back to host
-    cudaMemcpy(host_c, dev_c, NUMBER_OF_TESTS * sizeof(bignum),
+    cudaMemcpy(host_c, dev_c, TOTAL_NUMBER_OF_THREADS * sizeof(bignum),
                cudaMemcpyDeviceToHost);
 
     // free device memory
@@ -41,7 +35,7 @@ __global__ void normal_addition(bignum* dev_c, bignum* dev_a, bignum* dev_b)
     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
     uint32_t tid_increment = blockDim.x * gridDim.x;
 
-    while (tid < NUMBER_OF_TESTS)
+    while (tid < TOTAL_NUMBER_OF_THREADS)
     {
 
         asm("add.cc.u32 %0, %1, %2;"

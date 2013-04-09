@@ -1,9 +1,3 @@
-#include "coalesced_normal_addition_benchmark.cuh"
-#include "test_constants.h"
-#include "bignum_conversions.h"
-
-#include <gmp.h>
-
 void execute_coalesced_normal_addition_on_device(bignum* host_c, bignum* host_a,
                                                  bignum* host_b,
                                                  uint32_t threads_per_block,
@@ -19,7 +13,7 @@ void execute_coalesced_normal_addition_on_device(bignum* host_c, bignum* host_a,
     // arrange values of each of the arrays in a coalesced way
     for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
-        for (uint32_t j = 0; j < NUMBER_OF_TESTS; j++)
+        for (uint32_t j = 0; j < TOTAL_NUMBER_OF_THREADS; j++)
         {
             host_coalesced_a[i][j] = host_a[j][i];
             host_coalesced_b[i][j] = host_b[j][i];
@@ -65,7 +59,7 @@ void execute_coalesced_normal_addition_on_device(bignum* host_c, bignum* host_a,
     // rearrange results into host_c
     for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
-        for (uint32_t j = 0; j < NUMBER_OF_TESTS; j++)
+        for (uint32_t j = 0; j < TOTAL_NUMBER_OF_THREADS; j++)
         {
             host_c[j][i] = host_coalesced_c[i][j];
         }
@@ -86,7 +80,7 @@ __global__ void coalesced_normal_addition(coalesced_bignum* dev_coalesced_c,
     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
     uint32_t tid_increment = blockDim.x * gridDim.x;
 
-    while (tid < NUMBER_OF_TESTS)
+    while (tid < TOTAL_NUMBER_OF_THREADS)
     {
         asm("add.cc.u32 %0, %1, %2;"
             : "=r"(dev_coalesced_c[0][tid])
