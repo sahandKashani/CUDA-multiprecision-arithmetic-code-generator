@@ -31,6 +31,8 @@ void execute_coalesced_interleaved_addition_on_device(bignum* host_c,
         (coalesced_interleaved_bignum*)
             calloc(BIGNUM_NUMBER_OF_WORDS, sizeof(coalesced_interleaved_bignum));
 
+    printf("arranging values on cpu ... ");
+    fflush(stdout);
     // arrange values of host_a and host_b in coalesced_interleaved_operands.
     for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
@@ -40,6 +42,8 @@ void execute_coalesced_interleaved_addition_on_device(bignum* host_c,
             coalesced_interleaved_operands[i][j + 1] = host_b[j / 2][i];
         }
     }
+    printf("done\n");
+    fflush(stdout);
 
     // device operands (dev_coalesced_interleaved_operands) and results
     // (dev_coalesced_results)

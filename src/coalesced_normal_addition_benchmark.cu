@@ -27,6 +27,8 @@ void execute_coalesced_normal_addition_on_device(bignum* host_c, bignum* host_a,
         (coalesced_bignum*) calloc(BIGNUM_NUMBER_OF_WORDS,
                                    sizeof(coalesced_bignum));
 
+    printf("arranging values on cpu ... ");
+    fflush(stdout);
     // arrange values of each of the arrays in a coalesced way
     for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
@@ -36,6 +38,8 @@ void execute_coalesced_normal_addition_on_device(bignum* host_c, bignum* host_a,
             host_coalesced_b[i][j] = host_b[j][i];
         }
     }
+    printf("done\n");
+    fflush(stdout);
 
     // device operands (dev_coalesced_a, dev_coalesced_b) and results
     // (dev_coalesced_c)

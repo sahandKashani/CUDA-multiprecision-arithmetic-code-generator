@@ -123,7 +123,7 @@ char** cut_string_to_multiple_words(char* str)
     // until now, the strings have been cut in big-endian form, but we want
     // little endian for indexing, so we have to invert the array.
     char* tmp;
-    uint32_t middle_of_array = ceil(BIGNUM_NUMBER_OF_WORDS / 2);
+    uint32_t middle_of_array = ceil(BIGNUM_NUMBER_OF_WORDS / 2.0);
     for (uint32_t i = 0; i < middle_of_array; i++)
     {
         tmp = str_words[i];

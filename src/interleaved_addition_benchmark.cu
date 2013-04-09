@@ -22,6 +22,8 @@ void execute_interleaved_addition_on_device(bignum* host_c, bignum* host_a,
     interleaved_bignum* host_interleaved_operands =
         (interleaved_bignum*) calloc(NUMBER_OF_TESTS, sizeof(interleaved_bignum));
 
+    printf("arranging values on cpu ... ");
+    fflush(stdout);
     // interleave values of host_a and host_b in host_interleaved_operands.
     for (uint32_t i = 0; i < NUMBER_OF_TESTS; i++)
     {
@@ -37,6 +39,8 @@ void execute_interleaved_addition_on_device(bignum* host_c, bignum* host_a,
             }
         }
     }
+    printf("done\n");
+    fflush(stdout);
 
     // device operands (dev_interleaved_operands) and results (dev_results)
     interleaved_bignum* dev_interleaved_operands;

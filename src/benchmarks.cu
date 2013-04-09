@@ -27,28 +27,33 @@ int main(void)
     // results and put them in host_c. This is done by the code which calls the
     // kernels. They are the "execute_xxx_on_device" functions.
 
-    for (uint32_t blocks = 1; blocks < 65536; blocks *= 2)
-    {
-        for (uint32_t threads = 1; threads < 2048; threads *= 2)
-        {
-            execute_normal_addition_on_device(host_c, host_a, host_b, blocks,
-                                              threads);
-            // check_normal_addition_results(host_c, host_a, host_b);
+    // for (uint32_t blocks = 1; blocks < 65536; blocks *= 2)
+    // {
+    //     for (uint32_t threads = 1; threads < 2048; threads *= 2)
+    //     {
+    //         execute_normal_addition_on_device(host_c, host_a, host_b, blocks,
+    //                                           threads);
+    //         // check_normal_addition_results(host_c, host_a, host_b);
 
-            execute_interleaved_addition_on_device(host_c, host_a, host_b,
-                                                   blocks, threads);
-            // check_interleaved_addition_results(host_c, host_a, host_b);
+    //         execute_interleaved_addition_on_device(host_c, host_a, host_b,
+    //                                                blocks, threads);
+    //         // check_interleaved_addition_results(host_c, host_a, host_b);
 
-            execute_coalesced_interleaved_addition_on_device(host_c, host_a,
-                                                             host_b, blocks,
-                                                             threads);
-            // check_coalesced_interleaved_addition_results(host_c, host_a, host_b);
+    //         execute_coalesced_interleaved_addition_on_device(host_c, host_a,
+    //                                                          host_b, blocks,
+    //                                                          threads);
+    //         // check_coalesced_interleaved_addition_results(host_c, host_a, host_b);
 
-            execute_coalesced_normal_addition_on_device(host_c, host_a, host_b,
-                                                        blocks, threads);
-            // check_coalesced_normal_addition_results(host_c, host_a, host_b);
-        }
-    }
+    //         execute_coalesced_normal_addition_on_device(host_c, host_a, host_b,
+    //                                                     blocks, threads);
+    //         // check_coalesced_normal_addition_results(host_c, host_a, host_b);
+    //     }
+    // }
+
+    uint32_t blocks = 256;
+    uint32_t threads = 256;
+    execute_coalesced_normal_addition_on_device(host_c, host_a, host_b, blocks, threads);
+    // check_coalesced_normal_addition_results(host_c, host_a, host_b);
 
     free(host_a);
     free(host_b);
