@@ -1,4 +1,5 @@
 #include "bignum_conversions.h"
+#include "test_constants.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -10,7 +11,7 @@
  * @param  number uint32_t to be converted.
  * @return        String with the binary representation of number.
  */
-char* unsigned_int_to_string(uint32_t number)
+char* uint32_t_to_string(uint32_t number)
 {
     char* str = (char*) calloc(BITS_PER_WORD + 1, sizeof(char));
     str[BITS_PER_WORD] = '\0';
@@ -43,7 +44,7 @@ char* bignum_to_string(bignum number)
         words[i][BITS_PER_WORD] = '\0';
 
         // convert each bignum element to a string
-        words[i] = unsigned_int_to_string(number[i]);
+        words[i] = uint32_t_to_string(number[i]);
     }
 
     // concatenate the words together to form a TOTAL_BIT_LENGTH long string
@@ -163,7 +164,7 @@ void free_string_words(char*** words)
  * @param  str String to be converted.
  * @return     Converted value.
  */
-uint32_t string_to_unsigned_int(char* str)
+uint32_t string_to_uint32_t(char* str)
 {
     uint32_t number = 0;
 
@@ -189,8 +190,45 @@ void string_to_bignum(char* str, bignum number)
     // set the number
     for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
-        number[i] = string_to_unsigned_int(words[i]);
+        number[i] = string_to_uint32_t(words[i]);
     }
 
     free_string_words(&words);
+}
+
+bignum* coalesced_bignum_to_bignum(coalesced_bignum** a)
+{
+    bignum* b = (bignum*) calloc(NUMBER_OF_TESTS, sizeof(bignum));
+
+    for (uint32_t i = 0; i < NUMBER_OF_TESTS; i++)
+    {
+        for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
+        {
+            b[i][j] = (*a)[j][i];
+        }
+    }
+
+    free(*a);
+    *a = NULL;
+
+    return b;
+}
+
+coalesced_bignum* bignum_to_coalesced_bignum(bignum** a)
+{
+    coalesced_bignum* b = (coalesced_bignum*) calloc(BIGNUM_NUMBER_OF_WORDS,
+                                                     sizeof(coalesced_bignum));
+
+    for (uint32_t i = 0; i < NUMBER_OF_TESTS; i++)
+    {
+        for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
+        {
+            b[i][j] = (*a)[j][i];
+        }
+    }
+
+    free(*a);
+    *a = NULL;
+
+    return b;
 }

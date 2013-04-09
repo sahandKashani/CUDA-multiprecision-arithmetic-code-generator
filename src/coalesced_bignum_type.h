@@ -3,22 +3,25 @@
 
 #include "test_constants.h"
 
-#define COALESCED_BIGNUM_NUMBER_OF_WORDS NUMBER_OF_TESTS
+// Assume you have a bignum array "c", then the data in coalesced_bignum "c"
+// would be:
 
-// assume you have a bignum ARRAY "c", then the data in coalesced_bignum_result
-// "c" would be:
+//  c[0][0]   c[1][0]  ...  c[N-1][0]
+//  c[0][1]   c[1][1]  ...  c[N-1][1]
+//     .         .     .        .
+//     .         .      .       .
+//     .         .       .      .
+// c[0][H-1] c[1][H-1] ... c[N-1][H-1]
 
-// The "height" of the array should be BIGNUM_NUMBER_OF_WORDS
+// with N = number of bignums in the array
+//      H = BIGNUM_NUMBER_OF_WORDS
 
-// assuming N = COALESCED_BIGNUM_NUMBER_OF_WORDS
-// c[0][0], c[1][0], ..., c[N-1][0]
-// c[0][1], c[1][1], ..., c[N-1][1]
-// c[0][2], c[1][2], ..., c[N-1][2]
-// c[0][3], c[1][3], ..., c[N-1][3]
-// c[0][4], c[1][4], ..., c[N-1][4]
+// A bignum is written "vertically" instead of "horizontally". Each column
+// represents one bignum. The data on one "line" of a coalesced_bignum is a mix
+// of the i'th element of N different bignums.
 
-// coalesced_bignum would represent one "line" of the array given above.
+// We can see that coalesced_bignum* is actually a transposed version of bignum*
 
-typedef uint32_t coalesced_bignum[COALESCED_BIGNUM_NUMBER_OF_WORDS];
+typedef uint32_t coalesced_bignum[NUMBER_OF_TESTS];
 
 #endif

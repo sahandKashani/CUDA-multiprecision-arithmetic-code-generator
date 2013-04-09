@@ -5,6 +5,7 @@
 #include "interleaved_addition_benchmark.cuh"
 #include "coalesced_normal_addition_benchmark.cuh"
 #include "coalesced_interleaved_addition_benchmark.cuh"
+#include "operation_check.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,27 +34,37 @@ int main(void)
     //     {
     //         execute_normal_addition_on_device(host_c, host_a, host_b, blocks,
     //                                           threads);
-    //         // check_normal_addition_results(host_c, host_a, host_b);
+    //         // addition_check(host_c, host_a, host_b);
 
     //         execute_interleaved_addition_on_device(host_c, host_a, host_b,
     //                                                blocks, threads);
-    //         // check_interleaved_addition_results(host_c, host_a, host_b);
+    //         // addition_check(host_c, host_a, host_b);
 
     //         execute_coalesced_interleaved_addition_on_device(host_c, host_a,
     //                                                          host_b, blocks,
     //                                                          threads);
-    //         // check_coalesced_interleaved_addition_results(host_c, host_a, host_b);
+    //         // addition_check(host_c, host_a, host_b);
 
     //         execute_coalesced_normal_addition_on_device(host_c, host_a, host_b,
     //                                                     blocks, threads);
-    //         // check_coalesced_normal_addition_results(host_c, host_a, host_b);
+    //         // addition_check(host_c, host_a, host_b);
     //     }
     // }
 
     uint32_t blocks = 256;
     uint32_t threads = 256;
+
+    // execute_normal_addition_on_device(host_c, host_a, host_b, blocks, threads);
+    // addition_check(host_c, host_a, host_b);
+
     execute_coalesced_normal_addition_on_device(host_c, host_a, host_b, blocks, threads);
-    // check_coalesced_normal_addition_results(host_c, host_a, host_b);
+    addition_check(host_c, host_a, host_b);
+
+    // execute_interleaved_addition_on_device(host_c, host_a, host_b, blocks, threads);
+    // addition_check(host_c, host_a, host_b);
+
+    // execute_coalesced_interleaved_addition_on_device(host_c, host_a, host_b, blocks, threads);
+    // addition_check(host_c, host_a, host_b);
 
     free(host_a);
     free(host_b);

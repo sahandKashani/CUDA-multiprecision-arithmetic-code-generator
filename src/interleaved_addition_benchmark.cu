@@ -9,25 +9,13 @@ void execute_interleaved_addition_on_device(bignum* host_c, bignum* host_a,
                                             uint32_t threads_per_block,
                                             uint32_t blocks_per_grid)
 {
-    // for this interleaved addition, we are going to interleave the values of
-    // the 2 operands host_a and host_b.
-    // Our operands will look like the following:
-
-    // host_a[0][0], host_b[0][0], host_a[0][1], host_b[0][1],
-    // host_a[0][2], host_b[0][2], host_a[0][3], host_b[0][3],
-    // host_a[0][4], host_b[0][4], host_a[1][0], host_b[1][0], ...
-
-    // our results will be stocked sequentially as for normal addition.
-
     interleaved_bignum* host_interleaved_operands =
         (interleaved_bignum*) calloc(NUMBER_OF_TESTS, sizeof(interleaved_bignum));
 
-    printf("arranging values on cpu ... ");
-    fflush(stdout);
     // interleave values of host_a and host_b in host_interleaved_operands.
     for (uint32_t i = 0; i < NUMBER_OF_TESTS; i++)
     {
-        for (uint32_t j = 0; j < INTERLEAVED_BIGNUM_NUMBER_OF_WORDS; j++)
+        for (uint32_t j = 0; j < 2 * BIGNUM_NUMBER_OF_WORDS; j++)
         {
             if (j % 2 == 0)
             {
@@ -39,8 +27,6 @@ void execute_interleaved_addition_on_device(bignum* host_c, bignum* host_a,
             }
         }
     }
-    printf("done\n");
-    fflush(stdout);
 
     // device operands (dev_interleaved_operands) and results (dev_results)
     interleaved_bignum* dev_interleaved_operands;
@@ -74,104 +60,32 @@ __global__ void interleaved_addition(bignum* dev_results,
                                      interleaved_bignum* dev_interleaved_operands)
 {
     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
+    uint32_t tid_increment = blockDim.x * gridDim.x;
 
     while (tid < NUMBER_OF_TESTS)
     {
-        asm("add.cc.u32  %0, %1, %2;"
-            : "=r"(dev_results[tid][0])
-            : "r"(dev_interleaved_operands[tid][0]),
-              "r"(dev_interleaved_operands[tid][1])
-            );
+        uint32_t i = 0;
+        uint32_t col = 2 * i;
 
-        asm("addc.cc.u32 %0, %1, %2;"
-            : "=r"(dev_results[tid][1])
-            : "r"(dev_interleaved_operands[tid][2]),
-              "r"(dev_interleaved_operands[tid][3])
-            );
+        asm("add.cc.u32 %0, %1, %2;"
+            : "=r"(dev_results[tid][i])
+            : "r" (dev_interleaved_operands[tid][col]),
+              "r" (dev_interleaved_operands[tid][col + 1]));
 
-        asm("addc.cc.u32 %0, %1, %2;"
-            : "=r"(dev_results[tid][2])
-            : "r"(dev_interleaved_operands[tid][4]),
-              "r"(dev_interleaved_operands[tid][5])
-            );
-
-        asm("addc.cc.u32 %0, %1, %2;"
-            : "=r"(dev_results[tid][3])
-            : "r"(dev_interleaved_operands[tid][6]),
-              "r"(dev_interleaved_operands[tid][7])
-            );
-
-        asm("addc.u32    %0, %1, %2;"
-            : "=r"(dev_results[tid][4])
-            : "r"(dev_interleaved_operands[tid][8]),
-              "r"(dev_interleaved_operands[tid][9])
-            );
-
-        tid += blockDim.x * gridDim.x;
-    }
-}
-
-/**
- * Checks if host_a op host_b == host_c, where host_c is to be tested against
- * values computed by gmp. If you have data in any other formats than these, you
- * will have to "rearrange" them to meet this pattern for the check to work.
- * @param host_c Values we have computed with our algorithms.
- * @param host_a First operands.
- * @param host_b Second operands.
- */
-void check_interleaved_addition_results(bignum* host_c, bignum* host_a,
-                                        bignum* host_b)
-{
-    bool results_correct = true;
-
-    for (uint32_t i = 0; results_correct && i < NUMBER_OF_TESTS; i++)
-    {
-        char* bignum_a_str = bignum_to_string(host_a[i]);
-        char* bignum_b_str = bignum_to_string(host_b[i]);
-        char* bignum_c_str = bignum_to_string(host_c[i]);
-
-        mpz_t gmp_bignum_a;
-        mpz_t gmp_bignum_b;
-        mpz_t gmp_bignum_c;
-
-        mpz_init_set_str(gmp_bignum_a, bignum_a_str, 2);
-        mpz_init_set_str(gmp_bignum_b, bignum_b_str, 2);
-        mpz_init(gmp_bignum_c);
-
-        // GMP function which will calculate what our algorithm is supposed to
-        // calculate
-        mpz_add(gmp_bignum_c, gmp_bignum_a, gmp_bignum_b);
-
-        // get binary string result
-        char* gmp_bignum_c_str = mpz_get_str(NULL, 2, gmp_bignum_c);
-        pad_string_with_zeros(&gmp_bignum_c_str);
-
-        if (strcmp(gmp_bignum_c_str, bignum_c_str) != 0)
+        #pragma unroll
+        for (i = 1, col = 2 * i; i < BIGNUM_NUMBER_OF_WORDS - 1; i++, col = 2 * i)
         {
-            printf("incorrect calculation at iteration %d\n", i);
-            results_correct = false;
-            printf("own\n%s +\n%s =\n%s\n", bignum_a_str, bignum_b_str,
-                   bignum_c_str);
-            printf("gmp\n%s +\n%s =\n%s\n", bignum_a_str, bignum_b_str,
-                   gmp_bignum_c_str);
+            asm("addc.cc.u32 %0, %1, %2;"
+                : "=r"(dev_results[tid][i])
+                : "r" (dev_interleaved_operands[tid][col]),
+                  "r" (dev_interleaved_operands[tid][col + 1]));
         }
 
-        free(bignum_a_str);
-        free(bignum_b_str);
-        free(bignum_c_str);
-        free(gmp_bignum_c_str);
+        asm("addc.u32 %0, %1, %2;"
+            : "=r"(dev_results[tid][BIGNUM_NUMBER_OF_WORDS - 1])
+            : "r" (dev_interleaved_operands[tid][col]),
+              "r" (dev_interleaved_operands[tid][col + 1]));
 
-        mpz_clear(gmp_bignum_a);
-        mpz_clear(gmp_bignum_b);
-        mpz_clear(gmp_bignum_c);
-    }
-
-    if (results_correct)
-    {
-        printf("all correct\n");
-    }
-    else
-    {
-        printf("something wrong\n");
+        tid += tid_increment;
     }
 }
