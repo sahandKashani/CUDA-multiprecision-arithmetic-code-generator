@@ -212,7 +212,7 @@ coalesced_bignum* bignum_to_coalesced_bignum(bignum** in)
     {
         for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
         {
-            out[i][j] = (*in)[j][i];
+            out[j][i] = (*in)[i][j];
         }
     }
 
