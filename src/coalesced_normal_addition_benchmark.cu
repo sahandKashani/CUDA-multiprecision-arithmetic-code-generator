@@ -98,42 +98,56 @@ __global__ void coalesced_normal_addition(coalesced_bignum* dev_coalesced_c,
                                           coalesced_bignum* dev_coalesced_a,
                                           coalesced_bignum* dev_coalesced_b)
 {
-    uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
+    // uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
 
-    while (tid < NUMBER_OF_TESTS)
-    {
-        asm("add.cc.u32  %0, %1, %2;"
-            : "=r"(dev_coalesced_c[0][tid])
-            : "r"(dev_coalesced_a[0][tid]),
-              "r"(dev_coalesced_b[0][tid])
-            );
+    asm("{"
+        "   .reg .u32 %op1_i;"
+        "   .reg .u32 %op2_i;"
+        "   .reg .u32 %r_0;"
+        "   .reg .u32 %r_1;"
+        "   .reg .u32 %r_2;"
+        "   .reg .u32 %r_3;"
+        "   .reg .u32 %r_4;"
+        "   "
+        "   ld.global .u32 %a, [dev_coalesced_a[0][tid]];"
+        "   add.cc.u32  %0, %1, %2;"
+        "}"
+    : :);
 
-        asm("addc.cc.u32 %0, %1, %2;"
-            : "=r"(dev_coalesced_c[1][tid])
-            : "r"(dev_coalesced_a[1][tid]),
-              "r"(dev_coalesced_b[1][tid])
-            );
+    // while (tid < NUMBER_OF_TESTS)
+    // {
+        // asm("add.cc.u32  %0, %1, %2;"
+        //     : "=r"(dev_coalesced_c[0][tid])
+        //     : "r"(dev_coalesced_a[0][tid]),
+        //       "r"(dev_coalesced_b[0][tid])
+        //     );
 
-        asm("addc.cc.u32 %0, %1, %2;"
-            : "=r"(dev_coalesced_c[2][tid])
-            : "r"(dev_coalesced_a[2][tid]),
-              "r"(dev_coalesced_b[2][tid])
-            );
+        // asm("addc.cc.u32 %0, %1, %2;"
+        //     : "=r"(dev_coalesced_c[1][tid])
+        //     : "r"(dev_coalesced_a[1][tid]),
+        //       "r"(dev_coalesced_b[1][tid])
+        //     );
 
-        asm("addc.cc.u32 %0, %1, %2;"
-            : "=r"(dev_coalesced_c[3][tid])
-            : "r"(dev_coalesced_a[3][tid]),
-              "r"(dev_coalesced_b[3][tid])
-            );
+        // asm("addc.cc.u32 %0, %1, %2;"
+        //     : "=r"(dev_coalesced_c[2][tid])
+        //     : "r"(dev_coalesced_a[2][tid]),
+        //       "r"(dev_coalesced_b[2][tid])
+        //     );
 
-        asm("addc.u32    %0, %1, %2;"
-            : "=r"(dev_coalesced_c[4][tid])
-            : "r"(dev_coalesced_a[4][tid]),
-              "r"(dev_coalesced_b[4][tid])
-            );
+        // asm("addc.cc.u32 %0, %1, %2;"
+        //     : "=r"(dev_coalesced_c[3][tid])
+        //     : "r"(dev_coalesced_a[3][tid]),
+        //       "r"(dev_coalesced_b[3][tid])
+        //     );
 
-        tid += blockDim.x * gridDim.x;
-    }
+        // asm("addc.u32    %0, %1, %2;"
+        //     : "=r"(dev_coalesced_c[4][tid])
+        //     : "r"(dev_coalesced_a[4][tid]),
+        //       "r"(dev_coalesced_b[4][tid])
+        //     );
+
+    //     tid += blockDim.x * gridDim.x;
+    // }
 }
 
 /**
