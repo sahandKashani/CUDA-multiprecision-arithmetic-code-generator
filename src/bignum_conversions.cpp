@@ -3,7 +3,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 
 /**
  * Returns an binary string representation of a uint32_t. The string returned is
@@ -124,7 +123,7 @@ char** cut_string_to_multiple_words(char* str)
     // until now, the strings have been cut in big-endian form, but we want
     // little endian for indexing, so we have to invert the array.
     char* tmp;
-    uint32_t middle_of_array = ceil(BIGNUM_NUMBER_OF_WORDS / 2.0);
+    uint32_t middle_of_array = CEILING(BIGNUM_NUMBER_OF_WORDS, 2);
     for (uint32_t i = 0; i < middle_of_array; i++)
     {
         tmp = str_words[i];

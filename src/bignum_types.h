@@ -4,8 +4,11 @@
 #include "constants.h"
 #include <stdint.h>
 
+#define CEILING(x, y) (((x) + (y) - 1) / (y))
+
 #define BITS_PER_WORD 32
-#define BIGNUM_NUMBER_OF_WORDS 9 // represent Ceil[131 * 2 / 32] = 288 bits
+#define RANDOM_NUMBER_BIT_RANGE ((uint32_t) 131)
+#define BIGNUM_NUMBER_OF_WORDS CEILING(2 * RANDOM_NUMBER_BIT_RANGE, BITS_PER_WORD)
 #define TOTAL_BIT_LENGTH (BIGNUM_NUMBER_OF_WORDS * BITS_PER_WORD)
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -26,9 +26,9 @@ int main(void)
     // addition_check(host_c, host_a, host_b);
 
     coalesced_normal_memory_layout_benchmark(&host_c, &host_a, &host_b, blocks, threads);
-    // addition_check(host_c, host_a, host_b);
+    addition_check(host_c, host_a, host_b);
 
-    coalesced_normal_memory_layout_with_local_memory_benchmark(&host_c, &host_a, &host_b, blocks, threads);
+    // coalesced_normal_memory_layout_with_local_memory_benchmark(&host_c, &host_a, &host_b, blocks, threads);
     // addition_check(host_c, host_a, host_b);
 
     // interleaved_memory_layout_benchmark(&host_c, &host_a, &host_b, blocks, threads);

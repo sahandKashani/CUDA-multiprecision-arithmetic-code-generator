@@ -5,7 +5,6 @@
 #include <stdint.h>
 
 #define SEED ((uint32_t) 12345)
-#define RANDOM_NUMBER_BIT_RANGE ((uint32_t) 131)
 
 char* generate_random_bignum_str();
 void generate_random_bignum(bignum number);
