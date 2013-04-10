@@ -1,11 +1,12 @@
 #include "operation_check.h"
-
-#include <stdio.h>
-#include <string.h>
-#include <stdint.h>
-#include <gmp.h>
 #include "bignum_types.h"
 #include "bignum_conversions.h"
+#include "constants.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <gmp.h>
 
 /**
  * Checks if host_a + host_b == host_c, where host_c is to be tested against

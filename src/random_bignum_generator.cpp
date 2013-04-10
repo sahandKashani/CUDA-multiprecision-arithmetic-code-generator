@@ -1,9 +1,8 @@
 #include "random_bignum_generator.h"
-
-#include <stdlib.h>
-#include <gmp.h>
 #include "bignum_types.h"
 #include "bignum_conversions.h"
+#include <stdlib.h>
+#include <gmp.h>
 
 // current state of the random number generator
 gmp_randstate_t random_state;

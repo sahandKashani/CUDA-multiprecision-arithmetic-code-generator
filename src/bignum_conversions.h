@@ -1,8 +1,8 @@
 #ifndef BIGNUM_CONVERSIONS_H
 #define BIGNUM_CONVERSIONS_H
 
-#include <stdint.h>
 #include "bignum_types.h"
+#include <stdint.h>
 
 // Note: all functions work on little endian word representations (not byte
 // representation).
@@ -25,14 +25,13 @@ void string_to_bignum(char* str, bignum number);
 uint32_t string_to_uint32_t(char* str);
 
 coalesced_bignum* bignum_to_coalesced_bignum(bignum** in);
-bignum* coalesced_bignum_to_bignum(coalesced_bignum** in);
-
 interleaved_bignum* bignums_to_interleaved_bignum(bignum** in_1, bignum** in_2);
-void interleaved_bignum_to_bignums(bignum** out_1, bignum** out_2,
-                                   interleaved_bignum** in);
-
 coalesced_interleaved_bignum* bignums_to_coalesced_interleaved_bignum(bignum** in_1,
                                                                       bignum** in_2);
+
+bignum* coalesced_bignum_to_bignum(coalesced_bignum** in);
+void interleaved_bignum_to_bignums(bignum** out_1, bignum** out_2,
+                                   interleaved_bignum** in);
 void coalesced_interleaved_bignum_to_bignums(bignum** out_1, bignum** out_2,
                                              coalesced_interleaved_bignum** in);
 

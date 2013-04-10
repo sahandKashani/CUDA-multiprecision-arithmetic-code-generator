@@ -3,14 +3,14 @@
 #include <stdint.h>
 #include "bignum_types.h"
 #include "random_bignum_generator.h"
+#include "constants.h"
+#include "operation_check.h"
+#include "memory_layout_benchmarks.cuh"
 
 void generate_operands(bignum* host_a, bignum* host_b);
 
 int main(void)
 {
-    printf("Benchmarking PTX\n");
-    fflush(stdout);
-
     // host operands (host_a, host_b) and results (host_c)
     bignum* host_a = (bignum*) calloc(TOTAL_NUMBER_OF_THREADS, sizeof(bignum));
     bignum* host_b = (bignum*) calloc(TOTAL_NUMBER_OF_THREADS, sizeof(bignum));
@@ -22,17 +22,17 @@ int main(void)
     uint32_t blocks = 256;
     uint32_t threads = 256;
 
-    // execute_normal_addition_on_device(host_c, host_a, host_b, blocks, threads);
-    // addition_check(host_c, host_a, host_b);
-
-    execute_coalesced_normal_addition_on_device(host_c, host_a, host_b, blocks, threads);
+    normal_memory_layout_benchmark(host_c, host_a, host_b, blocks, threads);
     addition_check(host_c, host_a, host_b);
 
-    // execute_interleaved_addition_on_device(host_c, host_a, host_b, blocks, threads);
-    // addition_check(host_c, host_a, host_b);
+    coalesced_normal_memory_layout_benchmark(host_c, host_a, host_b, blocks, threads);
+    addition_check(host_c, host_a, host_b);
 
-    // execute_coalesced_interleaved_addition_on_device(host_c, host_a, host_b, blocks, threads);
-    // addition_check(host_c, host_a, host_b);
+    interleaved_memory_layout_benchmark(host_c, host_a, host_b, blocks, threads);
+    addition_check(host_c, host_a, host_b);
+
+    coalesced_interleaved_memory_layout_benchmark(host_c, host_a, host_b, blocks, threads);
+    addition_check(host_c, host_a, host_b);
 
     free(host_a);
     free(host_b);

@@ -1,9 +1,9 @@
 #include "bignum_conversions.h"
-
+#include "bignum_types.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include "bignum_types.h"
+#include <math.h>
 
 /**
  * Returns an binary string representation of a uint32_t. The string returned is
@@ -374,8 +374,8 @@ void coalesced_interleaved_bignum_to_bignums(bignum** out_1, bignum** out_2,
     {
         for (uint32_t j = 0; j < 2 * TOTAL_NUMBER_OF_THREADS; j += 2)
         {
-            (*out_1)[j / 2][i] = in[i][j];
-            (*out_2)[j / 2][i] = in[i][j + 1];
+            (*out_1)[j / 2][i] = (*in)[i][j];
+            (*out_2)[j / 2][i] = (*in)[i][j + 1];
         }
     }
 

@@ -1,6 +1,7 @@
-#include <stdint.h>
+#include "operations.cuh"
 #include "bignum_types.h"
 #include "constants.h"
+#include <stdint.h>
 
 __device__ void add(coalesced_bignum* c,
                     coalesced_bignum* a,
