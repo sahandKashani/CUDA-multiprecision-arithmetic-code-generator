@@ -7,4 +7,8 @@ __device__ void add(coalesced_bignum* c,
                     coalesced_bignum* a,
                     coalesced_bignum* b);
 
+__device__ void subtract(coalesced_bignum* c,
+                         coalesced_bignum* a,
+                         coalesced_bignum* b);
+
 #endif

@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #define BITS_PER_WORD 32
-#define BIGNUM_NUMBER_OF_WORDS 5
+#define BIGNUM_NUMBER_OF_WORDS 9 // represent Ceil[131 * 2 / 32] = 288 bits
 #define TOTAL_BIT_LENGTH (BIGNUM_NUMBER_OF_WORDS * BITS_PER_WORD)
 
 ////////////////////////////////////////////////////////////////////////////////

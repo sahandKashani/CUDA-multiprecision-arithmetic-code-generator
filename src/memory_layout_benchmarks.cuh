@@ -14,6 +14,10 @@ __global__ void coalesced_normal_addition(coalesced_bignum* c,
 __global__ void coalesced_interleaved_addition(coalesced_bignum* c,
                                                coalesced_interleaved_bignum* ops);
 
+__global__ void coalesced_normal_addition_with_local_memory(coalesced_bignum* c,
+                                                            coalesced_bignum* a,
+                                                            coalesced_bignum* b);
+
 void normal_memory_layout_benchmark(bignum** host_c,
                                     bignum** host_a,
                                     bignum** host_b,
@@ -38,5 +42,11 @@ void coalesced_interleaved_memory_layout_benchmark(bignum** host_c,
                                                    bignum** host_b,
                                                    uint32_t threads_per_block,
                                                    uint32_t blocks_per_grid);
+
+void coalesced_normal_memory_layout_with_local_memory_benchmark(bignum** host_c,
+                                                                bignum** host_a,
+                                                                bignum** host_b,
+                                                                uint32_t threads_per_block,
+                                                                uint32_t blocks_per_grid);
 
 #endif

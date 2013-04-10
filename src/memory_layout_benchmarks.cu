@@ -302,3 +302,106 @@ __global__ void coalesced_interleaved_addition(coalesced_bignum* c,
         tid += tid_increment;
     }
 }
+
+void coalesced_normal_memory_layout_with_local_memory_benchmark(bignum** host_c,
+                                                                bignum** host_a,
+                                                                bignum** host_b,
+                                                                uint32_t threads_per_block,
+                                                                uint32_t blocks_per_grid)
+{
+    // arrange data in coalesced form
+    coalesced_bignum* host_c_a = bignum_to_coalesced_bignum(host_a);
+    coalesced_bignum* host_c_b = bignum_to_coalesced_bignum(host_b);
+    coalesced_bignum* host_c_c = bignum_to_coalesced_bignum(host_c);
+
+    // device operands (dev_c_a, dev_c_b) and results (dev_c_c)
+    coalesced_bignum* dev_c_a;
+    coalesced_bignum* dev_c_b;
+    coalesced_bignum* dev_c_c;
+
+    // allocate gpu memory
+    cudaMalloc((void**) &dev_c_a,
+               BIGNUM_NUMBER_OF_WORDS * sizeof(coalesced_bignum));
+    cudaMalloc((void**) &dev_c_b,
+               BIGNUM_NUMBER_OF_WORDS * sizeof(coalesced_bignum));
+    cudaMalloc((void**) &dev_c_c,
+               BIGNUM_NUMBER_OF_WORDS * sizeof(coalesced_bignum));
+
+    // copy operands to device memory
+    cudaMemcpy(dev_c_a, host_c_a,
+               BIGNUM_NUMBER_OF_WORDS * sizeof(coalesced_bignum),
+               cudaMemcpyHostToDevice);
+    cudaMemcpy(dev_c_b, host_c_b,
+               BIGNUM_NUMBER_OF_WORDS * sizeof(coalesced_bignum),
+               cudaMemcpyHostToDevice);
+
+    // execute addition
+    coalesced_normal_addition_with_local_memory<<<blocks_per_grid, threads_per_block>>>(
+        dev_c_c, dev_c_a, dev_c_b);
+
+    // copy results back to host
+    cudaMemcpy(host_c_c, dev_c_c,
+               BIGNUM_NUMBER_OF_WORDS * sizeof(coalesced_bignum),
+               cudaMemcpyDeviceToHost);
+
+    // put data back to non-coalesced form
+    *host_a = coalesced_bignum_to_bignum(&host_c_a);
+    *host_b = coalesced_bignum_to_bignum(&host_c_b);
+    *host_c = coalesced_bignum_to_bignum(&host_c_c);
+
+    // free device memory
+    cudaFree(dev_c_a);
+    cudaFree(dev_c_b);
+    cudaFree(dev_c_c);
+}
+
+__global__ void coalesced_normal_addition_with_local_memory(coalesced_bignum* c,
+                                                            coalesced_bignum* a,
+                                                            coalesced_bignum* b)
+{
+    uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
+    uint32_t tid_increment = blockDim.x * gridDim.x;
+
+    bignum local_a;
+    bignum local_b;
+    bignum local_c;
+
+    while (tid < TOTAL_NUMBER_OF_THREADS)
+    {
+        // read the thread's operands to per-thread local memory in advance as a
+        // form of prefetching.
+        for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+        {
+            local_a[i] = a[i][tid];
+            local_b[i] = b[i][tid];
+        }
+
+        asm("add.cc.u32 %0, %1, %2;"
+            : "=r"(local_c[0])
+            : "r" (local_a[0]),
+              "r" (local_b[0]));
+
+        #pragma unroll
+        for (uint32_t i = 1; i < BIGNUM_NUMBER_OF_WORDS - 1; i++)
+        {
+            asm("addc.cc.u32 %0, %1, %2;"
+                : "=r"(local_c[i])
+                : "r" (local_a[i]),
+                  "r" (local_b[i]));
+        }
+
+        asm("addc.u32 %0, %1, %2;"
+            : "=r"(local_c[BIGNUM_NUMBER_OF_WORDS - 1])
+            : "r" (local_a[BIGNUM_NUMBER_OF_WORDS - 1]),
+              "r" (local_b[BIGNUM_NUMBER_OF_WORDS - 1]));
+
+        // store the thread's result from per-thread local memory to global
+        // memory once all calculations are finished.
+        for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+        {
+            c[i][tid] = local_c[i];
+        }
+
+        tid += tid_increment;
+    }
+}
