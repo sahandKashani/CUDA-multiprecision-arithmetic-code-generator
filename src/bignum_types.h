@@ -15,10 +15,25 @@
 /////////////////////////////////// BIGNUM /////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-// Little endian: most significant bits come in bignum[BIGNUM_NUMBER_OF_WORDS-1]
-// and least significant bits come in bignum[0]. The radix is 2^BITS_PER_WORD
+// A bignum is represented as the following data structure:
+// uint32_t[BIGNUM_NUMBER_OF_WORDS]
 
-// Assume you have a bignum array "c", then the data would be represented as:
+// In the code of this project, there will be no "bignum" type. It will only be
+// referred to as a uint32_t*. This is needed, because having direct access to
+// the inner representation of a bignum will be useful for efficient operations
+// such as matrix transpositions, ...
+
+// The code of this project will not have a bignum's size as a parameter to
+// functions. This value is accessible throught the macros of this header file.
+
+// A bignum is represented in "little endian" format: the most significant bits
+// come in bignum[BIGNUM_NUMBER_OF_WORDS - 1] and the least significant bits
+// come in bignum[0].
+
+// A bignum's radix is 2^BITS_PER_WORD.
+
+// Assume you have a bignum array "c", then the data would be conceptually
+// represented as:
 
 //  c[0][0]   c[0][1]  ...  c[0][H-1]
 //  c[1][0]   c[1][1]  ...  c[1][H-1]
@@ -27,19 +42,34 @@
 //     .         .       .      .
 // c[N-1][0] c[N-1][1] ... c[N-1][H-1]
 
-// with N = number of bignums in the array
+// with N = TOTAL_NUMBER_OF_THREADS
 //      H = BIGNUM_NUMBER_OF_WORDS
 
 // A bignum is written "horizontally". The data on one "line" of a bignum
 // consists of the BIGNUM_NUMBER_OF_WORDS elements of the bignum.
 
-typedef uint32_t bignum[BIGNUM_NUMBER_OF_WORDS];
+// For memory alignment issues, an array of bignums will not be represented as a
+// 2D array like uint32_t[N][H], but rather as a flattened 1D array like
+// uint32_t[N * H]. Index manipulation will be needed to access the array like a
+// 2D array.
+
+// Assuming the human readable 2D standard bignum array representation above,
+// the following macro returns the index of the "j"th element of the "i"th
+// bignum from a 1D array of size N * H (N and H defined as below).
+
+// 0 < i < N = TOTAL_NUMBER_OF_THREADS
+// 0 < j < H = BIGNUM_NUMBER_OF_WORDS
+#define IDX(i, j) (((i) * BIGNUM_NUMBER_OF_WORDS) + (j))
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////// COALESCED_BIGNUM ////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-// Assume you have a bignum array "c", then the data in coalesced_bignum "c"
+// For efficient access to operands in gpu global memory, data needs to be
+// accessed in a coalesced way. This is easily achieved by transposing an array
+// of bignums to have the following representation:
+
+// Assume you have a bignum array "c", then the data in a coalesced bignum "c"
 // would be:
 
 //  c[0][0]   c[1][0]  ...  c[N-1][0]
@@ -49,53 +79,23 @@ typedef uint32_t bignum[BIGNUM_NUMBER_OF_WORDS];
 //     .         .       .      .
 // c[0][H-1] c[1][H-1] ... c[N-1][H-1]
 
-// with N = number of bignums in the array
+// with N = TOTAL_NUMBER_OF_THREADS
 //      H = BIGNUM_NUMBER_OF_WORDS
 
 // A bignum is written "vertically" instead of "horizontally" with this
 // representation. Each column represents one bignum. The data on one "line" of
-// a coalesced_bignum is a mix of the i'th element of N different bignums.
+// a coalesced bignum is a mix of the j'th element of N different bignums.
 
-// We can see that coalesced_bignum* is actually a transposed version of bignum*
+// As for normal bignums, a coalesced bignum will be represented as a flattened
+// 1D array like uint32_t[N * H], and index manipulation would be neeeded to
+// access the array like a 2D array.
 
-typedef uint32_t coalesced_bignum[TOTAL_NUMBER_OF_THREADS];
+// Assuming the human readable 2D coalesced bignum array representation above,
+// the following macro returns the index of the "i"th element of the "j"th
+// bignum from a 1D array of size N * H (N and H defined as below).
 
-////////////////////////////////////////////////////////////////////////////////
-///////////////////////////// INTERLEAVED_BIGNUM ///////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
-// Assume you have 2 bignum arrays "a" and "b", then the data in
-// interleaved_bignum would be:
-
-//  a[0][0]   b[0][0]   a[0][1]   b[0][1]  ...  a[0][H-1]   b[0][H-1]
-//  a[1][0]   b[1][0]   a[1][1]   b[1][1]  ...  a[1][H-1]   b[1][H-1]
-//     .         .         .         .     .        .           .
-//     .         .         .         .      .       .           .
-//     .         .         .         .       .      .           .
-// a[N-1][0] b[N-1][0] a[N-1][1] b[N-1][1] ... a[N-1][H-1] b[N-1][H-1]
-
-// with N = number of bignums in the array
-//      H = BIGNUM_NUMBER_OF_WORDS
-
-typedef uint32_t interleaved_bignum[2 * BIGNUM_NUMBER_OF_WORDS];
-
-////////////////////////////////////////////////////////////////////////////////
-//////////////////////// COALESCED_INTERLEAVED_BIGNUM //////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
-// Assume you have 2 bignum arrays "a" and "b", then the data in
-// coalesced_interleaved_bignum would be:
-
-//  a[0][0]   b[0][0]   a[1][0]   b[1][0]  ...  a[N-1][0]   b[N-1][0]
-//  a[0][1]   b[0][1]   a[1][1]   b[1][1]  ...  a[N-1][1]   b[N-1][1]
-//     .         .         .         .     .        .           .
-//     .         .         .         .      .       .           .
-//     .         .         .         .       .      .           .
-// a[0][H-1] b[0][H-1] a[1][H-1] b[1][H-1] ... a[N-1][H-1] b[N-1][H-1]
-
-// with N = number of bignums in the array
-//      H = BIGNUM_NUMBER_OF_WORDS
-
-typedef uint32_t coalesced_interleaved_bignum[2 * TOTAL_NUMBER_OF_THREADS];
+// 0 < i < H = BIGNUM_NUMBER_OF_WORDS
+// 0 < j < N = TOTAL_NUMBER_OF_THREADS
+#define COAL_IDX(i, j) (((i) * TOTAL_NUMBER_OF_THREADS) + (j))
 
 #endif

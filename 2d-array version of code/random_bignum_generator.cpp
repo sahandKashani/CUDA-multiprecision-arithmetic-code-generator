@@ -9,10 +9,10 @@ gmp_randstate_t random_state;
 
 /**
  * Generates the next random number and stores it in the bignum given as a
- * parameter.
- * @param number Bignum to set.
+ * parameter
+ * @param number bignum to set
  */
-void generate_random_bignum(uint32_t* number)
+void generate_random_bignum(bignum number)
 {
     char* number_str = generate_random_bignum_str();
     string_to_bignum(number_str, number);
@@ -41,9 +41,9 @@ void stop_random_number_generator()
 }
 
 /**
- * Generates a binary string representation of the next random number. The
- * number is padded with zeros up until a length of TOTAL_BIT_LENGTH.
- * @return Binary string representing the next random number.
+ * Generates a string representation of the next random number. The number is
+ * padded with 0s up until a length of TOTAL_BIT_LENGTH
+ * @return string representing the next random number.
  */
 char* generate_random_bignum_str()
 {
