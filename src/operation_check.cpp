@@ -93,7 +93,7 @@ void addition_check(bignum* host_c, bignum* host_a, bignum* host_b)
  * @param host_a First operands.
  * @param host_b Second operands.
  */
-void addition_check(bignum* host_c, bignum* host_a, bignum* host_b)
+void subtraction_check(bignum* host_c, bignum* host_a, bignum* host_b)
 {
     binary_operator_check(host_c, host_a, host_b, mpz_sub);
 }

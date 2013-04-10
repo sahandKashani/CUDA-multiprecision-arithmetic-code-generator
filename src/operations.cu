@@ -8,7 +8,7 @@ __device__ void add(coalesced_bignum* c,
                     coalesced_bignum* b)
 {
     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
-    uint32_t tid_increment = blockDim.x * gridDim.x;
+    uint32_t stride = blockDim.x * gridDim.x;
 
     while (tid < TOTAL_NUMBER_OF_THREADS)
     {
@@ -31,7 +31,7 @@ __device__ void add(coalesced_bignum* c,
             : "r" (a[BIGNUM_NUMBER_OF_WORDS - 1][tid]),
               "r" (b[BIGNUM_NUMBER_OF_WORDS - 1][tid]));
 
-        tid += tid_increment;
+        tid += stride;
     }
 }
 
@@ -40,7 +40,7 @@ __device__ void subtract(coalesced_bignum* c,
                          coalesced_bignum* b)
 {
     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
-    uint32_t tid_increment = blockDim.x * gridDim.x;
+    uint32_t stride = blockDim.x * gridDim.x;
 
     while (tid < TOTAL_NUMBER_OF_THREADS)
     {
@@ -63,6 +63,6 @@ __device__ void subtract(coalesced_bignum* c,
             : "r" (a[BIGNUM_NUMBER_OF_WORDS - 1][tid]),
               "r" (b[BIGNUM_NUMBER_OF_WORDS - 1][tid]));
 
-        tid += tid_increment;
+        tid += stride;
     }
 }

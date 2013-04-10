@@ -31,11 +31,17 @@ int main(void)
     // coalesced_normal_memory_layout_with_local_memory_benchmark(&host_c, &host_a, &host_b, blocks, threads);
     // addition_check(host_c, host_a, host_b);
 
+    // coalesced_normal_memory_layout_with_cudaMallocPitch(&host_c, &host_a, &host_b, blocks, threads);
+    // addition_check(host_c, host_a, host_b);
+
     // interleaved_memory_layout_benchmark(&host_c, &host_a, &host_b, blocks, threads);
     // addition_check(host_c, host_a, host_b);
 
     // coalesced_interleaved_memory_layout_benchmark(&host_c, &host_a, &host_b, blocks, threads);
     // addition_check(host_c, host_a, host_b);
+
+    // andrea_hardcoded_test(blocks, threads);
+    // andrea_hardcoded_local_test(blocks, threads);
 
     free(host_a);
     free(host_b);
