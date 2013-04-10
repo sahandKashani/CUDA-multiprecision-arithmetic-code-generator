@@ -14,28 +14,28 @@ __global__ void coalesced_normal_addition(coalesced_bignum* c,
 __global__ void coalesced_interleaved_addition(coalesced_bignum* c,
                                                coalesced_interleaved_bignum* ops);
 
-void normal_memory_layout_benchmark(bignum* host_c,
-                                    bignum* host_a,
-                                    bignum* host_b,
+void normal_memory_layout_benchmark(bignum** host_c,
+                                    bignum** host_a,
+                                    bignum** host_b,
                                     uint32_t threads_per_block,
                                     uint32_t blocks_per_grid);
 
 
-void interleaved_memory_layout_benchmark(bignum* host_c,
-                                         bignum* host_a,
-                                         bignum* host_b,
+void interleaved_memory_layout_benchmark(bignum** host_c,
+                                         bignum** host_a,
+                                         bignum** host_b,
                                          uint32_t threads_per_block,
                                          uint32_t blocks_per_grid);
 
-void coalesced_normal_memory_layout_benchmark(bignum* host_c,
-                                              bignum* host_a,
-                                              bignum* host_b,
+void coalesced_normal_memory_layout_benchmark(bignum** host_c,
+                                              bignum** host_a,
+                                              bignum** host_b,
                                               uint32_t threads_per_block,
                                               uint32_t blocks_per_grid);
 
-void coalesced_interleaved_memory_layout_benchmark(bignum* host_c,
-                                                   bignum* host_a,
-                                                   bignum* host_b,
+void coalesced_interleaved_memory_layout_benchmark(bignum** host_c,
+                                                   bignum** host_a,
+                                                   bignum** host_b,
                                                    uint32_t threads_per_block,
                                                    uint32_t blocks_per_grid);
 

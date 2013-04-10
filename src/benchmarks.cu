@@ -22,21 +22,24 @@ int main(void)
     uint32_t blocks = 256;
     uint32_t threads = 256;
 
-    normal_memory_layout_benchmark(host_c, host_a, host_b, blocks, threads);
+    normal_memory_layout_benchmark(&host_c, &host_a, &host_b, blocks, threads);
     addition_check(host_c, host_a, host_b);
 
-    coalesced_normal_memory_layout_benchmark(host_c, host_a, host_b, blocks, threads);
+    coalesced_normal_memory_layout_benchmark(&host_c, &host_a, &host_b, blocks, threads);
     addition_check(host_c, host_a, host_b);
 
-    interleaved_memory_layout_benchmark(host_c, host_a, host_b, blocks, threads);
+    interleaved_memory_layout_benchmark(&host_c, &host_a, &host_b, blocks, threads);
     addition_check(host_c, host_a, host_b);
 
-    coalesced_interleaved_memory_layout_benchmark(host_c, host_a, host_b, blocks, threads);
+    coalesced_interleaved_memory_layout_benchmark(&host_c, &host_a, &host_b, blocks, threads);
     addition_check(host_c, host_a, host_b);
 
     free(host_a);
     free(host_b);
     free(host_c);
+
+    // for leak detection when using cuda-memcheck
+    cudaDeviceReset();
 }
 
 /**

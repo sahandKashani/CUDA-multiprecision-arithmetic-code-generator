@@ -4,9 +4,9 @@
 #include "constants.h"
 #include <stdint.h>
 
-void normal_memory_layout_benchmark(bignum* host_c,
-                                    bignum* host_a,
-                                    bignum* host_b,
+void normal_memory_layout_benchmark(bignum** host_c,
+                                    bignum** host_a,
+                                    bignum** host_b,
                                     uint32_t threads_per_block,
                                     uint32_t blocks_per_grid)
 {
@@ -21,16 +21,16 @@ void normal_memory_layout_benchmark(bignum* host_c,
     cudaMalloc((void**) &dev_c, TOTAL_NUMBER_OF_THREADS * sizeof(bignum));
 
     // copy operands to device memory
-    cudaMemcpy(dev_a, host_a, TOTAL_NUMBER_OF_THREADS * sizeof(bignum),
+    cudaMemcpy(dev_a, *host_a, TOTAL_NUMBER_OF_THREADS * sizeof(bignum),
                cudaMemcpyHostToDevice);
-    cudaMemcpy(dev_b, host_b, TOTAL_NUMBER_OF_THREADS * sizeof(bignum),
+    cudaMemcpy(dev_b, *host_b, TOTAL_NUMBER_OF_THREADS * sizeof(bignum),
                cudaMemcpyHostToDevice);
 
     // execute addition
     normal_addition<<<blocks_per_grid, threads_per_block>>>(dev_c, dev_a, dev_b);
 
     // copy results back to host
-    cudaMemcpy(host_c, dev_c, TOTAL_NUMBER_OF_THREADS * sizeof(bignum),
+    cudaMemcpy(*host_c, dev_c, TOTAL_NUMBER_OF_THREADS * sizeof(bignum),
                cudaMemcpyDeviceToHost);
 
     // free device memory
@@ -70,14 +70,14 @@ __global__ void normal_addition(bignum* c, bignum* a, bignum* b)
     }
 }
 
-void interleaved_memory_layout_benchmark(bignum* host_c,
-                                         bignum* host_a,
-                                         bignum* host_b,
+void interleaved_memory_layout_benchmark(bignum** host_c,
+                                         bignum** host_a,
+                                         bignum** host_b,
                                          uint32_t threads_per_block,
                                          uint32_t blocks_per_grid)
 {
     // arrange data in interleaved form
-    interleaved_bignum* host_ops = bignums_to_interleaved_bignum(&host_a, &host_b);
+    interleaved_bignum* host_ops = bignums_to_interleaved_bignum(host_a, host_b);
 
     // device operands (dev_ops) and results (dev_c)
     interleaved_bignum* dev_ops;
@@ -97,11 +97,11 @@ void interleaved_memory_layout_benchmark(bignum* host_c,
     interleaved_addition<<<blocks_per_grid, threads_per_block>>>(dev_c, dev_ops);
 
     // copy results back to host
-    cudaMemcpy(host_c, dev_c, TOTAL_NUMBER_OF_THREADS * sizeof(bignum),
+    cudaMemcpy(*host_c, dev_c, TOTAL_NUMBER_OF_THREADS * sizeof(bignum),
                cudaMemcpyDeviceToHost);
 
     // re-arrange data in non-interleaved form
-    interleaved_bignum_to_bignums(&host_a, &host_b, &host_ops);
+    interleaved_bignum_to_bignums(host_a, host_b, &host_ops);
 
     // free device memory
     cudaFree(dev_ops);
@@ -141,16 +141,16 @@ __global__ void interleaved_addition(bignum* c, interleaved_bignum* ops)
     }
 }
 
-void coalesced_normal_memory_layout_benchmark(bignum* host_c,
-                                              bignum* host_a,
-                                              bignum* host_b,
+void coalesced_normal_memory_layout_benchmark(bignum** host_c,
+                                              bignum** host_a,
+                                              bignum** host_b,
                                               uint32_t threads_per_block,
                                               uint32_t blocks_per_grid)
 {
     // arrange data in coalesced form
-    coalesced_bignum* host_c_a = bignum_to_coalesced_bignum(&host_a);
-    coalesced_bignum* host_c_b = bignum_to_coalesced_bignum(&host_b);
-    coalesced_bignum* host_c_c = bignum_to_coalesced_bignum(&host_c);
+    coalesced_bignum* host_c_a = bignum_to_coalesced_bignum(host_a);
+    coalesced_bignum* host_c_b = bignum_to_coalesced_bignum(host_b);
+    coalesced_bignum* host_c_c = bignum_to_coalesced_bignum(host_c);
 
     // device operands (dev_c_a, dev_c_b) and results (dev_c_c)
     coalesced_bignum* dev_c_a;
@@ -183,9 +183,9 @@ void coalesced_normal_memory_layout_benchmark(bignum* host_c,
                cudaMemcpyDeviceToHost);
 
     // put data back to non-coalesced form
-    coalesced_bignum_to_bignum(&host_c_a);
-    coalesced_bignum_to_bignum(&host_c_b);
-    coalesced_bignum_to_bignum(&host_c_c);
+    *host_a = coalesced_bignum_to_bignum(&host_c_a);
+    *host_b = coalesced_bignum_to_bignum(&host_c_b);
+    *host_c = coalesced_bignum_to_bignum(&host_c_c);
 
     // free device memory
     cudaFree(dev_c_a);
@@ -225,16 +225,16 @@ __global__ void coalesced_normal_addition(coalesced_bignum* c,
     }
 }
 
-void coalesced_interleaved_memory_layout_benchmark(bignum* host_c,
-                                                   bignum* host_a,
-                                                   bignum* host_b,
+void coalesced_interleaved_memory_layout_benchmark(bignum** host_c,
+                                                   bignum** host_a,
+                                                   bignum** host_b,
                                                    uint32_t threads_per_block,
                                                    uint32_t blocks_per_grid)
 {
     // arrange data in coalesced interleaved form
     coalesced_interleaved_bignum* host_c_ops =
-        bignums_to_coalesced_interleaved_bignum(&host_a, &host_b);
-    coalesced_bignum* host_c_c = bignum_to_coalesced_bignum(&host_c);
+        bignums_to_coalesced_interleaved_bignum(host_a, host_b);
+    coalesced_bignum* host_c_c = bignum_to_coalesced_bignum(host_c);
 
     // device operands (dev_c_ops) and results (dev_c_c)
     coalesced_interleaved_bignum* dev_c_ops;
@@ -255,17 +255,14 @@ void coalesced_interleaved_memory_layout_benchmark(bignum* host_c,
     coalesced_interleaved_addition<<<blocks_per_grid, threads_per_block>>>(
         dev_c_c, dev_c_ops);
 
-    coalesced_bignum* host_coalesced_results =
-        (coalesced_bignum*) calloc(BIGNUM_NUMBER_OF_WORDS,
-                                   sizeof(coalesced_bignum));
-
     // copy results back to host
     cudaMemcpy(host_c_c, dev_c_c,
                BIGNUM_NUMBER_OF_WORDS * sizeof(coalesced_bignum),
                cudaMemcpyDeviceToHost);
 
     // rearrange data back to non-coalesced form
-    coalesced_interleaved_bignum_to_bignums(&host_a, &host_b, &host_c_ops);
+    coalesced_interleaved_bignum_to_bignums(host_a, host_b, &host_c_ops);
+    *host_c = coalesced_bignum_to_bignum(&host_c_c);
 
     // free device memory
     cudaFree(dev_c_ops);
