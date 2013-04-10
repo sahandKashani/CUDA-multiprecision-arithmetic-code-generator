@@ -8,15 +8,8 @@
 #include <stdint.h>
 #include <gmp.h>
 
-/**
- * Checks if host_a + host_b == host_c, where host_c is to be tested against
- * values computed by gmp. If you have data in any other formats than these, you
- * will have to "rearrange" them to meet this pattern for the check to work.
- * @param host_c Values we have computed with our gpu algorithms.
- * @param host_a First operands.
- * @param host_b Second operands.
- */
-void addition_check(bignum* host_c, bignum* host_a, bignum* host_b)
+void binary_operator_check(bignum* host_c, bignum* host_a, bignum* host_b,
+                           void (*op)(mpz_t rop, const mpz_t op1, const mpz_t op2))
 {
     bool results_correct = true;
 
@@ -36,7 +29,7 @@ void addition_check(bignum* host_c, bignum* host_a, bignum* host_b)
 
         // GMP function which will calculate what our algorithm is supposed to
         // calculate
-        mpz_add(gmp_bignum_c, gmp_bignum_a, gmp_bignum_b);
+        op(gmp_bignum_c, gmp_bignum_a, gmp_bignum_b);
 
         // get binary string result
         char* gmp_bignum_c_str = mpz_get_str(NULL, 2, gmp_bignum_c);
@@ -70,4 +63,37 @@ void addition_check(bignum* host_c, bignum* host_a, bignum* host_b)
     {
         printf("additions incorrect\n");
     }
+}
+
+/**
+ * Checks if host_c == host_a + host_b. host_c is a value calculated with our
+ * gpu algorithm. This function will use GMP to calculate the value that host_c
+ * should have after the addition of host_a and host_b. If any differences are
+ * found with the values computed by our gpu algorithm, an error is reported. If
+ * you have data in any other formats than bignum*, you will have to rearrange
+ * them to meet this pattern for the check to work.
+ * @param host_c Result of the addition we have computed with our gpu algorithm.
+ * @param host_a First operands.
+ * @param host_b Second operands.
+ */
+void addition_check(bignum* host_c, bignum* host_a, bignum* host_b)
+{
+    binary_operator_check(host_c, host_a, host_b, mpz_add);
+}
+
+/**
+ * Checks if host_c == host_a - host_b. host_c is a value calculated with our
+ * gpu algorithm. This function will use GMP to calculate the value that host_c
+ * should have after the subtraction of host_b from host_a. If any differences
+ * are found with the values computed by our gpu algorithm, an error is
+ * reported. If you have data in any other formats than bignum*, you will have
+ * to rearrange them to meet this pattern for the check to work.
+ * @param host_c Result of the subtraction we have computed with our gpu
+ *               algorithm.
+ * @param host_a First operands.
+ * @param host_b Second operands.
+ */
+void addition_check(bignum* host_c, bignum* host_a, bignum* host_b)
+{
+    binary_operator_check(host_c, host_a, host_b, mpz_sub);
 }
