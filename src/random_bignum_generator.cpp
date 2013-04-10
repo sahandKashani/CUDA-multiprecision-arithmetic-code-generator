@@ -51,7 +51,7 @@ char* generate_random_bignum_str()
     mpz_init(number);
 
     // generate random number
-    mpz_urandomb(number, random_state, RANDOM_NUMBER_BIT_RANGE);
+    mpz_urandomb(number, random_state, BIT_RANGE);
 
     // get binary string version
     char* str_number = mpz_get_str(NULL, 2, number);

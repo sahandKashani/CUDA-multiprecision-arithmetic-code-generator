@@ -7,8 +7,8 @@
 #define CEILING(x, y) (((x) + (y) - 1) / (y))
 
 #define BITS_PER_WORD 32
-#define RANDOM_NUMBER_BIT_RANGE ((uint32_t) 131)
-#define BIGNUM_NUMBER_OF_WORDS CEILING(2 * RANDOM_NUMBER_BIT_RANGE, BITS_PER_WORD)
+#define BIT_RANGE ((uint32_t) 131)
+#define BIGNUM_NUMBER_OF_WORDS CEILING(2 * BIT_RANGE, BITS_PER_WORD)
 #define TOTAL_BIT_LENGTH (BIGNUM_NUMBER_OF_WORDS * BITS_PER_WORD)
 
 ////////////////////////////////////////////////////////////////////////////////
