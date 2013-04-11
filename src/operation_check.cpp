@@ -10,8 +10,10 @@
 
 void binary_operator_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b, void (*op)(mpz_t rop, const mpz_t op1, const mpz_t op2))
 {
-    bool results_correct = true;
+    printf("checking with gmp ... ");
+    fflush(stdout);
 
+    bool results_correct = true;
     for (uint32_t i = 0; results_correct && i < NUMBER_OF_BIGNUMS; i++)
     {
         char* bignum_a_str = bignum_to_string(&host_a[IDX(i, 0)]);
@@ -42,6 +44,7 @@ void binary_operator_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b,
                    bignum_c_str);
             printf("gmp\n%s +\n%s =\n%s\n", bignum_a_str, bignum_b_str,
                    gmp_bignum_c_str);
+            fflush(stdout);
         }
 
         free(bignum_a_str);
@@ -54,13 +57,15 @@ void binary_operator_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b,
         mpz_clear(gmp_bignum_c);
     }
 
+    printf("done => ");
+
     if (results_correct)
     {
-        printf("additions correct\n");
+        printf("correct\n");
     }
     else
     {
-        printf("additions incorrect\n");
+        printf("errors\n");
     }
 }
 

@@ -3,8 +3,11 @@
 
 #include <stdint.h>
 
-__global__ void coalesced_normal_addition(uint32_t* c, uint32_t* a, uint32_t* b);
+void benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b, uint32_t threads_per_block, uint32_t blocks_per_grid);
 
-void coalesced_normal_memory_layout_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b, uint32_t threads_per_block, uint32_t blocks_per_grid);
+__global__ void kernel_1(uint32_t* c, uint32_t* a, uint32_t* b);
+
+__device__ void add(uint32_t* c, uint32_t* a, uint32_t* b);
+__device__ void subtract(uint32_t* c, uint32_t* a, uint32_t* b);
 
 #endif
