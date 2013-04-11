@@ -16,9 +16,13 @@ uint32_t string_to_uint32_t(char* str);
 void pad_string_with_zeros(char** old_str);
 void free_string_words(char*** words);
 void string_to_bignum(char* str, uint32_t* number);
-void bignum_array_to_coalesced_bignum_array(uint32_t** in);
-void coalesced_bignum_array_to_bignum_array(uint32_t** in);
+void bignum_array_to_coalesced_bignum_array(uint32_t* in);
+void coalesced_bignum_array_to_bignum_array(uint32_t* in);
 void print_bignum_array(uint32_t* in);
 void print_coalesced_bignum_array(uint32_t* in);
+
+// all credit goes to "http://rosettacode.org/wiki/Matrix_transposition#C" for
+// the following in-place matrix transposition code.
+void transpose(uint32_t* m, int w, int h);
 
 #endif

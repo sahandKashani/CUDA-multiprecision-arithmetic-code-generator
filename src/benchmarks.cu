@@ -19,7 +19,7 @@ int main(void)
     // generate random numbers for the tests
     generate_operands(host_a, host_b);
 
-    coalesced_normal_memory_layout_benchmark(&host_c, &host_a, &host_b, BLOCKS_PER_GRID, THREADS_PER_BLOCK);
+    coalesced_normal_memory_layout_benchmark(host_c, host_a, host_b, BLOCKS_PER_GRID, THREADS_PER_BLOCK);
     addition_check(host_c, host_a, host_b);
 
     free(host_a);

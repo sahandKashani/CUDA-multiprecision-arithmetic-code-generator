@@ -203,20 +203,9 @@ void string_to_bignum(char* str, uint32_t* number)
  * coalesced representation.
  * @param  in Bignum array to transform from its non-coalesced representation.
  */
-void bignum_array_to_coalesced_bignum_array(uint32_t** in)
+void bignum_array_to_coalesced_bignum_array(uint32_t* in)
 {
-    uint32_t* out = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
-
-    for (uint32_t i = 0; i < NUMBER_OF_BIGNUMS; i++)
-    {
-        for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
-        {
-            out[COAL_IDX(j, i)] = (*in)[IDX(i, j)];
-        }
-    }
-
-    free(*in);
-    *in = out;
+    transpose(in, BIGNUM_NUMBER_OF_WORDS, NUMBER_OF_BIGNUMS);
 }
 
 /**
@@ -224,20 +213,9 @@ void bignum_array_to_coalesced_bignum_array(uint32_t** in)
  * non-coalesced representation.
  * @param  in Bignum array to transform from its coalesced representation.
  */
-void coalesced_bignum_array_to_bignum_array(uint32_t** in)
+void coalesced_bignum_array_to_bignum_array(uint32_t* in)
 {
-    uint32_t* out = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
-
-    for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
-    {
-        for (uint32_t j = 0; j < NUMBER_OF_BIGNUMS; j++)
-        {
-            out[IDX(j, i)] = (*in)[COAL_IDX(i, j)];
-        }
-    }
-
-    free(*in);
-    *in = out;
+    transpose(in, NUMBER_OF_BIGNUMS, BIGNUM_NUMBER_OF_WORDS);
 }
 
 void print_bignum_array(uint32_t* in)
@@ -263,5 +241,38 @@ void print_coalesced_bignum_array(uint32_t* in)
         }
 
         printf("\n");
+    }
+}
+
+void transpose(uint32_t* m, int w, int h)
+{
+    int start, next, i;
+    uint32_t tmp;
+
+    for (start = 0; start <= w * h - 1; start++)
+    {
+        next = start;
+        i = 0;
+        do
+        {
+            i++;
+            next = (next % h) * w + next / h;
+        }
+        while (next > start);
+
+        if (next < start || i == 1)
+        {
+            continue;
+        }
+
+        tmp = m[next = start];
+
+        do
+        {
+            i = (next % h) * w + next / h;
+            m[next] = (i == start) ? tmp : m[i];
+            next = i;
+        }
+        while (next > start);
     }
 }

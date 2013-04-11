@@ -4,7 +4,7 @@
 #include "constants.h"
 #include <stdint.h>
 
-void coalesced_normal_memory_layout_benchmark(uint32_t** host_c, uint32_t** host_a, uint32_t** host_b, uint32_t threads_per_block, uint32_t blocks_per_grid)
+void coalesced_normal_memory_layout_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b, uint32_t threads_per_block, uint32_t blocks_per_grid)
 {
     // arrange data in coalesced form
     bignum_array_to_coalesced_bignum_array(host_a);
@@ -22,14 +22,14 @@ void coalesced_normal_memory_layout_benchmark(uint32_t** host_c, uint32_t** host
     cudaMalloc((void**) &dev_c, NUMBER_OF_BIGNUMS * BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
 
     // copy operands to device memory
-    cudaMemcpy(dev_a, *host_a, NUMBER_OF_BIGNUMS * BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t), cudaMemcpyHostToDevice);
-    cudaMemcpy(dev_b, *host_b, NUMBER_OF_BIGNUMS * BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t), cudaMemcpyHostToDevice);
+    cudaMemcpy(dev_a, host_a, NUMBER_OF_BIGNUMS * BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t), cudaMemcpyHostToDevice);
+    cudaMemcpy(dev_b, host_b, NUMBER_OF_BIGNUMS * BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t), cudaMemcpyHostToDevice);
 
     // execute addition
     coalesced_normal_addition<<<blocks_per_grid, threads_per_block>>>(dev_c, dev_a, dev_b);
 
     // copy results back to host
-    cudaMemcpy(*host_c, dev_c, NUMBER_OF_BIGNUMS * BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t), cudaMemcpyDeviceToHost);
+    cudaMemcpy(host_c, dev_c, NUMBER_OF_BIGNUMS * BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t), cudaMemcpyDeviceToHost);
 
     // put data back to non-coalesced form
     coalesced_bignum_array_to_bignum_array(host_a);
