@@ -218,6 +218,10 @@ void coalesced_bignum_array_to_bignum_array(uint32_t* in)
     transpose(in, NUMBER_OF_BIGNUMS, BIGNUM_NUMBER_OF_WORDS);
 }
 
+/**
+ * Prints a bignum array.
+ * @param in Bignum array to be printed.
+ */
 void print_bignum_array(uint32_t* in)
 {
     for (uint32_t i = 0; i < NUMBER_OF_BIGNUMS; i++)
@@ -231,6 +235,10 @@ void print_bignum_array(uint32_t* in)
     }
 }
 
+/**
+ * Prints a coalesced bignum array.
+ * @param in Coalesced bignum array to be printed.
+ */
 void print_coalesced_bignum_array(uint32_t* in)
 {
     for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
@@ -244,6 +252,14 @@ void print_coalesced_bignum_array(uint32_t* in)
     }
 }
 
+/**
+ * Transposes a 2D matrix of width "w" and height "h" in-place. All credit goes
+ * to "http://rosettacode.org/wiki/Matrix_transposition#C" for the following
+ * in-place matrix transposition code.
+ * @param m Matrix to be transposed.
+ * @param w Width of the matrix.
+ * @param h Height of the matrix.
+ */
 void transpose(uint32_t* m, int w, int h)
 {
     int start, next, i;
