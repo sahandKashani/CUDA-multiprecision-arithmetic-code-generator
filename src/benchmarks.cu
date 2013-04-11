@@ -1,13 +1,11 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
 #include "bignum_types.h"
 #include "random_bignum_generator.h"
 #include "constants.h"
-// #include "operation_check.h"
-// #include "memory_layout_benchmarks.cuh"
-
-#include "bignum_conversions.h"
+#include "operation_check.h"
+#include "memory_layout_benchmarks.cuh"
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
 
 void generate_operands(uint32_t* host_a, uint32_t* host_b);
 
@@ -21,11 +19,11 @@ int main(void)
     // generate random numbers for the tests
     generate_operands(host_a, host_b);
 
-    // uint32_t blocks = 256;
-    // uint32_t threads = 256;
+    uint32_t blocks = 256;
+    uint32_t threads = 256;
 
-    // coalesced_normal_memory_layout_benchmark(&host_c, &host_a, &host_b, blocks, threads);
-    // addition_check(host_c, host_a, host_b);
+    coalesced_normal_memory_layout_benchmark(host_c, host_a, host_b, blocks, threads);
+    addition_check(host_c, host_a, host_b);
 
     free(host_a);
     free(host_b);

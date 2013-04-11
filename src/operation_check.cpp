@@ -8,16 +8,15 @@
 #include <stdint.h>
 #include <gmp.h>
 
-void binary_operator_check(bignum* host_c, bignum* host_a, bignum* host_b,
-                           void (*op)(mpz_t rop, const mpz_t op1, const mpz_t op2))
+void binary_operator_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b, void (*op)(mpz_t rop, const mpz_t op1, const mpz_t op2))
 {
     bool results_correct = true;
 
     for (uint32_t i = 0; results_correct && i < TOTAL_NUMBER_OF_THREADS; i++)
     {
-        char* bignum_a_str = bignum_to_string(host_a[i]);
-        char* bignum_b_str = bignum_to_string(host_b[i]);
-        char* bignum_c_str = bignum_to_string(host_c[i]);
+        char* bignum_a_str = bignum_to_string(&host_a[IDX(i, 0)]);
+        char* bignum_b_str = bignum_to_string(&host_b[IDX(i, 0)]);
+        char* bignum_c_str = bignum_to_string(&host_c[IDX(i, 0)]);
 
         mpz_t gmp_bignum_a;
         mpz_t gmp_bignum_b;
@@ -76,7 +75,7 @@ void binary_operator_check(bignum* host_c, bignum* host_a, bignum* host_b,
  * @param host_a First operands.
  * @param host_b Second operands.
  */
-void addition_check(bignum* host_c, bignum* host_a, bignum* host_b)
+void addition_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
 {
     binary_operator_check(host_c, host_a, host_b, mpz_add);
 }
@@ -93,7 +92,7 @@ void addition_check(bignum* host_c, bignum* host_a, bignum* host_b)
  * @param host_a First operands.
  * @param host_b Second operands.
  */
-void subtraction_check(bignum* host_c, bignum* host_a, bignum* host_b)
+void subtraction_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
 {
     binary_operator_check(host_c, host_a, host_b, mpz_sub);
 }
