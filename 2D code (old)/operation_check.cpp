@@ -8,8 +8,7 @@
 #include <stdint.h>
 #include <gmp.h>
 
-void binary_operator_check(bignum* host_c, bignum* host_a, bignum* host_b,
-                           void (*op)(mpz_t rop, const mpz_t op1, const mpz_t op2))
+void binary_operator_check(bignum* host_c, bignum* host_a, bignum* host_b, void (*op)(mpz_t rop, const mpz_t op1, const mpz_t op2))
 {
     bool results_correct = true;
 
@@ -39,10 +38,8 @@ void binary_operator_check(bignum* host_c, bignum* host_a, bignum* host_b,
         {
             printf("incorrect calculation at iteration %d\n", i);
             results_correct = false;
-            printf("own\n%s +\n%s =\n%s\n", bignum_a_str, bignum_b_str,
-                   bignum_c_str);
-            printf("gmp\n%s +\n%s =\n%s\n", bignum_a_str, bignum_b_str,
-                   gmp_bignum_c_str);
+            printf("own\n%s +\n%s =\n%s\n", bignum_a_str, bignum_b_str, bignum_c_str);
+            printf("gmp\n%s +\n%s =\n%s\n", bignum_a_str, bignum_b_str, gmp_bignum_c_str);
         }
 
         free(bignum_a_str);

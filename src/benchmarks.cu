@@ -38,8 +38,8 @@ void read_bignum_arrays_from_files(uint32_t* a, uint32_t* b)
 {
     printf("reading bignums from files ... ");
     fflush(stdout);
-    read_bignum_array_from_file("../data/bignum_array_1.txt", a, NUMBER_OF_BIGNUMS);
-    read_bignum_array_from_file("../data/bignum_array_2.txt", b, NUMBER_OF_BIGNUMS);
+    read_bignum_array_from_file("../../data/bignum_array_1.txt", a, NUMBER_OF_BIGNUMS);
+    read_bignum_array_from_file("../../data/bignum_array_2.txt", b, NUMBER_OF_BIGNUMS);
     printf("done\n");
     fflush(stdout);
 }
@@ -48,8 +48,8 @@ void generate_random_bignum_arrays_to_files()
 {
     start_random_number_generator();
 
-    generate_random_bignum_array_to_file("../data/bignum_array_1.txt");
-    generate_random_bignum_array_to_file("../data/bignum_array_2.txt");
+    generate_random_bignum_array_to_file("../../data/bignum_array_1.txt");
+    generate_random_bignum_array_to_file("../../data/bignum_array_2.txt");
 
     stop_random_number_generator();
 }

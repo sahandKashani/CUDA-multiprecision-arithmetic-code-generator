@@ -26,13 +26,10 @@ uint32_t string_to_uint32_t(char* str);
 
 coalesced_bignum* bignum_to_coalesced_bignum(bignum** in);
 interleaved_bignum* bignums_to_interleaved_bignum(bignum** in_1, bignum** in_2);
-coalesced_interleaved_bignum* bignums_to_coalesced_interleaved_bignum(bignum** in_1,
-                                                                      bignum** in_2);
+coalesced_interleaved_bignum* bignums_to_coalesced_interleaved_bignum(bignum** in_1, bignum** in_2);
 
 bignum* coalesced_bignum_to_bignum(coalesced_bignum** in);
-void interleaved_bignum_to_bignums(bignum** out_1, bignum** out_2,
-                                   interleaved_bignum** in);
-void coalesced_interleaved_bignum_to_bignums(bignum** out_1, bignum** out_2,
-                                             coalesced_interleaved_bignum** in);
+void interleaved_bignum_to_bignums(bignum** out_1, bignum** out_2, interleaved_bignum** in);
+void coalesced_interleaved_bignum_to_bignums(bignum** out_1, bignum** out_2, coalesced_interleaved_bignum** in);
 
 #endif

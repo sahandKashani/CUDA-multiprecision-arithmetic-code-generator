@@ -19,8 +19,8 @@ int main(void)
     // generate random numbers for the tests
     generate_operands(host_a, host_b);
 
-    uint32_t blocks = 256;
-    uint32_t threads = 256;
+    uint32_t blocks = BLOCKS_PER_GRID;
+    uint32_t threads = THREADS_PER_BLOCK;
 
     // normal_memory_layout_benchmark(&host_c, &host_a, &host_b, blocks, threads);
     // addition_check(host_c, host_a, host_b);

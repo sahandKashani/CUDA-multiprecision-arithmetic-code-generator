@@ -104,8 +104,7 @@ char** cut_string_to_multiple_words(char* str)
     // BITS_PER_WORD long
 
     // array of BITS_PER_WORD length strings
-    char** str_words = (char**) calloc(BIGNUM_NUMBER_OF_WORDS + 1,
-                                       sizeof(char*));
+    char** str_words = (char**) calloc(BIGNUM_NUMBER_OF_WORDS + 1, sizeof(char*));
     str_words[BIGNUM_NUMBER_OF_WORDS] = NULL;
 
     // allocate each one of the strings and fill them up
@@ -204,8 +203,7 @@ void string_to_bignum(char* str, bignum number)
  */
 coalesced_bignum* bignum_to_coalesced_bignum(bignum** in)
 {
-    coalesced_bignum* out = (coalesced_bignum*) calloc(BIGNUM_NUMBER_OF_WORDS,
-                                                       sizeof(coalesced_bignum));
+    coalesced_bignum* out = (coalesced_bignum*) calloc(BIGNUM_NUMBER_OF_WORDS, sizeof(coalesced_bignum));
 
     for (uint32_t i = 0; i < NUMBER_OF_BIGNUMS; i++)
     {
@@ -256,8 +254,7 @@ bignum* coalesced_bignum_to_bignum(coalesced_bignum** in)
  */
 interleaved_bignum* bignums_to_interleaved_bignum(bignum** in_1, bignum** in_2)
 {
-    interleaved_bignum* out = (interleaved_bignum*) calloc(NUMBER_OF_BIGNUMS,
-                                                           sizeof(interleaved_bignum));
+    interleaved_bignum* out = (interleaved_bignum*) calloc(NUMBER_OF_BIGNUMS, sizeof(interleaved_bignum));
 
     for (uint32_t i = 0; i < NUMBER_OF_BIGNUMS; i++)
     {
@@ -292,8 +289,7 @@ interleaved_bignum* bignums_to_interleaved_bignum(bignum** in_1, bignum** in_2)
  *              elements. Memory is allocated by this function to hold the data.
  * @param in    interleaved_bignum to convert.
  */
-void interleaved_bignum_to_bignums(bignum** out_1, bignum** out_2,
-                                   interleaved_bignum** in)
+void interleaved_bignum_to_bignums(bignum** out_1, bignum** out_2, interleaved_bignum** in)
 {
     bignum* out_1_tmp = (bignum*) calloc(NUMBER_OF_BIGNUMS, sizeof(bignum));
     bignum* out_2_tmp = (bignum*) calloc(NUMBER_OF_BIGNUMS, sizeof(bignum));
@@ -328,12 +324,9 @@ void interleaved_bignum_to_bignums(bignum** out_1, bignum** out_2,
  * @param  in_2 Second array of data elements.
  * @return      converted coalesced_interleaved_bignum array.
  */
-coalesced_interleaved_bignum* bignums_to_coalesced_interleaved_bignum(bignum** in_1,
-                                                                      bignum** in_2)
+coalesced_interleaved_bignum* bignums_to_coalesced_interleaved_bignum(bignum** in_1, bignum** in_2)
 {
-    coalesced_interleaved_bignum* out =
-        (coalesced_interleaved_bignum*) calloc(BIGNUM_NUMBER_OF_WORDS,
-                                               sizeof(coalesced_interleaved_bignum));
+    coalesced_interleaved_bignum* out = (coalesced_interleaved_bignum*) calloc(BIGNUM_NUMBER_OF_WORDS, sizeof(coalesced_interleaved_bignum));
 
     for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
@@ -363,8 +356,7 @@ coalesced_interleaved_bignum* bignums_to_coalesced_interleaved_bignum(bignum** i
  *              elements. Memory is allocated by this function to hold the data.
  * @param in    coalesced_interleaved_bignum to convert.
  */
-void coalesced_interleaved_bignum_to_bignums(bignum** out_1, bignum** out_2,
-                                             coalesced_interleaved_bignum** in)
+void coalesced_interleaved_bignum_to_bignums(bignum** out_1, bignum** out_2, coalesced_interleaved_bignum** in)
 {
     bignum* out_1_tmp = (bignum*) calloc(NUMBER_OF_BIGNUMS, sizeof(bignum));
     bignum* out_2_tmp = (bignum*) calloc(NUMBER_OF_BIGNUMS, sizeof(bignum));

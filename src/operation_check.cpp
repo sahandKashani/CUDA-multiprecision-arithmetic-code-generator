@@ -39,12 +39,11 @@ void binary_operator_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b,
         if (strcmp(gmp_bignum_c_str, bignum_c_str) != 0)
         {
             printf("incorrect calculation at iteration %d\n", i);
-            results_correct = false;
-            printf("own\n%s +\n%s =\n%s\n", bignum_a_str, bignum_b_str,
-                   bignum_c_str);
-            printf("gmp\n%s +\n%s =\n%s\n", bignum_a_str, bignum_b_str,
-                   gmp_bignum_c_str);
+            printf("own\n%s +\n%s =\n%s\n", bignum_a_str, bignum_b_str, bignum_c_str);
+            printf("gmp\n%s +\n%s =\n%s\n", bignum_a_str, bignum_b_str, gmp_bignum_c_str);
             fflush(stdout);
+
+            results_correct = false;
         }
 
         free(bignum_a_str);

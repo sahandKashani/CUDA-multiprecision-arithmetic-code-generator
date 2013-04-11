@@ -3,9 +3,7 @@
 #include "constants.h"
 #include <stdint.h>
 
-__device__ void add(coalesced_bignum* c,
-                    coalesced_bignum* a,
-                    coalesced_bignum* b)
+__device__ void add(coalesced_bignum* c, coalesced_bignum* a, coalesced_bignum* b)
 {
     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
     uint32_t stride = blockDim.x * gridDim.x;
@@ -35,9 +33,7 @@ __device__ void add(coalesced_bignum* c,
     }
 }
 
-__device__ void subtract(coalesced_bignum* c,
-                         coalesced_bignum* a,
-                         coalesced_bignum* b)
+__device__ void subtract(coalesced_bignum* c, coalesced_bignum* a, coalesced_bignum* b)
 {
     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
     uint32_t stride = blockDim.x * gridDim.x;
