@@ -10,7 +10,7 @@ __device__ void add(coalesced_bignum* c,
     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
     uint32_t stride = blockDim.x * gridDim.x;
 
-    while (tid < TOTAL_NUMBER_OF_THREADS)
+    while (tid < NUMBER_OF_BIGNUMS)
     {
         asm("add.cc.u32 %0, %1, %2;"
             : "=r"(c[0][tid])
@@ -42,7 +42,7 @@ __device__ void subtract(coalesced_bignum* c,
     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
     uint32_t stride = blockDim.x * gridDim.x;
 
-    while (tid < TOTAL_NUMBER_OF_THREADS)
+    while (tid < NUMBER_OF_BIGNUMS)
     {
         asm("sub.cc.u32 %0, %1, %2;"
             : "=r"(c[0][tid])

@@ -1,6 +1,7 @@
 #include "bignum_conversions.h"
 #include "bignum_types.h"
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -202,19 +203,20 @@ void string_to_bignum(char* str, uint32_t* number)
  * coalesced representation.
  * @param  in Bignum array to transform from its non-coalesced representation.
  */
-void bignum_array_to_coalesced_bignum_array(uint32_t* in)
+void bignum_array_to_coalesced_bignum_array(uint32_t** in)
 {
-    uint32_t tmp;
+    uint32_t* out = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
 
-    for (uint32_t i = 0; i < TOTAL_NUMBER_OF_THREADS; i++)
+    for (uint32_t i = 0; i < NUMBER_OF_BIGNUMS; i++)
     {
         for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
         {
-            tmp = in[IDX(i, j)];
-            in[IDX(i, j)] = in[COAL_IDX(j, i)];
-            in[COAL_IDX(j, i)] = tmp;
+            out[COAL_IDX(j, i)] = (*in)[IDX(i, j)];
         }
     }
+
+    free(*in);
+    *in = out;
 }
 
 /**
@@ -222,17 +224,44 @@ void bignum_array_to_coalesced_bignum_array(uint32_t* in)
  * non-coalesced representation.
  * @param  in Bignum array to transform from its coalesced representation.
  */
-void coalesced_bignum_array_to_bignum_array(uint32_t* in)
+void coalesced_bignum_array_to_bignum_array(uint32_t** in)
 {
-    uint32_t tmp;
+    uint32_t* out = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
 
     for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
-        for (uint32_t j = 0; j < TOTAL_NUMBER_OF_THREADS; j++)
+        for (uint32_t j = 0; j < NUMBER_OF_BIGNUMS; j++)
         {
-            tmp = in[COAL_IDX(i, j)];
-            in[COAL_IDX(i, j)] = in[IDX(j, i)];
-            in[IDX(j, i)] = tmp;
+            out[IDX(j, i)] = (*in)[COAL_IDX(i, j)];
         }
+    }
+
+    free(*in);
+    *in = out;
+}
+
+void print_bignum_array(uint32_t* in)
+{
+    for (uint32_t i = 0; i < NUMBER_OF_BIGNUMS; i++)
+    {
+        for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
+        {
+            printf("%11u    ", in[IDX(i, j)]);
+        }
+
+        printf("\n");
+    }
+}
+
+void print_coalesced_bignum_array(uint32_t* in)
+{
+    for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+    {
+        for (uint32_t j = 0; j < NUMBER_OF_BIGNUMS; j++)
+        {
+            printf("%11u    ", in[COAL_IDX(i, j)]);
+        }
+
+        printf("\n");
     }
 }

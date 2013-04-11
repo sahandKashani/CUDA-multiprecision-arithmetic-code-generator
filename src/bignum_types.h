@@ -42,7 +42,7 @@
 //     .         .       .      .
 // c[N-1][0] c[N-1][1] ... c[N-1][H-1]
 
-// with N = TOTAL_NUMBER_OF_THREADS
+// with N = NUMBER_OF_BIGNUMS
 //      H = BIGNUM_NUMBER_OF_WORDS
 
 // A bignum is written "horizontally". The data on one "line" of a bignum
@@ -57,7 +57,7 @@
 // the following macro returns the index of the "j"th element of the "i"th
 // bignum from a 1D array of size N * H (N and H defined as below).
 
-// 0 < i < N = TOTAL_NUMBER_OF_THREADS
+// 0 < i < N = NUMBER_OF_BIGNUMS
 // 0 < j < H = BIGNUM_NUMBER_OF_WORDS
 #define IDX(i, j) (((i) * BIGNUM_NUMBER_OF_WORDS) + (j))
 
@@ -79,7 +79,7 @@
 //     .         .       .      .
 // c[0][H-1] c[1][H-1] ... c[N-1][H-1]
 
-// with N = TOTAL_NUMBER_OF_THREADS
+// with N = NUMBER_OF_BIGNUMS
 //      H = BIGNUM_NUMBER_OF_WORDS
 
 // A bignum is written "vertically" instead of "horizontally" with this
@@ -95,7 +95,7 @@
 // bignum from a 1D array of size N * H (N and H defined as below).
 
 // 0 < i < H = BIGNUM_NUMBER_OF_WORDS
-// 0 < j < N = TOTAL_NUMBER_OF_THREADS
-#define COAL_IDX(i, j) (((i) * TOTAL_NUMBER_OF_THREADS) + (j))
+// 0 < j < N = NUMBER_OF_BIGNUMS
+#define COAL_IDX(i, j) (((i) * NUMBER_OF_BIGNUMS) + (j))
 
 #endif

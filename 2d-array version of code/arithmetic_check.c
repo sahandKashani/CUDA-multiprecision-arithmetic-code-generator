@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <gmp.h>
 
-#define TOTAL_NUMBER_OF_THREADS ((uint32_t) 3)
+#define NUMBER_OF_BIGNUMS ((uint32_t) 3)
 #define SEED ((uint32_t) 12345)
 #define RANDOM_NUMBER_BIT_RANGE ((uint32_t) 131)
 #define MODULO ((uint32_t) 12)
@@ -25,7 +25,7 @@ void operator_test(void (*function)(mpz_t rop, const mpz_t op1, const mpz_t op2)
     mpz_init(op2);
     mpz_init(rop);
 
-    for(uint32_t i = 0; i < TOTAL_NUMBER_OF_THREADS; i += 1)
+    for(uint32_t i = 0; i < NUMBER_OF_BIGNUMS; i += 1)
     {
         // generate 2 random numbers as inputs
         mpz_urandomb(op1, random_state, RANDOM_NUMBER_BIT_RANGE);

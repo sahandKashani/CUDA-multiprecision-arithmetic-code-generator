@@ -58,7 +58,7 @@ typedef uint32_t bignum[BIGNUM_NUMBER_OF_WORDS];
 
 // We can see that coalesced_bignum* is actually a transposed version of bignum*
 
-typedef uint32_t coalesced_bignum[TOTAL_NUMBER_OF_THREADS];
+typedef uint32_t coalesced_bignum[NUMBER_OF_BIGNUMS];
 
 ////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////// INTERLEAVED_BIGNUM ///////////////////////////////
@@ -96,6 +96,6 @@ typedef uint32_t interleaved_bignum[2 * BIGNUM_NUMBER_OF_WORDS];
 // with N = number of bignums in the array
 //      H = BIGNUM_NUMBER_OF_WORDS
 
-typedef uint32_t coalesced_interleaved_bignum[2 * TOTAL_NUMBER_OF_THREADS];
+typedef uint32_t coalesced_interleaved_bignum[2 * NUMBER_OF_BIGNUMS];
 
 #endif

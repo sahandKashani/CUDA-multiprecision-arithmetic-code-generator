@@ -13,7 +13,7 @@ void binary_operator_check(bignum* host_c, bignum* host_a, bignum* host_b,
 {
     bool results_correct = true;
 
-    for (uint32_t i = 0; results_correct && i < TOTAL_NUMBER_OF_THREADS; i++)
+    for (uint32_t i = 0; results_correct && i < NUMBER_OF_BIGNUMS; i++)
     {
         char* bignum_a_str = bignum_to_string(host_a[i]);
         char* bignum_b_str = bignum_to_string(host_b[i]);

@@ -12,9 +12,9 @@ void generate_operands(bignum* host_a, bignum* host_b);
 int main(void)
 {
     // host operands (host_a, host_b) and results (host_c)
-    bignum* host_a = (bignum*) calloc(TOTAL_NUMBER_OF_THREADS, sizeof(bignum));
-    bignum* host_b = (bignum*) calloc(TOTAL_NUMBER_OF_THREADS, sizeof(bignum));
-    bignum* host_c = (bignum*) calloc(TOTAL_NUMBER_OF_THREADS, sizeof(bignum));
+    bignum* host_a = (bignum*) calloc(NUMBER_OF_BIGNUMS, sizeof(bignum));
+    bignum* host_b = (bignum*) calloc(NUMBER_OF_BIGNUMS, sizeof(bignum));
+    bignum* host_c = (bignum*) calloc(NUMBER_OF_BIGNUMS, sizeof(bignum));
 
     // generate random numbers for the tests
     generate_operands(host_a, host_b);
@@ -64,7 +64,7 @@ void generate_operands(bignum* host_a, bignum* host_b)
 
     start_random_number_generator();
 
-    for (uint32_t i = 0; i < TOTAL_NUMBER_OF_THREADS; i++)
+    for (uint32_t i = 0; i < NUMBER_OF_BIGNUMS; i++)
     {
         generate_random_bignum(host_a[i]);
         generate_random_bignum(host_b[i]);

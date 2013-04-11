@@ -12,7 +12,7 @@ void binary_operator_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b,
 {
     bool results_correct = true;
 
-    for (uint32_t i = 0; results_correct && i < TOTAL_NUMBER_OF_THREADS; i++)
+    for (uint32_t i = 0; results_correct && i < NUMBER_OF_BIGNUMS; i++)
     {
         char* bignum_a_str = bignum_to_string(&host_a[IDX(i, 0)]);
         char* bignum_b_str = bignum_to_string(&host_b[IDX(i, 0)]);

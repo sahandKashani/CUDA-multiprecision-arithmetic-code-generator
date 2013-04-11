@@ -12,17 +12,14 @@ void generate_operands(uint32_t* host_a, uint32_t* host_b);
 int main(void)
 {
     // host operands (host_a, host_b) and results (host_c)
-    uint32_t* host_a = (uint32_t*) calloc(TOTAL_NUMBER_OF_THREADS * BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
-    uint32_t* host_b = (uint32_t*) calloc(TOTAL_NUMBER_OF_THREADS * BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
-    uint32_t* host_c = (uint32_t*) calloc(TOTAL_NUMBER_OF_THREADS * BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
+    uint32_t* host_a = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
+    uint32_t* host_b = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
+    uint32_t* host_c = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
 
     // generate random numbers for the tests
     generate_operands(host_a, host_b);
 
-    uint32_t blocks = 256;
-    uint32_t threads = 256;
-
-    coalesced_normal_memory_layout_benchmark(host_c, host_a, host_b, blocks, threads);
+    coalesced_normal_memory_layout_benchmark(&host_c, &host_a, &host_b, BLOCKS_PER_GRID, THREADS_PER_BLOCK);
     addition_check(host_c, host_a, host_b);
 
     free(host_a);
@@ -46,7 +43,7 @@ void generate_operands(uint32_t* host_a, uint32_t* host_b)
 
     start_random_number_generator();
 
-    for (uint32_t i = 0; i < TOTAL_NUMBER_OF_THREADS; i++)
+    for (uint32_t i = 0; i < NUMBER_OF_BIGNUMS; i++)
     {
         generate_random_bignum(&host_a[IDX(i, 0)]);
         generate_random_bignum(&host_b[IDX(i, 0)]);

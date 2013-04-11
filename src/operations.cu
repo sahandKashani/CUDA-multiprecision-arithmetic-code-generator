@@ -8,7 +8,7 @@ __device__ void add(uint32_t* c, uint32_t* a, uint32_t* b)
     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
     uint32_t stride = blockDim.x * gridDim.x;
 
-    while (tid < TOTAL_NUMBER_OF_THREADS)
+    while (tid < NUMBER_OF_BIGNUMS)
     {
         asm("add.cc.u32 %0, %1, %2;"
             : "=r"(c[COAL_IDX(0, tid)])
@@ -38,7 +38,7 @@ __device__ void subtract(uint32_t* c, uint32_t* a, uint32_t* b)
     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
     uint32_t stride = blockDim.x * gridDim.x;
 
-    while (tid < TOTAL_NUMBER_OF_THREADS)
+    while (tid < NUMBER_OF_BIGNUMS)
     {
         asm("sub.cc.u32 %0, %1, %2;"
             : "=r"(c[COAL_IDX(0, tid)])

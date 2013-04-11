@@ -16,21 +16,21 @@ void normal_memory_layout_benchmark(bignum** host_c,
     bignum* dev_c;
 
     // allocate gpu memory
-    cudaMalloc((void**) &dev_a, TOTAL_NUMBER_OF_THREADS * sizeof(bignum));
-    cudaMalloc((void**) &dev_b, TOTAL_NUMBER_OF_THREADS * sizeof(bignum));
-    cudaMalloc((void**) &dev_c, TOTAL_NUMBER_OF_THREADS * sizeof(bignum));
+    cudaMalloc((void**) &dev_a, NUMBER_OF_BIGNUMS * sizeof(bignum));
+    cudaMalloc((void**) &dev_b, NUMBER_OF_BIGNUMS * sizeof(bignum));
+    cudaMalloc((void**) &dev_c, NUMBER_OF_BIGNUMS * sizeof(bignum));
 
     // copy operands to device memory
-    cudaMemcpy(dev_a, *host_a, TOTAL_NUMBER_OF_THREADS * sizeof(bignum),
+    cudaMemcpy(dev_a, *host_a, NUMBER_OF_BIGNUMS * sizeof(bignum),
                cudaMemcpyHostToDevice);
-    cudaMemcpy(dev_b, *host_b, TOTAL_NUMBER_OF_THREADS * sizeof(bignum),
+    cudaMemcpy(dev_b, *host_b, NUMBER_OF_BIGNUMS * sizeof(bignum),
                cudaMemcpyHostToDevice);
 
     // execute addition
     normal_addition<<<blocks_per_grid, threads_per_block>>>(dev_c, dev_a, dev_b);
 
     // copy results back to host
-    cudaMemcpy(*host_c, dev_c, TOTAL_NUMBER_OF_THREADS * sizeof(bignum),
+    cudaMemcpy(*host_c, dev_c, NUMBER_OF_BIGNUMS * sizeof(bignum),
                cudaMemcpyDeviceToHost);
 
     // free device memory
@@ -44,7 +44,7 @@ __global__ void normal_addition(bignum* c, bignum* a, bignum* b)
     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
     uint32_t stride = blockDim.x * gridDim.x;
 
-    while (tid < TOTAL_NUMBER_OF_THREADS)
+    while (tid < NUMBER_OF_BIGNUMS)
     {
 
         asm("add.cc.u32 %0, %1, %2;"
@@ -85,19 +85,19 @@ void interleaved_memory_layout_benchmark(bignum** host_c,
 
     // allocate gpu memory
     cudaMalloc((void**) &dev_ops,
-               TOTAL_NUMBER_OF_THREADS * sizeof(interleaved_bignum));
-    cudaMalloc((void**) &dev_c, TOTAL_NUMBER_OF_THREADS * sizeof(bignum));
+               NUMBER_OF_BIGNUMS * sizeof(interleaved_bignum));
+    cudaMalloc((void**) &dev_c, NUMBER_OF_BIGNUMS * sizeof(bignum));
 
     // copy operands to device memory
     cudaMemcpy(dev_ops, host_ops,
-               TOTAL_NUMBER_OF_THREADS * sizeof(interleaved_bignum),
+               NUMBER_OF_BIGNUMS * sizeof(interleaved_bignum),
                cudaMemcpyHostToDevice);
 
     // execute addition
     interleaved_addition<<<blocks_per_grid, threads_per_block>>>(dev_c, dev_ops);
 
     // copy results back to host
-    cudaMemcpy(*host_c, dev_c, TOTAL_NUMBER_OF_THREADS * sizeof(bignum),
+    cudaMemcpy(*host_c, dev_c, NUMBER_OF_BIGNUMS * sizeof(bignum),
                cudaMemcpyDeviceToHost);
 
     // re-arrange data in non-interleaved form
@@ -113,7 +113,7 @@ __global__ void interleaved_addition(bignum* c, interleaved_bignum* ops)
     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
     uint32_t stride = blockDim.x * gridDim.x;
 
-    while (tid < TOTAL_NUMBER_OF_THREADS)
+    while (tid < NUMBER_OF_BIGNUMS)
     {
         uint32_t i = 0;
         uint32_t col = 2 * i;
@@ -200,7 +200,7 @@ __global__ void coalesced_normal_addition(coalesced_bignum* c,
     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
     uint32_t stride = blockDim.x * gridDim.x;
 
-    while (tid < TOTAL_NUMBER_OF_THREADS)
+    while (tid < NUMBER_OF_BIGNUMS)
     {
         asm("add.cc.u32 %0, %1, %2;"
             : "=r"(c[0][tid])
@@ -275,7 +275,7 @@ __global__ void coalesced_interleaved_addition(coalesced_bignum* c,
     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
     uint32_t stride = blockDim.x * gridDim.x;
 
-    while (tid < TOTAL_NUMBER_OF_THREADS)
+    while (tid < NUMBER_OF_BIGNUMS)
     {
         uint32_t i = 0;
         uint32_t col = 2 * tid;
@@ -366,7 +366,7 @@ __global__ void coalesced_normal_addition_with_local_memory(coalesced_bignum* c,
     bignum local_b;
     bignum local_c;
 
-    while (tid < TOTAL_NUMBER_OF_THREADS)
+    while (tid < NUMBER_OF_BIGNUMS)
     {
         // read the thread's operands to per-thread local memory in advance as a
         // form of prefetching.
@@ -419,7 +419,7 @@ __global__ void coalesced_normal_addition_with_local_memory(coalesced_bignum* c,
 //     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
 //     uint32_t stride = blockDim.x * gridDim.x;
 
-//     while (tid < TOTAL_NUMBER_OF_THREADS)
+//     while (tid < NUMBER_OF_BIGNUMS)
 //     {
 //         asm("add.cc.u32 %0, %0, 3;"
 //             : "+r"(c[0][tid])
@@ -456,7 +456,7 @@ __global__ void coalesced_normal_addition_with_local_memory(coalesced_bignum* c,
 
 //     bignum local_c;
 
-//     while (tid < TOTAL_NUMBER_OF_THREADS)
+//     while (tid < NUMBER_OF_BIGNUMS)
 //     {
 //         // read the thread's operands to per-thread local memory in advance as a
 //         // form of prefetching.
@@ -564,7 +564,7 @@ __global__ void coalesced_normal_addition_with_local_memory(coalesced_bignum* c,
 //     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
 //     uint32_t stride = blockDim.x * gridDim.x;
 
-//     while (tid < TOTAL_NUMBER_OF_THREADS)
+//     while (tid < NUMBER_OF_BIGNUMS)
 //     {
 //         asm("add.cc.u32 %0, %1, %2;"
 //             : "=r"(get_element_from_coalesced_bignum_array(c, 0, tid, pitch_c))

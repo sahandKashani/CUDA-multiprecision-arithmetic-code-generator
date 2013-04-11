@@ -207,7 +207,7 @@ coalesced_bignum* bignum_to_coalesced_bignum(bignum** in)
     coalesced_bignum* out = (coalesced_bignum*) calloc(BIGNUM_NUMBER_OF_WORDS,
                                                        sizeof(coalesced_bignum));
 
-    for (uint32_t i = 0; i < TOTAL_NUMBER_OF_THREADS; i++)
+    for (uint32_t i = 0; i < NUMBER_OF_BIGNUMS; i++)
     {
         for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
         {
@@ -230,9 +230,9 @@ coalesced_bignum* bignum_to_coalesced_bignum(bignum** in)
  */
 bignum* coalesced_bignum_to_bignum(coalesced_bignum** in)
 {
-    bignum* out = (bignum*) calloc(TOTAL_NUMBER_OF_THREADS, sizeof(bignum));
+    bignum* out = (bignum*) calloc(NUMBER_OF_BIGNUMS, sizeof(bignum));
 
-    for (uint32_t i = 0; i < TOTAL_NUMBER_OF_THREADS; i++)
+    for (uint32_t i = 0; i < NUMBER_OF_BIGNUMS; i++)
     {
         for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
         {
@@ -256,10 +256,10 @@ bignum* coalesced_bignum_to_bignum(coalesced_bignum** in)
  */
 interleaved_bignum* bignums_to_interleaved_bignum(bignum** in_1, bignum** in_2)
 {
-    interleaved_bignum* out = (interleaved_bignum*) calloc(TOTAL_NUMBER_OF_THREADS,
+    interleaved_bignum* out = (interleaved_bignum*) calloc(NUMBER_OF_BIGNUMS,
                                                            sizeof(interleaved_bignum));
 
-    for (uint32_t i = 0; i < TOTAL_NUMBER_OF_THREADS; i++)
+    for (uint32_t i = 0; i < NUMBER_OF_BIGNUMS; i++)
     {
         for (uint32_t j = 0; j < 2 * BIGNUM_NUMBER_OF_WORDS; j++)
         {
@@ -295,10 +295,10 @@ interleaved_bignum* bignums_to_interleaved_bignum(bignum** in_1, bignum** in_2)
 void interleaved_bignum_to_bignums(bignum** out_1, bignum** out_2,
                                    interleaved_bignum** in)
 {
-    bignum* out_1_tmp = (bignum*) calloc(TOTAL_NUMBER_OF_THREADS, sizeof(bignum));
-    bignum* out_2_tmp = (bignum*) calloc(TOTAL_NUMBER_OF_THREADS, sizeof(bignum));
+    bignum* out_1_tmp = (bignum*) calloc(NUMBER_OF_BIGNUMS, sizeof(bignum));
+    bignum* out_2_tmp = (bignum*) calloc(NUMBER_OF_BIGNUMS, sizeof(bignum));
 
-    for (uint32_t i = 0; i < TOTAL_NUMBER_OF_THREADS; i++)
+    for (uint32_t i = 0; i < NUMBER_OF_BIGNUMS; i++)
     {
         for (uint32_t j = 0; j < 2 * BIGNUM_NUMBER_OF_WORDS; j++)
         {
@@ -337,7 +337,7 @@ coalesced_interleaved_bignum* bignums_to_coalesced_interleaved_bignum(bignum** i
 
     for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
-        for (uint32_t j = 0; j < 2 * TOTAL_NUMBER_OF_THREADS; j += 2)
+        for (uint32_t j = 0; j < 2 * NUMBER_OF_BIGNUMS; j += 2)
         {
             out[i][j]     = (*in_1)[j / 2][i];
             out[i][j + 1] = (*in_2)[j / 2][i];
@@ -366,12 +366,12 @@ coalesced_interleaved_bignum* bignums_to_coalesced_interleaved_bignum(bignum** i
 void coalesced_interleaved_bignum_to_bignums(bignum** out_1, bignum** out_2,
                                              coalesced_interleaved_bignum** in)
 {
-    bignum* out_1_tmp = (bignum*) calloc(TOTAL_NUMBER_OF_THREADS, sizeof(bignum));
-    bignum* out_2_tmp = (bignum*) calloc(TOTAL_NUMBER_OF_THREADS, sizeof(bignum));
+    bignum* out_1_tmp = (bignum*) calloc(NUMBER_OF_BIGNUMS, sizeof(bignum));
+    bignum* out_2_tmp = (bignum*) calloc(NUMBER_OF_BIGNUMS, sizeof(bignum));
 
     for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
-        for (uint32_t j = 0; j < 2 * TOTAL_NUMBER_OF_THREADS; j += 2)
+        for (uint32_t j = 0; j < 2 * NUMBER_OF_BIGNUMS; j += 2)
         {
             out_1_tmp[j / 2][i] = (*in)[i][j];
             out_2_tmp[j / 2][i] = (*in)[i][j + 1];
