@@ -46,9 +46,9 @@ void binary_operator_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b,
                     if (strcmp(gmp_bignum_c_str, bignum_c_str) != 0)
                     {
                         printf("incorrect calculation at iteration %d\n", i);
-                        printf("our algorithm:\n%s %c\n%s =\n%s\n", bignum_a_str, op_character, bignum_b_str, bignum_c_str);
-                        printf("gmp algorithm:\n%s %c\n%s =\n%s\n", bignum_a_str, op_character, bignum_b_str, gmp_bignum_c_str);
-                        fflush(stdout);
+                        printf("our algorithm:   %s\n               %c %s\n               = %s\n", bignum_a_str, op_character, bignum_b_str, bignum_c_str);
+                        printf("\n");
+                        printf("gmp algorithm:   %s\n               %c %s\n               = %s\n", bignum_a_str, op_character, bignum_b_str, gmp_bignum_c_str);
 
                         results_correct = false;
                     }
