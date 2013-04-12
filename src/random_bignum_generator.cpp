@@ -2,6 +2,7 @@
 #include "bignum_types.h"
 #include "bignum_conversions.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <gmp.h>
 
 // current state of the random number generator
@@ -14,9 +15,26 @@ gmp_randstate_t random_state;
  */
 void generate_random_bignum(uint32_t* number)
 {
-    char* number_str = generate_random_bignum_str();
-    string_to_bignum(number_str, number);
-    free(number_str);
+    if (number != NULL)
+    {
+        char* number_str = generate_random_bignum_str();
+
+        if (number_str != NULL)
+        {
+            string_to_bignum(number_str, number);
+            free(number_str);
+        }
+        else
+        {
+            printf("Error: \"number_str\" is NULL\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+    else
+    {
+        printf("Error: bignum \"number\" is NULL\n");
+        exit(EXIT_FAILURE);
+    }
 }
 
 /**
@@ -32,7 +50,9 @@ void start_random_number_generator()
 /**
  * Stops and resets the state of the random number generator. After a call to
  * this function, you can no longer reuse the number generator unless you call
- * start_random_number_generator() first.
+ * start_random_number_generator() first. You can only use this function if a
+ * prior call to start_random_number_generator() has been made, or else this
+ * function will fail
  */
 void stop_random_number_generator()
 {
@@ -55,9 +75,17 @@ char* generate_random_bignum_str()
 
     // get binary string version
     char* str_number = mpz_get_str(NULL, 2, number);
-    pad_string_with_zeros(&str_number);
 
-    mpz_clear(number);
+    if (str_number != NULL)
+    {
+        pad_string_with_zeros(&str_number);
+        mpz_clear(number);
+    }
+    else
+    {
+        printf("Error: \"str_number\" is NULL\n");
+        exit(EXIT_FAILURE);
+    }
 
     return str_number;
 }

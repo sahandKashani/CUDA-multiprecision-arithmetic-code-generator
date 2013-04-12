@@ -8,63 +8,116 @@
 #include <stdint.h>
 #include <gmp.h>
 
-void binary_operator_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b, void (*op)(mpz_t rop, const mpz_t op1, const mpz_t op2))
+void binary_operator_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b, void (*op)(mpz_t rop, const mpz_t op1, const mpz_t op2), char op_character)
 {
     printf("checking with gmp ... ");
     fflush(stdout);
 
-    bool results_correct = true;
-    for (uint32_t i = 0; results_correct && i < NUMBER_OF_BIGNUMS; i++)
+    if (host_a != NULL && host_b != NULL && host_c != NULL)
     {
-        char* bignum_a_str = bignum_to_string(&host_a[IDX(i, 0)]);
-        char* bignum_b_str = bignum_to_string(&host_b[IDX(i, 0)]);
-        char* bignum_c_str = bignum_to_string(&host_c[IDX(i, 0)]);
-
-        mpz_t gmp_bignum_a;
-        mpz_t gmp_bignum_b;
-        mpz_t gmp_bignum_c;
-
-        mpz_init_set_str(gmp_bignum_a, bignum_a_str, 2);
-        mpz_init_set_str(gmp_bignum_b, bignum_b_str, 2);
-        mpz_init(gmp_bignum_c);
-
-        // GMP function which will calculate what our algorithm is supposed to
-        // calculate
-        op(gmp_bignum_c, gmp_bignum_a, gmp_bignum_b);
-
-        // get binary string result
-        char* gmp_bignum_c_str = mpz_get_str(NULL, 2, gmp_bignum_c);
-        pad_string_with_zeros(&gmp_bignum_c_str);
-
-        if (strcmp(gmp_bignum_c_str, bignum_c_str) != 0)
+        bool results_correct = true;
+        for (uint32_t i = 0; results_correct && i < NUMBER_OF_BIGNUMS; i++)
         {
-            printf("incorrect calculation at iteration %d\n", i);
-            printf("own\n%s +\n%s =\n%s\n", bignum_a_str, bignum_b_str, bignum_c_str);
-            printf("gmp\n%s +\n%s =\n%s\n", bignum_a_str, bignum_b_str, gmp_bignum_c_str);
-            fflush(stdout);
+            char* bignum_a_str = bignum_to_string(&host_a[IDX(i, 0)]);
+            char* bignum_b_str = bignum_to_string(&host_b[IDX(i, 0)]);
+            char* bignum_c_str = bignum_to_string(&host_c[IDX(i, 0)]);
 
-            results_correct = false;
+            if (bignum_a_str != NULL && bignum_b_str != NULL && bignum_c_str != NULL)
+            {
+                mpz_t gmp_bignum_a;
+                mpz_t gmp_bignum_b;
+                mpz_t gmp_bignum_c;
+
+                mpz_init_set_str(gmp_bignum_a, bignum_a_str, 2);
+                mpz_init_set_str(gmp_bignum_b, bignum_b_str, 2);
+                mpz_init(gmp_bignum_c);
+
+                // GMP function which will calculate what our algorithm is
+                // supposed to calculate
+                op(gmp_bignum_c, gmp_bignum_a, gmp_bignum_b);
+
+                // get binary string result
+                char* gmp_bignum_c_str = mpz_get_str(NULL, 2, gmp_bignum_c);
+
+                if (gmp_bignum_c_str != NULL)
+                {
+                    pad_string_with_zeros(&gmp_bignum_c_str);
+
+                    if (strcmp(gmp_bignum_c_str, bignum_c_str) != 0)
+                    {
+                        printf("incorrect calculation at iteration %d\n", i);
+                        printf("our algorithm:\n%s %c\n%s =\n%s\n", bignum_a_str, op_character, bignum_b_str, bignum_c_str);
+                        printf("gmp algorithm:\n%s %c\n%s =\n%s\n", bignum_a_str, op_character, bignum_b_str, gmp_bignum_c_str);
+                        fflush(stdout);
+
+                        results_correct = false;
+                    }
+
+                    free(bignum_a_str);
+                    free(bignum_b_str);
+                    free(bignum_c_str);
+                    free(gmp_bignum_c_str);
+
+                    mpz_clear(gmp_bignum_a);
+                    mpz_clear(gmp_bignum_b);
+                    mpz_clear(gmp_bignum_c);
+                }
+                else
+                {
+                    printf("Error: \"gmp_bignum_c_str\" is NULL\n");
+                    exit(EXIT_FAILURE);
+                }
+            }
+            else
+            {
+                if (bignum_a_str == NULL)
+                {
+                    printf("Error: \"bignum_a_str\" is NULL\n");
+                }
+
+                if (bignum_b_str == NULL)
+                {
+                    printf("Error: \"bignum_b_str\" is NULL\n");
+                }
+
+                if (bignum_c_str == NULL)
+                {
+                    printf("Error: \"bignum_c_str\" is NULL\n");
+                }
+
+                exit(EXIT_FAILURE);
+            }
         }
 
-        free(bignum_a_str);
-        free(bignum_b_str);
-        free(bignum_c_str);
-        free(gmp_bignum_c_str);
+        printf("done => ");
 
-        mpz_clear(gmp_bignum_a);
-        mpz_clear(gmp_bignum_b);
-        mpz_clear(gmp_bignum_c);
-    }
-
-    printf("done => ");
-
-    if (results_correct)
-    {
-        printf("correct\n");
+        if (results_correct)
+        {
+            printf("correct\n");
+        }
+        else
+        {
+            printf("errors\n");
+        }
     }
     else
     {
-        printf("errors\n");
+        if (host_a == NULL)
+        {
+            printf("Error: \"host_a\" is NULL\n");
+        }
+
+        if (host_b == NULL)
+        {
+            printf("Error: \"host_b\" is NULL\n");
+        }
+
+        if (host_c == NULL)
+        {
+            printf("Error: \"host_c\" is NULL\n");
+        }
+
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -81,7 +134,29 @@ void binary_operator_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b,
  */
 void addition_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
 {
-    binary_operator_check(host_c, host_a, host_b, mpz_add);
+    if (host_a != NULL && host_b != NULL && host_c != NULL)
+    {
+        binary_operator_check(host_c, host_a, host_b, mpz_add, '+');
+    }
+    else
+    {
+        if (host_a == NULL)
+        {
+            printf("Error: \"host_a\" is NULL\n");
+        }
+
+        if (host_b == NULL)
+        {
+            printf("Error: \"host_b\" is NULL\n");
+        }
+
+        if (host_c == NULL)
+        {
+            printf("Error: \"host_c\" is NULL\n");
+        }
+
+        exit(EXIT_FAILURE);
+    }
 }
 
 /**
@@ -98,5 +173,27 @@ void addition_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
  */
 void subtraction_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
 {
-    binary_operator_check(host_c, host_a, host_b, mpz_sub);
+    if (host_a != NULL && host_b != NULL && host_c != NULL)
+    {
+        binary_operator_check(host_c, host_a, host_b, mpz_sub, '-');
+    }
+    else
+    {
+        if (host_a == NULL)
+        {
+            printf("Error: \"host_a\" is NULL\n");
+        }
+
+        if (host_b == NULL)
+        {
+            printf("Error: \"host_b\" is NULL\n");
+        }
+
+        if (host_c == NULL)
+        {
+            printf("Error: \"host_c\" is NULL\n");
+        }
+
+        exit(EXIT_FAILURE);
+    }
 }
