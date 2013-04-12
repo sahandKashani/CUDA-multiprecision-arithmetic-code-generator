@@ -14,15 +14,24 @@
 char* uint32_t_to_string(uint32_t number)
 {
     char* str = (char*) calloc(BITS_PER_WORD + 1, sizeof(char));
-    str[BITS_PER_WORD] = '\0';
 
-    for (uint32_t i = 0; i < BITS_PER_WORD; i++)
+    if (str != NULL)
     {
-        uint32_t masked_number = number & (1 << i);
-        str[BITS_PER_WORD - 1 - i] = (masked_number != 0) ? '1' : '0';
-    }
+        str[BITS_PER_WORD] = '\0';
 
-    return str;
+        for (uint32_t i = 0; i < BITS_PER_WORD; i++)
+        {
+            uint32_t masked_number = number & (1 << i);
+            str[BITS_PER_WORD - 1 - i] = (masked_number != 0) ? '1' : '0';
+        }
+
+        return str;
+    }
+    else
+    {
+        printf("Error: could not allocate memory for \"str\"\n");
+        exit(EXIT_FAILURE);
+    }
 }
 
 /**
@@ -34,38 +43,74 @@ char* uint32_t_to_string(uint32_t number)
  */
 char* bignum_to_string(uint32_t* number)
 {
-    // make an array of strings which will each contain 1 of the
-    // BIGNUM_NUMBER_OF_WORDS words in the bignum
-    char** words = (char**) calloc(BIGNUM_NUMBER_OF_WORDS + 1, sizeof(char*));
-    words[BIGNUM_NUMBER_OF_WORDS] = NULL;
-
-    for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+    if (number != NULL)
     {
-        words[i] = (char*) calloc(BITS_PER_WORD + 1, sizeof(char));
-        words[i][BITS_PER_WORD] = '\0';
+        // make an array of strings which will each contain 1 of the
+        // BIGNUM_NUMBER_OF_WORDS words in the bignum
+        char** words = (char**) calloc(BIGNUM_NUMBER_OF_WORDS + 1, sizeof(char*));
 
-        // convert each bignum element to a string
-        words[i] = uint32_t_to_string(number[i]);
+        if (words != NULL)
+        {
+            words[BIGNUM_NUMBER_OF_WORDS] = NULL;
+
+            for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+            {
+                words[i] = (char*) calloc(BITS_PER_WORD + 1, sizeof(char));
+
+                if (words[i] != NULL)
+                {
+                    words[i][BITS_PER_WORD] = '\0';
+
+                    // convert each bignum element to a string
+                    words[i] = uint32_t_to_string(number[i]);
+                }
+                else
+                {
+                    printf("Error: could not allocate memory for \"words[%u]\"\n", i);
+                    exit(EXIT_FAILURE);
+                }
+            }
+
+            // concatenate the words together to form a TOTAL_BIT_LENGTH long
+            // string
+            char* final_str = (char*) calloc(TOTAL_BIT_LENGTH + 1, sizeof(char));
+
+            if (final_str != NULL)
+            {
+                final_str[TOTAL_BIT_LENGTH] = '\0';
+
+                char* src;
+                char* dest = final_str;
+                for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+                {
+                    src = words[BIGNUM_NUMBER_OF_WORDS - i - 1];
+                    strncpy(dest, src, BITS_PER_WORD);
+
+                    dest += BITS_PER_WORD;
+                }
+
+                free_string_words(&words);
+
+                // return concatenated string
+                return final_str;
+            }
+            else
+            {
+                printf("Error: could not allocate memory for \"final_str\"\n");
+                exit(EXIT_FAILURE);
+            }
+        }
+        else
+        {
+            printf("Error: could not allocate memory for \"words\"\n");
+            exit(EXIT_FAILURE);
+        }
     }
-
-    // concatenate the words together to form a TOTAL_BIT_LENGTH long string
-    char* final_str = (char*) calloc(TOTAL_BIT_LENGTH + 1, sizeof(char));
-    final_str[TOTAL_BIT_LENGTH] = '\0';
-
-    char* src;
-    char* dest = final_str;
-    for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+    else
     {
-        src = words[BIGNUM_NUMBER_OF_WORDS - i - 1];
-        strncpy(dest, src, BITS_PER_WORD);
-
-        dest += BITS_PER_WORD;
+        printf("Error: bignum \"number\" is NULL\n");
+        exit(EXIT_FAILURE);
     }
-
-    free_string_words(&words);
-
-    // return concatenated string
-    return final_str;
 }
 
 /**
@@ -74,22 +119,39 @@ char* bignum_to_string(uint32_t* number)
  */
 void pad_string_with_zeros(char** old_str)
 {
-    char* new_str = (char*) calloc(TOTAL_BIT_LENGTH + 1, sizeof(char));
-    new_str[TOTAL_BIT_LENGTH] = '\0';
-    for (uint32_t i = 0; i < TOTAL_BIT_LENGTH; i++)
+    if (old_str != NULL)
     {
-        new_str[i] = '0';
+        char* new_str = (char*) calloc(TOTAL_BIT_LENGTH + 1, sizeof(char));
+
+        if (new_str != NULL)
+        {
+            new_str[TOTAL_BIT_LENGTH] = '\0';
+            for (uint32_t i = 0; i < TOTAL_BIT_LENGTH; i++)
+            {
+                new_str[i] = '0';
+            }
+
+            uint32_t old_str_length = strlen(*old_str);
+
+            for (uint32_t i = 0; i < old_str_length; i++)
+            {
+                new_str[(TOTAL_BIT_LENGTH - old_str_length) + i] = (*old_str)[i];
+            }
+
+            free(*old_str);
+            *old_str = new_str;
+        }
+        else
+        {
+            printf("Error: could not allocate memory for \"new_str\"\n");
+            exit(EXIT_FAILURE);
+        }
     }
-
-    uint32_t old_str_length = strlen(*old_str);
-
-    for (uint32_t i = 0; i < old_str_length; i++)
+    else
     {
-        new_str[(TOTAL_BIT_LENGTH - old_str_length) + i] = (*old_str)[i];
+        printf("Error: \"old_str\" is NULL");
+        exit(EXIT_FAILURE);
     }
-
-    free(*old_str);
-    *old_str = new_str;
 }
 
 /**
@@ -102,37 +164,63 @@ void pad_string_with_zeros(char** old_str)
  */
 char** cut_string_to_multiple_words(char* str)
 {
-    // cut str into BIGNUM_NUMBER_OF_WORDS pieces, each of which is
-    // BITS_PER_WORD long
-
-    // array of BITS_PER_WORD length strings
-    char** str_words = (char**) calloc(BIGNUM_NUMBER_OF_WORDS + 1, sizeof(char*));
-    str_words[BIGNUM_NUMBER_OF_WORDS] = NULL;
-
-    // allocate each one of the strings and fill them up
-    for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+    if (str != NULL)
     {
-        str_words[i] = (char*) calloc(BITS_PER_WORD + 1, sizeof(char));
-        str_words[i][BITS_PER_WORD] = '\0';
+        // cut str into BIGNUM_NUMBER_OF_WORDS pieces, each of which is
+        // BITS_PER_WORD long
 
-        for (uint32_t j = 0; j < BITS_PER_WORD; j++)
+        // array of BITS_PER_WORD length strings
+        char** str_words = (char**) calloc(BIGNUM_NUMBER_OF_WORDS + 1, sizeof(char*));
+
+        if (str_words != NULL)
         {
-            str_words[i][j] = str[i * BITS_PER_WORD + j];
+            str_words[BIGNUM_NUMBER_OF_WORDS] = NULL;
+
+            // allocate each one of the strings and fill them up
+            for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+            {
+                str_words[i] = (char*) calloc(BITS_PER_WORD + 1, sizeof(char));
+
+                if (str_words[i] != NULL)
+                {
+                    str_words[i][BITS_PER_WORD] = '\0';
+
+                    for (uint32_t j = 0; j < BITS_PER_WORD; j++)
+                    {
+                        str_words[i][j] = str[i * BITS_PER_WORD + j];
+                    }
+                }
+                else
+                {
+                    printf("Error: could not allocate memory for \"str_words[%u]\"\n", i);
+                    exit(EXIT_FAILURE);
+                }
+            }
+
+            // until now, the strings have been cut in big-endian form, but we
+            // want little-endian for indexing, so we have to invert the array.
+            char* tmp;
+            uint32_t middle_of_array = CEILING(BIGNUM_NUMBER_OF_WORDS, 2);
+            for (uint32_t i = 0; i < middle_of_array; i++)
+            {
+                tmp = str_words[i];
+                str_words[i] = str_words[BIGNUM_NUMBER_OF_WORDS - 1 - i];
+                str_words[BIGNUM_NUMBER_OF_WORDS - 1 - i] = tmp;
+            }
+
+            return str_words;
+        }
+        else
+        {
+            printf("Error: could not allocate memory for \"str_words\"\n");
+            exit(EXIT_FAILURE);
         }
     }
-
-    // until now, the strings have been cut in big-endian form, but we want
-    // little-endian for indexing, so we have to invert the array.
-    char* tmp;
-    uint32_t middle_of_array = CEILING(BIGNUM_NUMBER_OF_WORDS, 2);
-    for (uint32_t i = 0; i < middle_of_array; i++)
+    else
     {
-        tmp = str_words[i];
-        str_words[i] = str_words[BIGNUM_NUMBER_OF_WORDS - 1 - i];
-        str_words[BIGNUM_NUMBER_OF_WORDS - 1 - i] = tmp;
+        printf("Error: \"str\" is NULL");
+        exit(EXIT_FAILURE);
     }
-
-    return str_words;
 }
 
 /**
@@ -166,15 +254,23 @@ void free_string_words(char*** words)
  */
 uint32_t string_to_uint32_t(char* str)
 {
-    uint32_t number = 0;
-
-    for (uint32_t i = 0; i < BITS_PER_WORD; i++)
+    if (str != NULL)
     {
-        uint32_t bit_value = str[BITS_PER_WORD - 1 - i] == '1' ? 1 : 0;
-        number |= bit_value << i;
-    }
+        uint32_t number = 0;
 
-    return number;
+        for (uint32_t i = 0; i < BITS_PER_WORD; i++)
+        {
+            uint32_t bit_value = str[BITS_PER_WORD - 1 - i] == '1' ? 1 : 0;
+            number |= bit_value << i;
+        }
+
+        return number;
+    }
+    else
+    {
+        printf("Error: \"str\" is NULL\n");
+        exit(EXIT_FAILURE);
+    }
 }
 
 /**
@@ -187,15 +283,32 @@ uint32_t string_to_uint32_t(char* str)
  */
 void string_to_bignum(char* str, uint32_t* number)
 {
-    char** words = cut_string_to_multiple_words(str);
-
-    // set the number
-    for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+    if (str != NULL && number != NULL)
     {
-        number[i] = string_to_uint32_t(words[i]);
-    }
+        char** words = cut_string_to_multiple_words(str);
 
-    free_string_words(&words);
+        // set the number
+        for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+        {
+            number[i] = string_to_uint32_t(words[i]);
+        }
+
+        free_string_words(&words);
+    }
+    else
+    {
+        if (str == NULL)
+        {
+            printf("Error: \"str\" is NULL\n");
+        }
+
+        if (number == NULL)
+        {
+            printf("Error: bignum \"number\" is NULL\n");
+        }
+
+        exit(EXIT_FAILURE);
+    }
 }
 
 /**
@@ -205,7 +318,15 @@ void string_to_bignum(char* str, uint32_t* number)
  */
 void bignum_array_to_coalesced_bignum_array(uint32_t* in)
 {
-    transpose(in, BIGNUM_NUMBER_OF_WORDS, NUMBER_OF_BIGNUMS);
+    if (in != NULL)
+    {
+        transpose(in, BIGNUM_NUMBER_OF_WORDS, NUMBER_OF_BIGNUMS);
+    }
+    else
+    {
+        printf("Error: bignum array \"in\" is NULL\n");
+        exit(EXIT_FAILURE);
+    }
 }
 
 /**
@@ -215,7 +336,15 @@ void bignum_array_to_coalesced_bignum_array(uint32_t* in)
  */
 void coalesced_bignum_array_to_bignum_array(uint32_t* in)
 {
-    transpose(in, NUMBER_OF_BIGNUMS, BIGNUM_NUMBER_OF_WORDS);
+    if (in != NULL)
+    {
+        transpose(in, NUMBER_OF_BIGNUMS, BIGNUM_NUMBER_OF_WORDS);
+    }
+    else
+    {
+        printf("Error: bignum array \"in\" is NULL\n");
+        exit(EXIT_FAILURE);
+    }
 }
 
 /**
@@ -224,14 +353,22 @@ void coalesced_bignum_array_to_bignum_array(uint32_t* in)
  */
 void print_bignum_array(uint32_t* in)
 {
-    for (uint32_t i = 0; i < NUMBER_OF_BIGNUMS; i++)
+    if (in != NULL)
     {
-        for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
+        for (uint32_t i = 0; i < NUMBER_OF_BIGNUMS; i++)
         {
-            printf("%11u    ", in[IDX(i, j)]);
-        }
+            for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
+            {
+                printf("%11u    ", in[IDX(i, j)]);
+            }
 
-        printf("\n");
+            printf("\n");
+        }
+    }
+    else
+    {
+        printf("Error: bignum array \"in\" is NULL\n");
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -241,14 +378,22 @@ void print_bignum_array(uint32_t* in)
  */
 void print_coalesced_bignum_array(uint32_t* in)
 {
-    for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+    if (in != NULL)
     {
-        for (uint32_t j = 0; j < NUMBER_OF_BIGNUMS; j++)
+        for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
         {
-            printf("%11u    ", in[COAL_IDX(i, j)]);
-        }
+            for (uint32_t j = 0; j < NUMBER_OF_BIGNUMS; j++)
+            {
+                printf("%11u    ", in[COAL_IDX(i, j)]);
+            }
 
-        printf("\n");
+            printf("\n");
+        }
+    }
+    else
+    {
+        printf("Error: bignum array \"in\" is NULL\n");
+        exit(EXIT_FAILURE);
     }
 }
 
