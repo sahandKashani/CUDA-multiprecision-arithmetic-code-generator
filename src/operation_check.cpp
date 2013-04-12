@@ -36,13 +36,12 @@ void binary_operator_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b,
                 // supposed to calculate
                 op(gmp_bignum_c, gmp_bignum_a, gmp_bignum_b);
 
-                // get binary string result
-                char* gmp_bignum_c_str = mpz_get_str(NULL, 2, gmp_bignum_c);
+                // get binary string result in 2's complement (same format as
+                // what the gpu is calculating)
+                char* gmp_bignum_c_str = mpz_t_to_binary_2s_complement_string(gmp_bignum_c);
 
                 if (gmp_bignum_c_str != NULL)
                 {
-                    pad_string_with_zeros(&gmp_bignum_c_str);
-
                     if (strcmp(gmp_bignum_c_str, bignum_c_str) != 0)
                     {
                         printf("incorrect calculation at iteration %d\n", i);
@@ -195,5 +194,73 @@ void subtraction_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
         }
 
         exit(EXIT_FAILURE);
+    }
+}
+
+char* mpz_t_to_binary_2s_complement_string(mpz_t number)
+{
+    // if number >= 0
+    if (mpz_cmp_ui(number, 0) >= 0)
+    {
+        // get binary string representation (does not contain any symbol in
+        // front of the string, since its positive)
+        char* number_str = mpz_get_str(NULL, 2, number);
+
+        if (number_str != NULL)
+        {
+            pad_string_with_zeros(&number_str);
+            return number_str;
+        }
+        else
+        {
+            printf("Error: \"number_str\" is NULL\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+    else
+    {
+        mpz_t neg_number;
+        mpz_init(neg_number);
+
+        // get positive version of the number, so that when it is transformed to
+        // a string, there will be no "-" sign in the representation. We are
+        // doing this, because we want the answer in 2's complement, like what
+        // is calculated on the gpu.
+        mpz_neg(neg_number, number);
+        // mpz_com(neg_number, neg_number);
+        // mpz_add_ui(neg_number, neg_number, 1);
+
+        printf("\n\ntests:\n");
+        // mpz_t minus_number; mpz_init(minus_number); mpz_neg(minus_number, number);
+        // mpz_t abs_number; mpz_init(abs_number); mpz_abs(abs_number, number);
+        // mpz_t bar_abs_number; mpz_init(bar_abs_number); mpz_com(bar_abs_number, abs_number);
+        // mpz_t bar_abs_plus_1_number; mpz_init(bar_abs_plus_1_number); mpz_add_ui(bar_abs_plus_1_number, bar_abs_number, 1);
+        // printf("number                = \"%s\"\n", mpz_get_str(NULL, 2, number));
+        // printf("minus_number          = \" %s\"\n", mpz_get_str(NULL, 2, minus_number));
+        // printf("abs_number            = \" %s\"\n", mpz_get_str(NULL, 2, abs_number));
+        // printf("bar_abs_number        = \"%s\"\n", mpz_get_str(NULL, 2, bar_abs_number));
+        // printf("bar_abs_plus_1_number = \"%s\"\n", mpz_get_str(NULL, 2, bar_abs_plus_1_number));
+        mpz_t a; mpz_init_set_str(a, "1111", 2); char* a_str_bin = mpz_get_str(NULL, 2, a); char* a_str_dec = mpz_get_str(NULL, 10, a);
+        mpz_t b; mpz_init_set_str(b, "-1111", 2); char* b_str_bin = mpz_get_str(NULL, 2, b); char* b_str_dec = mpz_get_str(NULL, 10, b);
+        printf("a = \"%s\" = \"%s\"\n", a_str_bin, a_str_dec);
+        printf("b = \"%s\" = \"%s\"\n", b_str_bin, b_str_dec);
+        printf("end test\n\n");
+
+        // get binary string representation (does not contain any symbol in
+        // front of the string, since its positive, because we inverted the
+        // negative number)
+        char* neg_number_str = mpz_get_str(NULL, 2, neg_number);
+
+        if (neg_number_str != NULL)
+        {
+            pad_string_with_ones(&neg_number_str);
+            mpz_clear(neg_number);
+            return neg_number_str;
+        }
+        else
+        {
+            printf("Error: \"neg_number_str\" is NULL\n");
+            exit(EXIT_FAILURE);
+        }
     }
 }

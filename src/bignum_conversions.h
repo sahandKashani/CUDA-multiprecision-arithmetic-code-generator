@@ -13,7 +13,9 @@ char** cut_string_to_multiple_words(char* str);
 
 uint32_t string_to_uint32_t(char* str);
 
+void pad_string_with_char(char** old_str, char pad_character);
 void pad_string_with_zeros(char** old_str);
+void pad_string_with_ones(char** old_str);
 void free_string_words(char*** words);
 void string_to_bignum(char* str, uint32_t* number);
 void bignum_array_to_coalesced_bignum_array(uint32_t* in);

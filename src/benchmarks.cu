@@ -12,7 +12,7 @@ void benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
     if (host_a != NULL && host_b != NULL && host_c != NULL)
     {
         addition_benchmark(host_c, host_a, host_b);
-        // subtraction_benchmark(host_c, host_a, host_b);
+        subtraction_benchmark(host_c, host_a, host_b);
     }
     else
     {

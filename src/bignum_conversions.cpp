@@ -114,10 +114,29 @@ char* bignum_to_string(uint32_t* number)
 }
 
 /**
- * Pads the binary string with zeros until it is TOTAL_BIT_LENGTH long.
+ * Pads the string with zeros until it is TOTAL_BIT_LENGTH long.
  * @param old_str String to be padded with zeros.
  */
 void pad_string_with_zeros(char** old_str)
+{
+    pad_string_with_char(old_str, '0');
+}
+
+/**
+ * Pads the string with ones until it is TOTAL_BIT_LENGTH long.
+ * @param old_str String to be padded with ones.
+ */
+void pad_string_with_ones(char** old_str)
+{
+    pad_string_with_char(old_str, '1');
+}
+
+/**
+ * Pads the binary string with the pad_character character until it is
+ * TOTAL_BIT_LENGTH long.
+ * @param old_str String to be padded with pad_character.
+ */
+void pad_string_with_char(char** old_str, char pad_character)
 {
     if (old_str != NULL)
     {
@@ -128,7 +147,7 @@ void pad_string_with_zeros(char** old_str)
             new_str[TOTAL_BIT_LENGTH] = '\0';
             for (uint32_t i = 0; i < TOTAL_BIT_LENGTH; i++)
             {
-                new_str[i] = '0';
+                new_str[i] = pad_character;
             }
 
             uint32_t old_str_length = strlen(*old_str);
