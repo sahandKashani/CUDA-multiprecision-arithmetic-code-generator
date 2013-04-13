@@ -123,15 +123,6 @@ void pad_string_with_zeros(char** old_str)
 }
 
 /**
- * Pads the string with ones until it is TOTAL_BIT_LENGTH long.
- * @param old_str String to be padded with ones.
- */
-void pad_string_with_ones(char** old_str)
-{
-    pad_string_with_char(old_str, '1');
-}
-
-/**
  * Pads the binary string with the pad_character character until it is
  * TOTAL_BIT_LENGTH long.
  * @param old_str String to be padded with pad_character.
