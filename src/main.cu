@@ -18,7 +18,7 @@ int main(void)
 
     if (host_a != NULL && host_b != NULL && host_c != NULL)
     {
-        // generate_random_bignum_arrays_to_files(bignum_file_1, bignum_file_2);
+        generate_random_bignum_arrays_to_files(bignum_file_1, bignum_file_2);
         read_bignum_arrays_from_files(host_a, host_b, bignum_file_1, bignum_file_2);
 
         benchmark(host_c, host_a, host_b);

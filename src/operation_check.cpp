@@ -197,14 +197,25 @@ void subtraction_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
     }
 }
 
+/**
+ * Returns a binary string of length TOTAL_BIT_LENGTH containing the 2's
+ * complement representation of the number given as a parameter. If the number
+ * is positive, the binary string is just padded with zeros. If the number is
+ * negative, then we use the well-know formula -B = \bar{B} + 1 to get the 2's
+ * complement representation of a negative number where abs(number) = B
+ * @param  number Number to be represented.
+ * @return        Binary 2's complement string representation of number.
+ */
 char* mpz_t_to_binary_2s_complement_string(mpz_t number)
 {
+    char* number_str = NULL;
+
     // if number >= 0
     if (mpz_cmp_ui(number, 0) >= 0)
     {
         // get binary string representation (does not contain any symbol in
         // front of the string, since its positive)
-        char* number_str = mpz_get_str(NULL, 2, number);
+        number_str = mpz_get_str(NULL, 2, number);
 
         if (number_str != NULL)
         {
@@ -219,48 +230,79 @@ char* mpz_t_to_binary_2s_complement_string(mpz_t number)
     }
     else
     {
-        mpz_t neg_number;
-        mpz_init(neg_number);
+        number_str = twos_complement_binary_string_of_negative_number(number);
 
-        // get positive version of the number, so that when it is transformed to
-        // a string, there will be no "-" sign in the representation. We are
-        // doing this, because we want the answer in 2's complement, like what
-        // is calculated on the gpu.
-        mpz_neg(neg_number, number);
-        // mpz_com(neg_number, neg_number);
-        // mpz_add_ui(neg_number, neg_number, 1);
-
-        printf("\n\ntests:\n");
-        // mpz_t minus_number; mpz_init(minus_number); mpz_neg(minus_number, number);
-        // mpz_t abs_number; mpz_init(abs_number); mpz_abs(abs_number, number);
-        // mpz_t bar_abs_number; mpz_init(bar_abs_number); mpz_com(bar_abs_number, abs_number);
-        // mpz_t bar_abs_plus_1_number; mpz_init(bar_abs_plus_1_number); mpz_add_ui(bar_abs_plus_1_number, bar_abs_number, 1);
-        // printf("number                = \"%s\"\n", mpz_get_str(NULL, 2, number));
-        // printf("minus_number          = \" %s\"\n", mpz_get_str(NULL, 2, minus_number));
-        // printf("abs_number            = \" %s\"\n", mpz_get_str(NULL, 2, abs_number));
-        // printf("bar_abs_number        = \"%s\"\n", mpz_get_str(NULL, 2, bar_abs_number));
-        // printf("bar_abs_plus_1_number = \"%s\"\n", mpz_get_str(NULL, 2, bar_abs_plus_1_number));
-        mpz_t a; mpz_init_set_str(a, "1111", 2); char* a_str_bin = mpz_get_str(NULL, 2, a); char* a_str_dec = mpz_get_str(NULL, 10, a);
-        mpz_t b; mpz_init_set_str(b, "-1111", 2); char* b_str_bin = mpz_get_str(NULL, 2, b); char* b_str_dec = mpz_get_str(NULL, 10, b);
-        printf("a = \"%s\" = \"%s\"\n", a_str_bin, a_str_dec);
-        printf("b = \"%s\" = \"%s\"\n", b_str_bin, b_str_dec);
-        printf("end test\n\n");
-
-        // get binary string representation (does not contain any symbol in
-        // front of the string, since its positive, because we inverted the
-        // negative number)
-        char* neg_number_str = mpz_get_str(NULL, 2, neg_number);
-
-        if (neg_number_str != NULL)
+        if (number_str != NULL)
         {
-            pad_string_with_ones(&neg_number_str);
-            mpz_clear(neg_number);
-            return neg_number_str;
+            return number_str;
         }
         else
         {
-            printf("Error: \"neg_number_str\" is NULL\n");
+            printf("Error: \"number_str\" is NULL\n");
             exit(EXIT_FAILURE);
         }
+    }
+}
+
+/**
+ * This function takes a negative number as a parameter and returns a binary 2's
+ * complement string representation of the negative number. The length of the
+ * string which is returned is TOTAL_BIT_LENGTH.
+ * @param  negative_number Gmp negative number to represent as a binary string
+ *                         in 2's complement notation.
+ * @return                 Binary string representation of negative_number in
+ *                         2's complement.
+ */
+char* twos_complement_binary_string_of_negative_number(mpz_t negative_number)
+{
+    // get absolute value of the negative number
+    mpz_t abs_number;
+    mpz_init(abs_number);
+    mpz_abs(abs_number, negative_number);
+
+    // get binary string representation of the absolute value.
+    char* abs_number_str = mpz_get_str(NULL, 2, abs_number);
+
+    if (abs_number_str != NULL)
+    {
+        pad_string_with_zeros(&abs_number_str);
+
+        // Then, get the twos complement representation of the binary string using
+        // -B = \bar{B} + 1
+
+        // find the index of the right-most bit set to 1
+        uint32_t right_most_1_index = 0;
+        bool right_most_1_not_found = true;
+
+        for (uint32_t i = 0; right_most_1_not_found && i < TOTAL_BIT_LENGTH; i++)
+        {
+            if (abs_number_str[TOTAL_BIT_LENGTH - i - 1] == '1')
+            {
+                right_most_1_index = TOTAL_BIT_LENGTH - i - 1;
+                right_most_1_not_found = false;
+            }
+        }
+
+        // invert all bits to the left of the right-most bit set to 1
+        for (uint32_t i = 0; i < right_most_1_index; i++)
+        {
+            if (abs_number_str[i] == '1')
+            {
+                abs_number_str[i] = '0';
+            }
+            else
+            {
+                abs_number_str[i] = '1';
+            }
+        }
+
+        mpz_clear(abs_number);
+
+        return abs_number_str;
+    }
+    else
+    {
+        printf("Error: \"abs_number_str\" is NULL\n");
+        exit(EXIT_FAILURE);
     }
 }

@@ -9,5 +9,6 @@ void addition_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b);
 void subtraction_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b);
 
 char* mpz_t_to_binary_2s_complement_string(mpz_t number);
+char* twos_complement_binary_string_of_negative_number(mpz_t negative_number);
 
 #endif
