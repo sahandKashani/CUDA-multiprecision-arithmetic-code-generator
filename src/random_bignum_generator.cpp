@@ -3,21 +3,17 @@
 #include "bignum_conversions.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <gmp.h>
 
 // current state of the random number generator
 gmp_randstate_t random_state;
 
-/**
- * Generates the next random number and stores it in the bignum given as a
- * parameter.
- * @param number Bignum to set.
- */
-void generate_random_bignum(uint32_t* number)
+void generate_generic_random_bignum(uint32_t* number, char* (*f)(void))
 {
     if (number != NULL)
     {
-        char* number_str = generate_random_bignum_str();
+        char* number_str = f();
 
         if (number_str != NULL)
         {
@@ -35,6 +31,16 @@ void generate_random_bignum(uint32_t* number)
         printf("Error: bignum \"number\" is NULL\n");
         exit(EXIT_FAILURE);
     }
+}
+
+void generate_random_bignum_modulus(uint32_t* number)
+{
+    generate_generic_random_bignum(number, generate_random_bignum_modulus_str);
+}
+
+void generate_random_bignum(uint32_t* number)
+{
+    generate_generic_random_bignum(number, generate_random_bignum_str);
 }
 
 /**
@@ -86,6 +92,37 @@ char* generate_random_bignum_str()
         printf("Error: \"str_number\" is NULL\n");
         exit(EXIT_FAILURE);
     }
+
+    return str_number;
+}
+
+char* generate_random_bignum_modulus_str()
+{
+    mpz_t number;
+    mpz_init(number);
+
+    char* str_number;
+
+    // generate a random number of exactly BIT_RANGE size (at least with a '1'
+    // at most significant bit which is at position BIT_RANGE)
+    do
+    {
+        // generate random number
+        mpz_urandomb(number, random_state, BIT_RANGE);
+
+        // get binary string version
+        str_number = mpz_get_str(NULL, 2, number);
+
+        if (str_number == NULL)
+        {
+            printf("Error: \"str_number\" is NULL\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+    while (strlen(str_number) != BIT_RANGE);
+
+    pad_string_with_zeros(&str_number);
+    mpz_clear(number);
 
     return str_number;
 }

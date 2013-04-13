@@ -6,113 +6,108 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-void read_bignum_arrays_from_files(uint32_t* a, uint32_t* b, const char* file_name_1, const char* file_name_2)
+void generate_random_bignum_modulus_and_operand_arrays_to_files(const char* host_m_file_name, const char* host_a_file_name, const char* host_b_file_name)
 {
-    if (a != NULL && b != NULL && file_name_1 != NULL && file_name_2 != NULL)
+    start_random_number_generator();
+
+    if (host_m_file_name != NULL && host_a_file_name != NULL && host_b_file_name != NULL)
     {
-        printf("reading bignums from files ... ");
-        fflush(stdout);
-        read_bignum_array_from_file(file_name_1, a, NUMBER_OF_BIGNUMS);
-        read_bignum_array_from_file(file_name_2, b, NUMBER_OF_BIGNUMS);
-        printf("done\n");
-        fflush(stdout);
-    }
-    else
-    {
-        if (a == NULL)
+        FILE* host_m_file = fopen(host_m_file_name, "w");
+        FILE* host_a_file = fopen(host_a_file_name, "w");
+        FILE* host_b_file = fopen(host_b_file_name, "w");
+
+        if (host_m_file != NULL && host_a_file != NULL && host_b_file != NULL)
         {
-            printf("Error: bignum array \"a\" is NULL\n");
-        }
+            uint32_t* host_m = (uint32_t*) calloc(BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
+            uint32_t* host_a = (uint32_t*) calloc(BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
+            uint32_t* host_b = (uint32_t*) calloc(BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
 
-        if (b == NULL)
-        {
-            printf("Error: bignum array \"b\" is NULL\n");
-        }
-
-        if (file_name_1 == NULL)
-        {
-            printf("Error: \"file_name_1\" is NULL\n");
-        }
-
-        if (file_name_2 == NULL)
-        {
-            printf("Error: \"file_name_2\" is NULL\n");
-        }
-
-        exit(EXIT_FAILURE);
-    }
-}
-
-void generate_random_bignum_arrays_to_files(const char* file_name_1, const char* file_name_2)
-{
-    if (file_name_1 != NULL && file_name_2 != NULL)
-    {
-        start_random_number_generator();
-
-        generate_random_bignum_array_to_file(file_name_1);
-        generate_random_bignum_array_to_file(file_name_2);
-
-        stop_random_number_generator();
-    }
-    else
-    {
-        if (file_name_1 == NULL)
-        {
-            printf("Error: \"file_name_1\" is NULL\n");
-        }
-
-        if (file_name_2 == NULL)
-        {
-            printf("Error: \"file_name_2\" is NULL\n");
-        }
-
-        exit(EXIT_FAILURE);
-    }
-}
-
-void generate_random_bignum_array_to_file(const char* file_name)
-{
-    if (file_name != NULL)
-    {
-        FILE* file = fopen(file_name, "w");
-
-        if (file != NULL)
-        {
-            uint32_t* bignum = (uint32_t*) calloc(BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
-
-            if (bignum != NULL)
+            if (host_m != NULL && host_a != NULL && host_b != NULL)
             {
                 for (uint32_t i = 0; i < NUMBER_OF_BIGNUMS; i++)
                 {
-                    generate_random_bignum(bignum);
+                    generate_random_bignum_modulus(host_m);
+                    // generate_random_bignum_less_than(host_a, host_m);
+                    // generate_random_bignum_less_than(host_b, host_m);
 
                     for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
                     {
-                        fprintf(file, "%u ", bignum[j]);
+                        fprintf(host_m_file, "%u ", host_m[j]);
+                        fprintf(host_a_file, "%u ", host_a[j]);
+                        fprintf(host_b_file, "%u ", host_b[j]);
                     }
 
-                    fprintf(file, "\n");
+                    fprintf(host_m_file, "\n");
+                    fprintf(host_a_file, "\n");
+                    fprintf(host_b_file, "\n");
                 }
+
+                fclose(host_m_file);
+                fclose(host_a_file);
+                fclose(host_b_file);
             }
             else
             {
-                printf("Error: could not allocate memory for generated bignum\n");
+                if (host_m == NULL)
+                {
+                    printf("Error: could not allocate memory for bignum \"host_m\"\n");
+                }
+
+                if (host_a == NULL)
+                {
+                    printf("Error: could not allocate memory for bignum \"host_a\"\n");
+                }
+
+                if (host_b == NULL)
+                {
+                    printf("Error: could not allocate memory for bignum \"host_b\"\n");
+                }
+
                 exit(EXIT_FAILURE);
             }
-
-            fclose(file);
         }
         else
         {
-            printf("Error: could not open file \"%s\" for writing\n", file_name);
+            if (host_m_file == NULL)
+            {
+                printf("Error: \"host_m_file\" is NULL\n");
+            }
+
+            if (host_a_file == NULL)
+            {
+                printf("Error: \"host_a_file\" is NULL\n");
+            }
+
+            if (host_b_file == NULL)
+            {
+                printf("Error: \"host_b_file\" is NULL\n");
+            }
+
             exit(EXIT_FAILURE);
         }
     }
     else
     {
-        printf("Error: \"file_name\" is NULL\n");
-        exit(EXIT_FAILURE);
+        if (host_m_file_name == NULL)
+        {
+            printf("Error: \"host_m_file_name\" is NULL\n");
+            exit(EXIT_FAILURE);
+        }
+
+        if (host_a_file_name == NULL)
+        {
+            printf("Error: \"host_a_file_name\" is NULL\n");
+            exit(EXIT_FAILURE);
+        }
+
+        if (host_b_file_name == NULL)
+        {
+            printf("Error: \"host_b_file_name\" is NULL\n");
+            exit(EXIT_FAILURE);
+        }
     }
+
+    stop_random_number_generator();
 }
 
 void read_bignum_array_from_file(const char* file_name, uint32_t* bignum, uint32_t amount_to_read)

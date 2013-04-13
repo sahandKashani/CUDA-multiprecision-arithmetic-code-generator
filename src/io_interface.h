@@ -3,9 +3,7 @@
 
 #include <stdint.h>
 
-void generate_random_bignum_arrays_to_files(const char* file_name_1, const char* file_name_2);
-void generate_random_bignum_array_to_file(const char* file_name);
-void read_bignum_arrays_from_files(uint32_t* a, uint32_t* b, const char* file_name_1, const char* file_name_2);
+void generate_random_bignum_modulus_and_operand_arrays_to_files(const char* host_m_file_name, const char* host_a_file_name, const char* host_b_file_name);
 void read_bignum_array_from_file(const char* file_name, uint32_t* bignum, uint32_t amount_to_read);
 void write_bignum_array_to_file(const char* file_name, uint32_t* bignum);
 
