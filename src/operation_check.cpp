@@ -8,12 +8,12 @@
 #include <stdint.h>
 #include <gmp.h>
 
-void binary_operator_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b, void (*op)(mpz_t rop, const mpz_t op1, const mpz_t op2), char op_character)
+void binary_operator_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b, void (*op)(mpz_t rop, const mpz_t op1, const mpz_t op2), char op_character, const char* operation_name)
 {
-    printf("checking with gmp ... ");
+    printf("checking \"%s\" with gmp ... ", operation_name);
     fflush(stdout);
 
-    if (host_a != NULL && host_b != NULL && host_c != NULL)
+    if (host_a != NULL && host_b != NULL && host_c != NULL && operation_name != NULL)
     {
         bool results_correct = true;
         for (uint32_t i = 0; results_correct && i < NUMBER_OF_BIGNUMS; i++)
@@ -116,6 +116,11 @@ void binary_operator_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b,
             printf("Error: \"host_c\" is NULL\n");
         }
 
+        if (operation_name == NULL)
+        {
+            printf("Error: \"operator_name\" is NULL\n");
+        }
+
         exit(EXIT_FAILURE);
     }
 }
@@ -135,7 +140,7 @@ void addition_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
 {
     if (host_a != NULL && host_b != NULL && host_c != NULL)
     {
-        binary_operator_check(host_c, host_a, host_b, mpz_add, '+');
+        binary_operator_check(host_c, host_a, host_b, mpz_add, '+', "addition");
     }
     else
     {
@@ -174,7 +179,7 @@ void subtraction_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
 {
     if (host_a != NULL && host_b != NULL && host_c != NULL)
     {
-        binary_operator_check(host_c, host_a, host_b, mpz_sub, '-');
+        binary_operator_check(host_c, host_a, host_b, mpz_sub, '-', "subtraction");
     }
     else
     {
