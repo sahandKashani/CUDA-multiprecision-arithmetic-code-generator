@@ -18,7 +18,7 @@ int main(void)
     uint32_t* host_c = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
     uint32_t* host_m = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
 
-    if (host_a != NULL && host_b != NULL && host_c != NULL)
+    if (host_a != NULL && host_b != NULL && host_c != NULL && host_m != NULL)
     {
         // generate operands to files
         generate_random_bignum_modulus_and_operand_arrays_to_files(host_m_file_name, host_a_file_name, host_b_file_name);
@@ -37,21 +37,7 @@ int main(void)
     }
     else
     {
-        if (host_a == NULL)
-        {
-            printf("Error: could not allocate memory for \"host_a\"\n");
-        }
-
-        if (host_b == NULL)
-        {
-            printf("Error: could not allocate memory for \"host_b\"\n");
-        }
-
-        if (host_c == NULL)
-        {
-            printf("Error: could not allocate memory for \"host_c\"\n");
-        }
-
+        printf("Error: could not allocate enough memory\n");
         exit(EXIT_FAILURE);
     }
 

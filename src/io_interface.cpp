@@ -4,6 +4,7 @@
 #include "constants.h"
 #include <stdio.h>
 #include <stdint.h>
+#include <assert.h>
 #include <stdlib.h>
 
 void generate_random_bignum_modulus_and_operand_arrays_to_files(const char* host_m_file_name, const char* host_a_file_name, const char* host_b_file_name)
@@ -112,89 +113,57 @@ void generate_random_bignum_modulus_and_operand_arrays_to_files(const char* host
 
 void read_bignum_array_from_file(const char* file_name, uint32_t* bignum, uint32_t amount_to_read)
 {
-    if (file_name != NULL && bignum != NULL && amount_to_read > 0)
+    assert(file_name != NULL);
+    assert(bignum != NULL);
+    assert(amount_to_read > 0);
+
+    FILE* file = fopen(file_name, "r");
+
+    if (file != NULL)
     {
-        FILE* file = fopen(file_name, "r");
-
-        if (file != NULL)
+        for (uint32_t i = 0; i < amount_to_read; i++)
         {
-            for (uint32_t i = 0; i < amount_to_read; i++)
+            for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
             {
-                for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
-                {
-                    fscanf(file, "%u", &bignum[IDX(i, j)]);
-                }
-
-                fprintf(file, "\n");
+                fscanf(file, "%u", &bignum[IDX(i, j)]);
             }
 
-            fclose(file);
+            fprintf(file, "\n");
         }
-        else
-        {
-            printf("Error: could not open file \"%s\" for reading\n", file_name);
-            exit(EXIT_FAILURE);
-        }
+
+        fclose(file);
     }
     else
     {
-        if (file_name == NULL)
-        {
-            printf("Error: \"file_name\" is NULL\n");
-        }
-
-        if (bignum == NULL)
-        {
-            printf("Error: bignum array \"bignum\" is NULL\n");
-        }
-
-        if (amount_to_read <= 0)
-        {
-            printf("Error: \"amount_to_read\" is negative\n");
-        }
-
+        printf("Error: could not open file \"%s\" for reading\n", file_name);
         exit(EXIT_FAILURE);
     }
 }
 
 void write_bignum_array_to_file(const char* file_name, uint32_t* bignum)
 {
-    if (file_name != NULL && bignum != NULL)
+    assert(file_name != NULL);
+    assert(bignum != NULL);
+
+    FILE* file = fopen(file_name, "w");
+
+    if (file != NULL)
     {
-        FILE* file = fopen(file_name, "w");
-
-        if (file != NULL)
+        for (uint32_t i = 0; i < NUMBER_OF_BIGNUMS; i++)
         {
-            for (uint32_t i = 0; i < NUMBER_OF_BIGNUMS; i++)
+            for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
             {
-                for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
-                {
-                    fprintf(file, "%u ", bignum[IDX(i, j)]);
-                }
-
-                fprintf(file, "\n");
+                fprintf(file, "%u ", bignum[IDX(i, j)]);
             }
 
-            fclose(file);
+            fprintf(file, "\n");
         }
-        else
-        {
-            printf("Error: could not open file \"%s\" for writing\n", file_name);
-            exit(EXIT_FAILURE);
-        }
+
+        fclose(file);
     }
     else
     {
-        if (file_name == NULL)
-        {
-            printf("Error: \"file_name\" is NULL\n");
-        }
-
-        if (bignum == NULL)
-        {
-            printf("Error: bignum array \"bignum\" is NULL\n");
-        }
-
+        printf("Error: could not open file \"%s\" for writing\n", file_name);
         exit(EXIT_FAILURE);
     }
 }

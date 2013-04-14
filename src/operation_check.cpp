@@ -37,12 +37,12 @@ void binary_operator_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b,
             mpz_init_set_str(gmp_bignum_b, bignum_b_str, 2);
             mpz_init(gmp_bignum_c);
 
-            // GMP function which will calculate what our algorithm is
-            // supposed to calculate
+            // GMP function which will calculate what our algorithm is supposed
+            // to calculate
             op(gmp_bignum_c, gmp_bignum_a, gmp_bignum_b);
 
-            // get binary string result in 2's complement (same format as
-            // what the gpu is calculating)
+            // get binary string result in 2's complement (same format as what
+            // the gpu is calculating)
             char* gmp_bignum_c_str = mpz_t_to_binary_2s_complement_string(gmp_bignum_c);
 
             if (gmp_bignum_c_str != NULL)
@@ -74,21 +74,7 @@ void binary_operator_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b,
         }
         else
         {
-            if (bignum_a_str == NULL)
-            {
-                printf("Error: \"bignum_a_str\" is NULL\n");
-            }
-
-            if (bignum_b_str == NULL)
-            {
-                printf("Error: \"bignum_b_str\" is NULL\n");
-            }
-
-            if (bignum_c_str == NULL)
-            {
-                printf("Error: \"bignum_c_str\" is NULL\n");
-            }
-
+            printf("Error: could not allocate enough memory\n");
             exit(EXIT_FAILURE);
         }
     }
@@ -186,20 +172,20 @@ void subtraction_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
  * Returns a binary string of length TOTAL_BIT_LENGTH containing the 2's
  * complement representation of the number given as a parameter. If the number
  * is positive, the binary string is just padded with zeros. If the number is
- * negative, then we use the well-know formula -B = \bar{B} + 1 to get the 2's
- * complement representation of a negative number where abs(number) = B
- * @param  number Number to be represented.
- * @return        Binary 2's complement string representation of number.
+ * negative, then we use the well-known formula -B = \bar{B} + 1 to get the 2's
+ * complement representation of a negative number where abs(number) = B.
+ * @param  number number to be represented in 2's complement.
+ * @return        binary 2's complement string representation of number.
  */
 char* mpz_t_to_binary_2s_complement_string(mpz_t number)
 {
-    char* number_str = NULL;
+    char* number_str;
 
     // if number >= 0
     if (mpz_cmp_ui(number, 0) >= 0)
     {
         // get binary string representation (does not contain any symbol in
-        // front of the string, since its positive)
+        // front of the string, since it is a positive number)
         number_str = mpz_get_str(NULL, 2, number);
 
         if (number_str != NULL)
@@ -209,23 +195,14 @@ char* mpz_t_to_binary_2s_complement_string(mpz_t number)
         }
         else
         {
-            printf("Error: \"number_str\" is NULL\n");
+            printf("Error: could not allocate enough memory\n");
             exit(EXIT_FAILURE);
         }
     }
     else
     {
         number_str = twos_complement_binary_string_of_negative_number(number);
-
-        if (number_str != NULL)
-        {
-            return number_str;
-        }
-        else
-        {
-            printf("Error: \"number_str\" is NULL\n");
-            exit(EXIT_FAILURE);
-        }
+        return number_str;
     }
 }
 
