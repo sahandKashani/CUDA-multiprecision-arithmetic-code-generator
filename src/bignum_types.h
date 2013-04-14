@@ -6,8 +6,13 @@
 
 #define CEILING(x, y) (((x) + (y) - 1) / (y))
 
+// NEVER CHANGE THIS VALUE
 #define BITS_PER_WORD 32
+
+// change this value at will to have bigger numbers
 #define BIT_RANGE ((uint32_t) 131)
+
+// NEVER CHANGE THESE VALUES
 #define BIGNUM_NUMBER_OF_WORDS CEILING(2 * BIT_RANGE, BITS_PER_WORD)
 #define TOTAL_BIT_LENGTH (BIGNUM_NUMBER_OF_WORDS * BITS_PER_WORD)
 

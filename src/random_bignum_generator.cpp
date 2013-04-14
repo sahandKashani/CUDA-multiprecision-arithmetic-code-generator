@@ -1,6 +1,7 @@
 #include "random_bignum_generator.h"
 #include "bignum_types.h"
 #include "bignum_conversions.h"
+#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -11,35 +12,31 @@ gmp_randstate_t random_state;
 
 void generate_generic_random_bignum(uint32_t* number, char* (*f)(void))
 {
-    if (number != NULL)
-    {
-        char* number_str = f();
+    assert(number != NULL);
+    assert(f != NULL);
 
-        if (number_str != NULL)
-        {
-            string_to_bignum(number_str, number);
-            free(number_str);
-        }
-        else
-        {
-            printf("Error: \"number_str\" is NULL\n");
-            exit(EXIT_FAILURE);
-        }
+    char* number_str = f();
+    if (number_str != NULL)
+    {
+        string_to_bignum(number_str, number);
+        free(number_str);
     }
     else
     {
-        printf("Error: bignum \"number\" is NULL\n");
+        printf("Error: \"number_str\" is NULL\n");
         exit(EXIT_FAILURE);
     }
 }
 
 void generate_random_bignum_modulus(uint32_t* number)
 {
+    assert(number != NULL);
     generate_generic_random_bignum(number, generate_random_bignum_modulus_str);
 }
 
 void generate_random_bignum(uint32_t* number)
 {
+    assert(number != NULL);
     generate_generic_random_bignum(number, generate_random_bignum_str);
 }
 
@@ -81,17 +78,11 @@ char* generate_random_bignum_str()
 
     // get binary string version
     char* str_number = mpz_get_str(NULL, 2, number);
+    assert(str_number != NULL);
 
-    if (str_number != NULL)
-    {
-        pad_string_with_zeros(&str_number);
-        mpz_clear(number);
-    }
-    else
-    {
-        printf("Error: \"str_number\" is NULL\n");
-        exit(EXIT_FAILURE);
-    }
+    pad_string_with_zeros(&str_number);
+
+    mpz_clear(number);
 
     return str_number;
 }
@@ -112,12 +103,7 @@ char* generate_random_bignum_modulus_str()
 
         // get binary string version
         str_number = mpz_get_str(NULL, 2, number);
-
-        if (str_number == NULL)
-        {
-            printf("Error: \"str_number\" is NULL\n");
-            exit(EXIT_FAILURE);
-        }
+        assert(str_number != NULL);
     }
     while (strlen(str_number) != BIT_RANGE);
 

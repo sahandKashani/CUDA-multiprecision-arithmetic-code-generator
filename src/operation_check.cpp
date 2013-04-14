@@ -2,6 +2,7 @@
 #include "bignum_types.h"
 #include "bignum_conversions.h"
 #include "constants.h"
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -10,118 +11,97 @@
 
 void binary_operator_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b, void (*op)(mpz_t rop, const mpz_t op1, const mpz_t op2), char op_character, const char* operation_name)
 {
+    assert(host_c != NULL);
+    assert(host_a != NULL);
+    assert(host_b != NULL);
+    assert(op != NULL);
+    assert(operation_name != NULL);
+
     printf("checking \"%s\" with gmp ... ", operation_name);
     fflush(stdout);
 
-    if (host_a != NULL && host_b != NULL && host_c != NULL && operation_name != NULL)
+    bool results_correct = true;
+    for (uint32_t i = 0; results_correct && i < NUMBER_OF_BIGNUMS; i++)
     {
-        bool results_correct = true;
-        for (uint32_t i = 0; results_correct && i < NUMBER_OF_BIGNUMS; i++)
+        char* bignum_a_str = bignum_to_string(&host_a[IDX(i, 0)]);
+        char* bignum_b_str = bignum_to_string(&host_b[IDX(i, 0)]);
+        char* bignum_c_str = bignum_to_string(&host_c[IDX(i, 0)]);
+
+        if (bignum_a_str != NULL && bignum_b_str != NULL && bignum_c_str != NULL)
         {
-            char* bignum_a_str = bignum_to_string(&host_a[IDX(i, 0)]);
-            char* bignum_b_str = bignum_to_string(&host_b[IDX(i, 0)]);
-            char* bignum_c_str = bignum_to_string(&host_c[IDX(i, 0)]);
+            mpz_t gmp_bignum_a;
+            mpz_t gmp_bignum_b;
+            mpz_t gmp_bignum_c;
 
-            if (bignum_a_str != NULL && bignum_b_str != NULL && bignum_c_str != NULL)
+            mpz_init_set_str(gmp_bignum_a, bignum_a_str, 2);
+            mpz_init_set_str(gmp_bignum_b, bignum_b_str, 2);
+            mpz_init(gmp_bignum_c);
+
+            // GMP function which will calculate what our algorithm is
+            // supposed to calculate
+            op(gmp_bignum_c, gmp_bignum_a, gmp_bignum_b);
+
+            // get binary string result in 2's complement (same format as
+            // what the gpu is calculating)
+            char* gmp_bignum_c_str = mpz_t_to_binary_2s_complement_string(gmp_bignum_c);
+
+            if (gmp_bignum_c_str != NULL)
             {
-                mpz_t gmp_bignum_a;
-                mpz_t gmp_bignum_b;
-                mpz_t gmp_bignum_c;
-
-                mpz_init_set_str(gmp_bignum_a, bignum_a_str, 2);
-                mpz_init_set_str(gmp_bignum_b, bignum_b_str, 2);
-                mpz_init(gmp_bignum_c);
-
-                // GMP function which will calculate what our algorithm is
-                // supposed to calculate
-                op(gmp_bignum_c, gmp_bignum_a, gmp_bignum_b);
-
-                // get binary string result in 2's complement (same format as
-                // what the gpu is calculating)
-                char* gmp_bignum_c_str = mpz_t_to_binary_2s_complement_string(gmp_bignum_c);
-
-                if (gmp_bignum_c_str != NULL)
+                if (strcmp(gmp_bignum_c_str, bignum_c_str) != 0)
                 {
-                    if (strcmp(gmp_bignum_c_str, bignum_c_str) != 0)
-                    {
-                        printf("incorrect calculation at iteration %d\n", i);
-                        printf("our algorithm:   %s\n               %c %s\n               = %s\n", bignum_a_str, op_character, bignum_b_str, bignum_c_str);
-                        printf("\n");
-                        printf("gmp algorithm:   %s\n               %c %s\n               = %s\n", bignum_a_str, op_character, bignum_b_str, gmp_bignum_c_str);
+                    printf("incorrect calculation at iteration %d\n", i);
+                    printf("our algorithm:   %s\n               %c %s\n               = %s\n", bignum_a_str, op_character, bignum_b_str, bignum_c_str);
+                    printf("\n");
+                    printf("gmp algorithm:   %s\n               %c %s\n               = %s\n", bignum_a_str, op_character, bignum_b_str, gmp_bignum_c_str);
 
-                        results_correct = false;
-                    }
-
-                    free(bignum_a_str);
-                    free(bignum_b_str);
-                    free(bignum_c_str);
-                    free(gmp_bignum_c_str);
-
-                    mpz_clear(gmp_bignum_a);
-                    mpz_clear(gmp_bignum_b);
-                    mpz_clear(gmp_bignum_c);
+                    results_correct = false;
                 }
-                else
-                {
-                    printf("Error: \"gmp_bignum_c_str\" is NULL\n");
-                    exit(EXIT_FAILURE);
-                }
+
+                free(bignum_a_str);
+                free(bignum_b_str);
+                free(bignum_c_str);
+                free(gmp_bignum_c_str);
+
+                mpz_clear(gmp_bignum_a);
+                mpz_clear(gmp_bignum_b);
+                mpz_clear(gmp_bignum_c);
             }
             else
             {
-                if (bignum_a_str == NULL)
-                {
-                    printf("Error: \"bignum_a_str\" is NULL\n");
-                }
-
-                if (bignum_b_str == NULL)
-                {
-                    printf("Error: \"bignum_b_str\" is NULL\n");
-                }
-
-                if (bignum_c_str == NULL)
-                {
-                    printf("Error: \"bignum_c_str\" is NULL\n");
-                }
-
+                printf("Error: \"gmp_bignum_c_str\" is NULL\n");
                 exit(EXIT_FAILURE);
             }
         }
-
-        printf("done => ");
-
-        if (results_correct)
-        {
-            printf("correct\n");
-        }
         else
         {
-            printf("errors\n");
+            if (bignum_a_str == NULL)
+            {
+                printf("Error: \"bignum_a_str\" is NULL\n");
+            }
+
+            if (bignum_b_str == NULL)
+            {
+                printf("Error: \"bignum_b_str\" is NULL\n");
+            }
+
+            if (bignum_c_str == NULL)
+            {
+                printf("Error: \"bignum_c_str\" is NULL\n");
+            }
+
+            exit(EXIT_FAILURE);
         }
+    }
+
+    printf("done => ");
+
+    if (results_correct)
+    {
+        printf("correct\n");
     }
     else
     {
-        if (host_a == NULL)
-        {
-            printf("Error: \"host_a\" is NULL\n");
-        }
-
-        if (host_b == NULL)
-        {
-            printf("Error: \"host_b\" is NULL\n");
-        }
-
-        if (host_c == NULL)
-        {
-            printf("Error: \"host_c\" is NULL\n");
-        }
-
-        if (operation_name == NULL)
-        {
-            printf("Error: \"operator_name\" is NULL\n");
-        }
-
-        exit(EXIT_FAILURE);
+        printf("errors\n");
     }
 }
 
