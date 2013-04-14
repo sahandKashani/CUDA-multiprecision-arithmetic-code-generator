@@ -18,7 +18,7 @@ void generate_generic_random_bignum(uint32_t* number, char* (*f)(void))
     char* number_str = f();
     if (number_str != NULL)
     {
-        string_to_bignum(number_str, number);
+        binary_string_to_bignum(number_str, number);
         free(number_str);
     }
     else
@@ -80,7 +80,7 @@ char* generate_random_bignum_str()
     char* str_number = mpz_get_str(NULL, 2, number);
     assert(str_number != NULL);
 
-    pad_string_with_zeros(&str_number);
+    pad_binary_string_with_zeros(&str_number);
 
     mpz_clear(number);
 
@@ -107,7 +107,7 @@ char* generate_random_bignum_modulus_str()
     }
     while (strlen(str_number) != BIT_RANGE);
 
-    pad_string_with_zeros(&str_number);
+    pad_binary_string_with_zeros(&str_number);
     mpz_clear(number);
 
     return str_number;
@@ -168,7 +168,7 @@ char* generate_exact_precision_bignum_string(uint32_t precision)
     {
         // we should have the wanted precision until now
         assert(strlen(str_number) == precision);
-        pad_string_with_zeros(&str_number);
+        pad_binary_string_with_zeros(&str_number);
     }
     else
     {
@@ -193,7 +193,7 @@ void generate_exact_precision_bignum(uint32_t* number, uint32_t precision)
     assert(precision > BITS_PER_WORD);
 
     char* number_str = generate_exact_precision_bignum_string(precision);
-    string_to_bignum(number_str, number);
+    binary_string_to_bignum(number_str, number);
     free(number_str);
 }
 
@@ -208,8 +208,8 @@ bool bignum_less_than_bignum(uint32_t* smaller, uint32_t* bigger)
     assert(smaller != NULL);
     assert(bigger != NULL);
 
-    char* smaller_str = bignum_to_string(smaller);
-    char* bigger_str = bignum_to_string(bigger);
+    char* smaller_str = bignum_to_binary_string(smaller);
+    char* bigger_str = bignum_to_binary_string(bigger);
 
     mpz_t smaller_gmp;
     mpz_t bigger_gmp;
@@ -247,7 +247,7 @@ uint32_t get_bignum_precision(uint32_t* number)
     assert(number != NULL);
 
     // get string which is padded with zeros
-    char* number_str = bignum_to_string(number);
+    char* number_str = bignum_to_binary_string(number);
 
     mpz_t number_gmp;
     uint32_t conversion_success = mpz_init_set_str(number_gmp, number_str, 2);
@@ -293,7 +293,7 @@ uint32_t get_bignum_precision(uint32_t* number)
 char* generate_bignum_string_less_than_bignum(uint32_t* bigger)
 {
     uint32_t precision = get_bignum_precision(bigger);
-    char* bigger_str = bignum_to_string(bigger);
+    char* bigger_str = bignum_to_binary_string(bigger);
 
     mpz_t bigger_gmp;
     uint32_t conversion_success = mpz_init_set_str(bigger_gmp, bigger_str, 2);
@@ -314,7 +314,7 @@ char* generate_bignum_string_less_than_bignum(uint32_t* bigger)
         char* smaller_str = mpz_get_str(NULL, 2, smaller_gmp);
         if (smaller_str != NULL)
         {
-            pad_string_with_zeros(&smaller_str);
+            pad_binary_string_with_zeros(&smaller_str);
 
             free(bigger_str);
             mpz_clear(bigger_gmp);
@@ -348,6 +348,6 @@ void generate_bignum_less_than_bignum(uint32_t* bigger, uint32_t* number)
     assert(number != NULL);
 
     char* number_str = generate_bignum_string_less_than_bignum(bigger);
-    string_to_bignum(number_str, number);
+    binary_string_to_bignum(number_str, number);
     free(number_str);
 }

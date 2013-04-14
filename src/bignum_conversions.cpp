@@ -6,22 +6,23 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <gmp.h>
 
 bool is_binary_string(char* str);
 
-char* uint32_t_to_string(uint32_t number);
-char* concatenate_string_array(char** words);
+char* uint32_t_to_binary_string(uint32_t number);
+char* concatenate_binary_string_array(char** words);
 
-char** bignum_to_string_array(uint32_t* bignum);
-char** string_to_string_array(char* str);
+char** bignum_to_binary_string_array(uint32_t* bignum);
+char** binary_string_to_binary_string_array(char* str);
 
-void pad_string_with_char(char** old_str, char pad_character);
+void pad_binary_string_with_char(char** old_str, char pad_character);
 void flip_string_array(char** array);
-void free_string_words(char*** words);
+void free_binary_string_words(char*** words);
 void transpose(uint32_t* m, int w, int h);
 
-uint32_t number_of_elements_in_string_array(char** array);
-uint32_t string_to_uint32_t(char* str);
+uint32_t number_of_elements_in_binary_string_array(char** array);
+uint32_t binary_string_to_uint32_t(char* str);
 
 /**
  * Checks if a string is a binary string.
@@ -49,7 +50,7 @@ bool is_binary_string(char* str)
  * @param  array NULL-terminated array to be tested.
  * @return       number of elements in the array.
  */
-uint32_t number_of_elements_in_string_array(char** array)
+uint32_t number_of_elements_in_binary_string_array(char** array)
 {
     assert(array != NULL);
 
@@ -69,7 +70,7 @@ uint32_t number_of_elements_in_string_array(char** array)
  * @param  number uint32_t to convert.
  * @return        binary string of length BITS_PER_WORD representing number.
  */
-char* uint32_t_to_string(uint32_t number)
+char* uint32_t_to_binary_string(uint32_t number)
 {
     char* str = (char*) calloc(BITS_PER_WORD + 1, sizeof(char));
 
@@ -104,7 +105,7 @@ char* uint32_t_to_string(uint32_t number)
  * @param  bignum bignum to convert.
  * @return        NULL-terminated binary string array representing the bignum.
  */
-char** bignum_to_string_array(uint32_t* bignum)
+char** bignum_to_binary_string_array(uint32_t* bignum)
 {
     assert(bignum != NULL);
 
@@ -125,7 +126,7 @@ char** bignum_to_string_array(uint32_t* bignum)
                 words[i][BITS_PER_WORD] = '\0';
 
                 // convert each bignum element to a string
-                words[i] = uint32_t_to_string(bignum[i]);
+                words[i] = uint32_t_to_binary_string(bignum[i]);
             }
             else
             {
@@ -141,7 +142,7 @@ char** bignum_to_string_array(uint32_t* bignum)
     }
 
     assert(words != NULL);
-    assert(number_of_elements_in_string_array(words) == BIGNUM_NUMBER_OF_WORDS);
+    assert(number_of_elements_in_binary_string_array(words) == BIGNUM_NUMBER_OF_WORDS);
     for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
         assert(is_binary_string(words[i]));
@@ -159,10 +160,10 @@ char** bignum_to_string_array(uint32_t* bignum)
  * @param  words binary string array to concatenate together.
  * @return       concatenated binary string.
  */
-char* concatenate_string_array(char** words)
+char* concatenate_binary_string_array(char** words)
 {
     assert(words != NULL);
-    assert(number_of_elements_in_string_array(words) == BIGNUM_NUMBER_OF_WORDS);
+    assert(number_of_elements_in_binary_string_array(words) == BIGNUM_NUMBER_OF_WORDS);
     for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
         assert(is_binary_string(words[i]));
@@ -204,14 +205,14 @@ char* concatenate_string_array(char** words)
  * @param  bignum bignum to convert.
  * @return        binary string representation of the bignum.
  */
-char* bignum_to_string(uint32_t* bignum)
+char* bignum_to_binary_string(uint32_t* bignum)
 {
     assert(bignum != NULL);
 
-    char** words = bignum_to_string_array(bignum);
-    char* str = concatenate_string_array(words);
+    char** words = bignum_to_binary_string_array(bignum);
+    char* str = concatenate_binary_string_array(words);
 
-    free_string_words(&words);
+    free_binary_string_words(&words);
     return str;
 }
 
@@ -221,12 +222,12 @@ char* bignum_to_string(uint32_t* bignum)
  * TOTAL_BIT_LENGTH elements.
  * @param old_str string to pad with '0's.
  */
-void pad_string_with_zeros(char** old_str)
+void pad_binary_string_with_zeros(char** old_str)
 {
     assert(old_str != NULL);
     assert(*old_str != NULL);
 
-    pad_string_with_char(old_str, '0');
+    pad_binary_string_with_char(old_str, '0');
 }
 
 /**
@@ -237,7 +238,7 @@ void pad_string_with_zeros(char** old_str)
  * @param old_str       string to be padded with pad_character.
  * @param pad_character character to use as padding.
  */
-void pad_string_with_char(char** old_str, char pad_character)
+void pad_binary_string_with_char(char** old_str, char pad_character)
 {
     assert(old_str != NULL);
     assert(*old_str != NULL);
@@ -302,7 +303,7 @@ void flip_string_array(char** array)
  * @param  str binary string to be converted.
  * @return     binary string array after conversion.
  */
-char** string_to_string_array(char* str)
+char** binary_string_to_binary_string_array(char* str)
 {
     assert(str != NULL);
     assert(is_binary_string(str));
@@ -350,7 +351,7 @@ char** string_to_string_array(char* str)
         exit(EXIT_FAILURE);
     }
 
-    assert(number_of_elements_in_string_array(str_words) == BIGNUM_NUMBER_OF_WORDS);
+    assert(number_of_elements_in_binary_string_array(str_words) == BIGNUM_NUMBER_OF_WORDS);
     for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
         assert(strlen(str_words[i]) == BITS_PER_WORD);
@@ -362,15 +363,15 @@ char** string_to_string_array(char* str)
 /**
  * Frees the NULL-terminated binary string array containing
  * BIGNUM_NUMBER_OF_WORDS elements, each of which is BITS_PER_WORD characters
- * long. This array is returned by a call to bignum_to_string_array(uint32_t*
- * bignum).
+ * long. This array is returned by a call to
+ * bignum_to_binary_string_array(uint32_t* bignum).
  * @param words NULL-terminated binary string array to free.
  */
-void free_string_words(char*** words)
+void free_binary_string_words(char*** words)
 {
     assert(words != NULL);
     assert(*words != NULL);
-    assert(number_of_elements_in_string_array(*words) == BIGNUM_NUMBER_OF_WORDS);
+    assert(number_of_elements_in_binary_string_array(*words) == BIGNUM_NUMBER_OF_WORDS);
     for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
         assert((*words)[i] != NULL);
@@ -394,7 +395,7 @@ void free_string_words(char*** words)
  * @param  str binary string to be converted.
  * @return     converted value.
  */
-uint32_t string_to_uint32_t(char* str)
+uint32_t binary_string_to_uint32_t(char* str)
 {
     assert(str != NULL);
     assert(is_binary_string(str));
@@ -416,22 +417,22 @@ uint32_t string_to_uint32_t(char* str)
  * @param str    string to be converted.
  * @param number converted value.
  */
-void string_to_bignum(char* str, uint32_t* number)
+void binary_string_to_bignum(char* str, uint32_t* number)
 {
     assert(str != NULL);
     assert(number != NULL);
     assert(is_binary_string(str));
     assert(strlen(str) == TOTAL_BIT_LENGTH);
 
-    char** words = string_to_string_array(str);
+    char** words = binary_string_to_binary_string_array(str);
 
     // set the number
     for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
-        number[i] = string_to_uint32_t(words[i]);
+        number[i] = binary_string_to_uint32_t(words[i]);
     }
 
-    free_string_words(&words);
+    free_binary_string_words(&words);
 }
 
 /**
@@ -539,4 +540,9 @@ void transpose(uint32_t* m, int w, int h)
         }
         while (next > start);
     }
+}
+
+char* mpz_t_to_string(mpz_t number)
+{
+    ;
 }

@@ -23,9 +23,9 @@ void binary_operator_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b,
     bool results_correct = true;
     for (uint32_t i = 0; results_correct && i < NUMBER_OF_BIGNUMS; i++)
     {
-        char* bignum_a_str = bignum_to_string(&host_a[IDX(i, 0)]);
-        char* bignum_b_str = bignum_to_string(&host_b[IDX(i, 0)]);
-        char* bignum_c_str = bignum_to_string(&host_c[IDX(i, 0)]);
+        char* bignum_a_str = bignum_to_binary_string(&host_a[IDX(i, 0)]);
+        char* bignum_b_str = bignum_to_binary_string(&host_b[IDX(i, 0)]);
+        char* bignum_c_str = bignum_to_binary_string(&host_c[IDX(i, 0)]);
 
         if (bignum_a_str != NULL && bignum_b_str != NULL && bignum_c_str != NULL)
         {
@@ -190,7 +190,7 @@ char* mpz_t_to_binary_2s_complement_string(mpz_t number)
 
         if (number_str != NULL)
         {
-            pad_string_with_zeros(&number_str);
+            pad_binary_string_with_zeros(&number_str);
             return number_str;
         }
         else
@@ -227,7 +227,7 @@ char* twos_complement_binary_string_of_negative_number(mpz_t negative_number)
 
     if (abs_number_str != NULL)
     {
-        pad_string_with_zeros(&abs_number_str);
+        pad_binary_string_with_zeros(&abs_number_str);
 
         // Then, get the twos complement representation of the binary string using
         // -B = \bar{B} + 1
