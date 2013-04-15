@@ -36,34 +36,22 @@ void generate_random_bignum_modulus_and_operand_arrays_to_files(const char* host
     for (uint32_t i = 0; i < NUMBER_OF_BIGNUMS; i++)
     {
         // generate modulus
-        // generate_exact_precision_bignum(host_m, BIT_RANGE);
+        generate_exact_precision_bignum(host_m, BIT_RANGE);
 
         // generate operands which are smaller than the modulus
-        // generate_bignum_less_than_bignum(host_m, host_a);
-        // generate_bignum_less_than_bignum(host_m, host_b);
+        generate_bignum_less_than_bignum(host_m, host_a); // LEAK HERE
+        generate_bignum_less_than_bignum(host_m, host_b);
 
-        char* host_a_str = bignum_to_binary_string(host_a);
-        // char* host_b_str = bignum_to_binary_string(host_b);
-        // char* host_m_str = bignum_to_binary_string(host_m);
+        for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
+        {
+            fprintf(host_a_file, "%u ", host_a[j]);
+            fprintf(host_b_file, "%u ", host_b[j]);
+            fprintf(host_m_file, "%u ", host_m[j]);
+        }
 
-        // fprintf(host_a_file, "%s", host_a_str);
-        // fprintf(host_b_file, "%s", host_b_str);
-        // fprintf(host_m_file, "%s", host_m_str);
-
-        free(host_a_str);
-        // free(host_b_str);
-        // free(host_m_str);
-
-        // for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
-        // {
-        //     fprintf(host_a_file, "%u ", host_a[j]);
-        //     fprintf(host_b_file, "%u ", host_b[j]);
-        //     fprintf(host_m_file, "%u ", host_m[j]);
-        // }
-
-        // fprintf(host_a_file, "\n");
-        // fprintf(host_b_file, "\n");
-        // fprintf(host_m_file, "\n");
+        fprintf(host_a_file, "\n");
+        fprintf(host_b_file, "\n");
+        fprintf(host_m_file, "\n");
     }
 
     fclose(host_a_file);
