@@ -27,68 +27,48 @@ void binary_operator_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b,
         char* bignum_b_str = bignum_to_binary_string(&host_b[IDX(i, 0)]);
         char* bignum_c_str = bignum_to_binary_string(&host_c[IDX(i, 0)]);
 
-        if (bignum_a_str != NULL && bignum_b_str != NULL && bignum_c_str != NULL)
+        assert(bignum_a_str != NULL);
+        assert(bignum_b_str != NULL);
+        assert(bignum_c_str != NULL);
+
+        mpz_t gmp_bignum_a;
+        mpz_t gmp_bignum_b;
+        mpz_t gmp_bignum_c;
+
+        mpz_init_set_str(gmp_bignum_a, bignum_a_str, 2);
+        mpz_init_set_str(gmp_bignum_b, bignum_b_str, 2);
+        mpz_init(gmp_bignum_c);
+
+        // GMP function which will calculate what our algorithm is supposed
+        // to calculate
+        op(gmp_bignum_c, gmp_bignum_a, gmp_bignum_b);
+
+        // get binary string result in 2's complement (same format as what
+        // the gpu is calculating)
+        char* gmp_bignum_c_str = mpz_t_to_binary_2s_complement_string(gmp_bignum_c);
+
+        if (strcmp(gmp_bignum_c_str, bignum_c_str) != 0)
         {
-            mpz_t gmp_bignum_a;
-            mpz_t gmp_bignum_b;
-            mpz_t gmp_bignum_c;
+            printf("incorrect calculation at iteration %d\n", i);
+            printf("our algorithm:   %s\n               %c %s\n               = %s\n", bignum_a_str, op_character, bignum_b_str, bignum_c_str);
+            printf("\n");
+            printf("gmp algorithm:   %s\n               %c %s\n               = %s\n", bignum_a_str, op_character, bignum_b_str, gmp_bignum_c_str);
 
-            mpz_init_set_str(gmp_bignum_a, bignum_a_str, 2);
-            mpz_init_set_str(gmp_bignum_b, bignum_b_str, 2);
-            mpz_init(gmp_bignum_c);
-
-            // GMP function which will calculate what our algorithm is supposed
-            // to calculate
-            op(gmp_bignum_c, gmp_bignum_a, gmp_bignum_b);
-
-            // get binary string result in 2's complement (same format as what
-            // the gpu is calculating)
-            char* gmp_bignum_c_str = mpz_t_to_binary_2s_complement_string(gmp_bignum_c);
-
-            if (gmp_bignum_c_str != NULL)
-            {
-                if (strcmp(gmp_bignum_c_str, bignum_c_str) != 0)
-                {
-                    printf("incorrect calculation at iteration %d\n", i);
-                    printf("our algorithm:   %s\n               %c %s\n               = %s\n", bignum_a_str, op_character, bignum_b_str, bignum_c_str);
-                    printf("\n");
-                    printf("gmp algorithm:   %s\n               %c %s\n               = %s\n", bignum_a_str, op_character, bignum_b_str, gmp_bignum_c_str);
-
-                    results_correct = false;
-                }
-
-                free(bignum_a_str);
-                free(bignum_b_str);
-                free(bignum_c_str);
-                free(gmp_bignum_c_str);
-
-                mpz_clear(gmp_bignum_a);
-                mpz_clear(gmp_bignum_b);
-                mpz_clear(gmp_bignum_c);
-            }
-            else
-            {
-                printf("Error: \"gmp_bignum_c_str\" is NULL\n");
-                exit(EXIT_FAILURE);
-            }
+            results_correct = false;
         }
-        else
-        {
-            printf("Error: could not allocate enough memory\n");
-            exit(EXIT_FAILURE);
-        }
+
+        free(bignum_a_str);
+        free(bignum_b_str);
+        free(bignum_c_str);
+        free(gmp_bignum_c_str);
+
+        mpz_clear(gmp_bignum_a);
+        mpz_clear(gmp_bignum_b);
+        mpz_clear(gmp_bignum_c);
     }
 
     printf("done => ");
-
-    if (results_correct)
-    {
-        printf("correct\n");
-    }
-    else
-    {
-        printf("errors\n");
-    }
+    results_correct ? printf("correct\n") : printf("errors\n");
 }
 
 /**
@@ -151,17 +131,10 @@ char* mpz_t_to_binary_2s_complement_string(mpz_t number)
         // get binary string representation (does not contain any symbol in
         // front of the string, since it is a positive number)
         number_str = mpz_get_str(NULL, 2, number);
+        assert(number_str != NULL);
 
-        if (number_str != NULL)
-        {
-            pad_binary_string_with_zeros(&number_str);
-            return number_str;
-        }
-        else
-        {
-            printf("Error: could not allocate enough memory\n");
-            exit(EXIT_FAILURE);
-        }
+        pad_binary_string_with_zeros(&number_str);
+        return number_str;
     }
     else
     {
@@ -188,47 +161,34 @@ char* twos_complement_binary_string_of_negative_number(mpz_t negative_number)
 
     // get binary string representation of the absolute value.
     char* abs_number_str = mpz_get_str(NULL, 2, abs_number);
+    assert(abs_number_str != NULL);
 
-    if (abs_number_str != NULL)
+    pad_binary_string_with_zeros(&abs_number_str);
+
+    // Then, get the twos complement representation of the binary string using
+    // -B = \bar{B} + 1
+
+    // find the index of the right-most bit set to 1
+    uint32_t right_most_1_index = 0;
+    bool right_most_1_not_found = true;
+
+    for (uint32_t i = 0; right_most_1_not_found && i < TOTAL_BIT_LENGTH; i++)
     {
-        pad_binary_string_with_zeros(&abs_number_str);
-
-        // Then, get the twos complement representation of the binary string using
-        // -B = \bar{B} + 1
-
-        // find the index of the right-most bit set to 1
-        uint32_t right_most_1_index = 0;
-        bool right_most_1_not_found = true;
-
-        for (uint32_t i = 0; right_most_1_not_found && i < TOTAL_BIT_LENGTH; i++)
+        if (abs_number_str[TOTAL_BIT_LENGTH - i - 1] == '1')
         {
-            if (abs_number_str[TOTAL_BIT_LENGTH - i - 1] == '1')
-            {
-                right_most_1_index = TOTAL_BIT_LENGTH - i - 1;
-                right_most_1_not_found = false;
-            }
+            right_most_1_index = TOTAL_BIT_LENGTH - i - 1;
+            right_most_1_not_found = false;
         }
-
-        // invert all bits to the left of the right-most bit set to 1
-        for (uint32_t i = 0; i < right_most_1_index; i++)
-        {
-            if (abs_number_str[i] == '1')
-            {
-                abs_number_str[i] = '0';
-            }
-            else
-            {
-                abs_number_str[i] = '1';
-            }
-        }
-
-        mpz_clear(abs_number);
-
-        return abs_number_str;
     }
-    else
+
+    // invert all bits to the left of the right-most bit set to 1
+    for (uint32_t i = 0; i < right_most_1_index; i++)
     {
-        printf("Error: \"abs_number_str\" is NULL\n");
-        exit(EXIT_FAILURE);
+        char bit = abs_number_str[i];
+        abs_number_str[i] = (bit == '1' ? '0' : '1');
     }
+
+    mpz_clear(abs_number);
+
+    return abs_number_str;
 }

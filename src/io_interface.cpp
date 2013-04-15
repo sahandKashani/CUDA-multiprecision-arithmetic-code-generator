@@ -7,6 +7,8 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#include "bignum_conversions.h" // TO REMOVE
+
 void generate_random_bignum_modulus_and_operand_arrays_to_files(const char* host_m_file_name, const char* host_a_file_name, const char* host_b_file_name)
 {
     assert(host_a_file_name != NULL);
@@ -19,68 +21,58 @@ void generate_random_bignum_modulus_and_operand_arrays_to_files(const char* host
     FILE* host_b_file = fopen(host_b_file_name, "w");
     FILE* host_m_file = fopen(host_m_file_name, "w");
 
-    if (host_m_file != NULL && host_a_file != NULL && host_b_file != NULL)
+    assert(host_a_file != NULL);
+    assert(host_b_file != NULL);
+    assert(host_m_file != NULL);
+
+    uint32_t* host_a = (uint32_t*) calloc(BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
+    uint32_t* host_b = (uint32_t*) calloc(BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
+    uint32_t* host_m = (uint32_t*) calloc(BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
+
+    assert(host_a != NULL);
+    assert(host_b != NULL);
+    assert(host_m != NULL);
+
+    for (uint32_t i = 0; i < NUMBER_OF_BIGNUMS; i++)
     {
-        uint32_t* host_a = (uint32_t*) calloc(BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
-        uint32_t* host_b = (uint32_t*) calloc(BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
-        uint32_t* host_m = (uint32_t*) calloc(BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
+        // generate modulus
+        // generate_exact_precision_bignum(host_m, BIT_RANGE);
 
-        if (host_m != NULL && host_a != NULL && host_b != NULL)
-        {
-            for (uint32_t i = 0; i < NUMBER_OF_BIGNUMS; i++)
-            {
-                // generate modulus
-                generate_exact_precision_bignum(host_m, BIT_RANGE);
+        // generate operands which are smaller than the modulus
+        // generate_bignum_less_than_bignum(host_m, host_a);
+        // generate_bignum_less_than_bignum(host_m, host_b);
 
-                // generate operands which are smaller than the modulus
-                generate_bignum_less_than_bignum(host_m, host_a);
-                generate_bignum_less_than_bignum(host_m, host_b);
+        char* host_a_str = bignum_to_binary_string(host_a);
+        // char* host_b_str = bignum_to_binary_string(host_b);
+        // char* host_m_str = bignum_to_binary_string(host_m);
 
-                for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
-                {
-                    fprintf(host_a_file, "%u ", host_a[j]);
-                    fprintf(host_b_file, "%u ", host_b[j]);
-                    fprintf(host_m_file, "%u ", host_m[j]);
-                }
+        // fprintf(host_a_file, "%s", host_a_str);
+        // fprintf(host_b_file, "%s", host_b_str);
+        // fprintf(host_m_file, "%s", host_m_str);
 
-                fprintf(host_a_file, "\n");
-                fprintf(host_b_file, "\n");
-                fprintf(host_m_file, "\n");
-            }
+        free(host_a_str);
+        // free(host_b_str);
+        // free(host_m_str);
 
-            fclose(host_a_file);
-            fclose(host_b_file);
-            fclose(host_m_file);
+        // for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
+        // {
+        //     fprintf(host_a_file, "%u ", host_a[j]);
+        //     fprintf(host_b_file, "%u ", host_b[j]);
+        //     fprintf(host_m_file, "%u ", host_m[j]);
+        // }
 
-            free(host_a);
-            free(host_b);
-            free(host_m);
-        }
-        else
-        {
-            printf("Error: could not allocate enough memory\n");
-            exit(EXIT_FAILURE);
-        }
+        // fprintf(host_a_file, "\n");
+        // fprintf(host_b_file, "\n");
+        // fprintf(host_m_file, "\n");
     }
-    else
-    {
-        if (host_m_file == NULL)
-        {
-            printf("Error: \"host_m_file\" is NULL\n");
-        }
 
-        if (host_a_file == NULL)
-        {
-            printf("Error: \"host_a_file\" is NULL\n");
-        }
+    fclose(host_a_file);
+    fclose(host_b_file);
+    fclose(host_m_file);
 
-        if (host_b_file == NULL)
-        {
-            printf("Error: \"host_b_file\" is NULL\n");
-        }
-
-        exit(EXIT_FAILURE);
-    }
+    free(host_a);
+    free(host_b);
+    free(host_m);
 
     stop_random_number_generator();
 }
@@ -92,26 +84,19 @@ void read_bignum_array_from_file(const char* file_name, uint32_t* bignum, uint32
     assert(amount_to_read > 0);
 
     FILE* file = fopen(file_name, "r");
+    assert(file != NULL);
 
-    if (file != NULL)
+    for (uint32_t i = 0; i < amount_to_read; i++)
     {
-        for (uint32_t i = 0; i < amount_to_read; i++)
+        for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
         {
-            for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
-            {
-                fscanf(file, "%u", &bignum[IDX(i, j)]);
-            }
-
-            fprintf(file, "\n");
+            fscanf(file, "%u", &bignum[IDX(i, j)]);
         }
 
-        fclose(file);
+        fprintf(file, "\n");
     }
-    else
-    {
-        printf("Error: could not open file \"%s\" for reading\n", file_name);
-        exit(EXIT_FAILURE);
-    }
+
+    fclose(file);
 }
 
 void write_bignum_array_to_file(const char* file_name, uint32_t* bignum)
@@ -120,24 +105,17 @@ void write_bignum_array_to_file(const char* file_name, uint32_t* bignum)
     assert(bignum != NULL);
 
     FILE* file = fopen(file_name, "w");
+    assert(file != NULL);
 
-    if (file != NULL)
+    for (uint32_t i = 0; i < NUMBER_OF_BIGNUMS; i++)
     {
-        for (uint32_t i = 0; i < NUMBER_OF_BIGNUMS; i++)
+        for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
         {
-            for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
-            {
-                fprintf(file, "%u ", bignum[IDX(i, j)]);
-            }
-
-            fprintf(file, "\n");
+            fprintf(file, "%u ", bignum[IDX(i, j)]);
         }
 
-        fclose(file);
+        fprintf(file, "\n");
     }
-    else
-    {
-        printf("Error: could not open file \"%s\" for writing\n", file_name);
-        exit(EXIT_FAILURE);
-    }
+
+    fclose(file);
 }
