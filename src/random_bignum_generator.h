@@ -5,13 +5,9 @@
 
 #define SEED ((uint32_t) 12345)
 
-void generate_generic_random_bignum(uint32_t* number, char* (*f)(void));
-void generate_random_bignum_modulus(uint32_t* number);
-void generate_random_bignum(uint32_t* number);
 void start_random_number_generator();
 void stop_random_number_generator();
-
-char* generate_random_bignum_str();
-char* generate_random_bignum_modulus_str();
+void generate_exact_precision_bignum(uint32_t* number, uint32_t precision);
+void generate_bignum_less_than_bignum(uint32_t* bigger, uint32_t* number);
 
 #endif

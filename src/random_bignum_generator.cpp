@@ -7,38 +7,13 @@
 #include <string.h>
 #include <gmp.h>
 
+char* generate_exact_precision_bignum_string(uint32_t precision);
+char* generate_bignum_string_less_than_bignum(uint32_t* bigger);
+bool precise_enough(mpz_t number, uint32_t precision);
+bool bignum_less_than_bignum(uint32_t* smaller, uint32_t* bigger);
+
 // current state of the random number generator
 gmp_randstate_t random_state;
-
-void generate_generic_random_bignum(uint32_t* number, char* (*f)(void))
-{
-    assert(number != NULL);
-    assert(f != NULL);
-
-    char* number_str = f();
-    if (number_str != NULL)
-    {
-        binary_string_to_bignum(number_str, number);
-        free(number_str);
-    }
-    else
-    {
-        printf("Error: \"number_str\" is NULL\n");
-        exit(EXIT_FAILURE);
-    }
-}
-
-void generate_random_bignum_modulus(uint32_t* number)
-{
-    assert(number != NULL);
-    generate_generic_random_bignum(number, generate_random_bignum_modulus_str);
-}
-
-void generate_random_bignum(uint32_t* number)
-{
-    assert(number != NULL);
-    generate_generic_random_bignum(number, generate_random_bignum_str);
-}
 
 /**
  * Initializes the state of the random number generator. You must call this
@@ -61,56 +36,6 @@ void stop_random_number_generator()
 {
     // get memory back from gmp_randstate_t
     gmp_randclear(random_state);
-}
-
-/**
- * Generates a binary string representation of the next random number. The
- * number is padded with zeros up until a length of TOTAL_BIT_LENGTH.
- * @return Binary string representing the next random number.
- */
-char* generate_random_bignum_str()
-{
-    mpz_t number;
-    mpz_init(number);
-
-    // generate random number
-    mpz_urandomb(number, random_state, BIT_RANGE);
-
-    // get binary string version
-    char* str_number = mpz_get_str(NULL, 2, number);
-    assert(str_number != NULL);
-
-    pad_binary_string_with_zeros(&str_number);
-
-    mpz_clear(number);
-
-    return str_number;
-}
-
-char* generate_random_bignum_modulus_str()
-{
-    mpz_t number;
-    mpz_init(number);
-
-    char* str_number;
-
-    // generate a random number of exactly BIT_RANGE size (at least with a '1'
-    // at most significant bit which is at position BIT_RANGE)
-    do
-    {
-        // generate random number
-        mpz_urandomb(number, random_state, BIT_RANGE);
-
-        // get binary string version
-        str_number = mpz_get_str(NULL, 2, number);
-        assert(str_number != NULL);
-    }
-    while (strlen(str_number) != BIT_RANGE);
-
-    pad_binary_string_with_zeros(&str_number);
-    mpz_clear(number);
-
-    return str_number;
 }
 
 /**
@@ -206,24 +131,6 @@ bool bignum_less_than_bignum(uint32_t* smaller, uint32_t* bigger)
     mpz_clear(bigger_gmp);
 
     return is_smaller;
-}
-
-/**
- * Returns the precision of a bignum.
- * @param  number bignum to retrieve precision of.
- * @return        precision of the bignum.
- */
-uint32_t get_bignum_precision(uint32_t* number)
-{
-    assert(number != NULL);
-
-    char* number_str = bignum_to_binary_string(number);
-    uint32_t precision = strlen(number_str);
-
-    assert(precision > BITS_PER_WORD);
-
-    free(number_str);
-    return precision;
 }
 
 /**

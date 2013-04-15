@@ -18,7 +18,7 @@ char** binary_string_to_binary_string_array(char* str);
 
 void pad_binary_string_with_char(char** old_str, char pad_character);
 void flip_string_array(char** array);
-void free_binary_string_words(char*** words);
+void free_binary_string_words(char** words);
 void transpose(uint32_t* m, int w, int h);
 
 uint32_t number_of_elements_in_binary_string_array(char** array);
@@ -212,7 +212,10 @@ char* bignum_to_binary_string(uint32_t* bignum)
     char** words = bignum_to_binary_string_array(bignum);
     char* str = concatenate_binary_string_array(words);
 
-    free_binary_string_words(&words);
+    free_binary_string_words(words);
+    free(words);
+    words = NULL;
+
     return str;
 }
 
@@ -367,27 +370,22 @@ char** binary_string_to_binary_string_array(char* str)
  * bignum_to_binary_string_array(uint32_t* bignum).
  * @param words NULL-terminated binary string array to free.
  */
-void free_binary_string_words(char*** words)
+void free_binary_string_words(char** words)
 {
     assert(words != NULL);
-    assert(*words != NULL);
-    assert(number_of_elements_in_binary_string_array(*words) == BIGNUM_NUMBER_OF_WORDS);
+    assert(number_of_elements_in_binary_string_array(words) == BIGNUM_NUMBER_OF_WORDS);
     for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
-        assert((*words)[i] != NULL);
-        assert(is_binary_string((*words)[i]));
-        assert(strlen((*words)[i]) == BITS_PER_WORD);
+        assert(words[i] != NULL);
+        assert(is_binary_string(words[i]));
+        assert(strlen(words[i]) == BITS_PER_WORD);
     }
 
     for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
-        free((*words)[i]);
-        (*words)[i] = NULL;
+        free(words[i]);
+        words[i] = NULL;
     }
-
-    // free the char** pointing to the words
-    free(*words);
-    *words = NULL;
 }
 
 /**
@@ -432,7 +430,9 @@ void binary_string_to_bignum(char* str, uint32_t* number)
         number[i] = binary_string_to_uint32_t(words[i]);
     }
 
-    free_binary_string_words(&words);
+    free_binary_string_words(words);
+    free(words);
+    words = NULL;
 }
 
 /**
@@ -621,4 +621,44 @@ void bignum_to_mpz_t(uint32_t* bignum, mpz_t number)
         printf("Error: gmp could not convert bignum string to gmp format\n");
         exit(EXIT_FAILURE);
     }
+
+    free(bignum_str);
+}
+
+/**
+ * Returns the precision of a bignum.
+ * @param  bignum bignum to retrieve precision of.
+ * @return        precision of the bignum.
+ */
+uint32_t get_bignum_precision(uint32_t* bignum)
+{
+    assert(bignum != NULL);
+
+    mpz_t bignum_gmp;
+    mpz_init(bignum_gmp);
+    bignum_to_mpz_t(bignum, bignum_gmp);
+
+    uint32_t precision = get_mpz_t_precision(bignum_gmp);
+
+    mpz_clear(bignum_gmp);
+    return precision;
+}
+
+/**
+ * Returns the precision of a mpz_t.
+ * @param  bignum mpz_t to retrieve precision of.
+ * @return        precision of the mpz_t.
+ */
+uint32_t get_mpz_t_precision(mpz_t bignum)
+{
+    // bignum must be positive
+    assert(mpz_cmp_ui(bignum, 0) > 0);
+
+    char* bignum_str = mpz_t_to_exact_precision_binary_string(bignum);
+    uint32_t precision = strlen(bignum_str);
+
+    assert(precision > BITS_PER_WORD);
+
+    free(bignum_str);
+    return precision;
 }
