@@ -542,7 +542,83 @@ void transpose(uint32_t* m, int w, int h)
     }
 }
 
-char* mpz_t_to_string(mpz_t number)
+/**
+ * Converts a positive mpz_t to a binary string. The length of the string is the
+ * number's precision in bits. No padding has been done.
+ * @param  number number to be converted.
+ * @return        binary string representation of number with exact precision,
+ *                with no leading 0s are kept.
+ */
+char* mpz_t_to_exact_precision_binary_string(mpz_t number)
 {
-    ;
+    // number has to be positive
+    assert(mpz_cmp_ui(number, 0) > 0);
+
+    char* number_str = mpz_get_str(NULL, 2, number);
+    if (number_str != NULL)
+    {
+        assert(strlen(number_str) < TOTAL_BIT_LENGTH);
+        assert(is_binary_string(number_str));
+
+        return number_str;
+    }
+    else
+    {
+        printf("Error: could not allocate enough memory\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+/**
+ * Converts a mpz_t to a binary string of length TOTAL_BIT_LENGTH. The number is
+ * padded with 0s until it is TOTAL_BIT_LENGTH long.
+ * @param  number number to be converted.
+ * @return        binary string representation of the string padded with 0s to
+ *                have length TOTAL_BIT_LENGTH.
+ */
+char* mpz_t_to_binary_string(mpz_t number)
+{
+    // number has to be positive
+    assert(mpz_cmp_ui(number, 0) > 0);
+
+    char* number_str = mpz_t_to_exact_precision_binary_string(number);
+    pad_binary_string_with_zeros(&number_str);
+
+    assert(strlen(number_str) == TOTAL_BIT_LENGTH);
+    assert(is_binary_string(number_str));
+
+    return number_str;
+}
+
+/**
+ * Converts a mpz_t to a bignum.
+ * @param number mpz_t to convert.
+ * @param bignum converted value.
+ */
+void mpz_t_to_bignum(mpz_t number, uint32_t* bignum)
+{
+    assert(bignum != NULL);
+
+    char* number_str = mpz_t_to_binary_string(number);
+    binary_string_to_bignum(number_str, bignum);
+}
+
+/**
+ * Converts a bignum to a mpz_t. The mpz_t given as a parameter MUST be
+ * initialized before calling this function.
+ * @param  bignum bignum to convert.
+ * @return        converted value.
+ */
+void bignum_to_mpz_t(uint32_t* bignum, mpz_t number)
+{
+    assert(bignum != NULL);
+
+    char* bignum_str = bignum_to_binary_string(bignum);
+
+    uint32_t conversion_success = mpz_set_str(number, bignum_str, 2);
+    if (conversion_success != 0)
+    {
+        printf("Error: gmp could not convert bignum string to gmp format\n");
+        exit(EXIT_FAILURE);
+    }
 }

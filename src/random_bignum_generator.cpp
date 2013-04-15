@@ -125,20 +125,12 @@ bool precise_enough(mpz_t number, uint32_t precision)
     assert(precision > BITS_PER_WORD);
 
     // get binary string version
-    char* str_number = mpz_get_str(NULL, 2, number);
+    char* str_number = mpz_t_to_exact_precision_binary_string(number);
 
-    if (str_number != NULL)
-    {
-        uint32_t str_number_length = strlen(str_number);
-        free(str_number);
+    uint32_t str_number_length = strlen(str_number);
+    free(str_number);
 
-        return str_number_length == precision;
-    }
-    else
-    {
-        printf("Error: could not allocate enough memory\n");
-        exit(EXIT_FAILURE);
-    }
+    return str_number_length == precision;
 }
 
 /**
@@ -163,20 +155,10 @@ char* generate_exact_precision_bignum_string(uint32_t precision)
     while (!precise_enough(number, precision));
 
     // get binary string version of number
-    char* str_number = mpz_get_str(NULL, 2, number);
-    if (str_number != NULL)
-    {
-        // we should have the wanted precision until now
-        assert(strlen(str_number) == precision);
-        pad_binary_string_with_zeros(&str_number);
-    }
-    else
-    {
-        printf("Error: could not allocate enough memory\n");
-        exit(EXIT_FAILURE);
-    }
+    char* str_number = mpz_t_to_binary_string(number);
 
     mpz_clear(number);
+
     assert(strlen(str_number) == TOTAL_BIT_LENGTH);
     return str_number;
 }
@@ -208,33 +190,22 @@ bool bignum_less_than_bignum(uint32_t* smaller, uint32_t* bigger)
     assert(smaller != NULL);
     assert(bigger != NULL);
 
-    char* smaller_str = bignum_to_binary_string(smaller);
-    char* bigger_str = bignum_to_binary_string(bigger);
-
     mpz_t smaller_gmp;
     mpz_t bigger_gmp;
 
-    uint32_t smaller_conversion_success = mpz_init_set_str(smaller_gmp, smaller_str, 2);
-    uint32_t bigger_conversion_success = mpz_init_set_str(bigger_gmp, bigger_str, 2);
+    mpz_init(smaller_gmp);
+    mpz_init(bigger_gmp);
 
-    free(smaller_str);
-    free(bigger_str);
+    bignum_to_mpz_t(smaller, smaller_gmp);
+    bignum_to_mpz_t(bigger, bigger_gmp);
 
-    if (smaller_conversion_success == 0 && bigger_conversion_success == 0)
-    {
-        // return true if smaller is strictly less than bigger
-        bool is_smaller = mpz_cmp(smaller_gmp, bigger_gmp) < 0;
+    // return true if smaller is strictly less than bigger
+    bool is_smaller = mpz_cmp(smaller_gmp, bigger_gmp) < 0;
 
-        mpz_clear(smaller_gmp);
-        mpz_clear(bigger_gmp);
+    mpz_clear(smaller_gmp);
+    mpz_clear(bigger_gmp);
 
-        return is_smaller;
-    }
-    else
-    {
-        printf("Error: gmp could not convert bignum string to gmp format\n");
-        exit(EXIT_FAILURE);
-    }
+    return is_smaller;
 }
 
 /**
@@ -246,39 +217,13 @@ uint32_t get_bignum_precision(uint32_t* number)
 {
     assert(number != NULL);
 
-    // get string which is padded with zeros
     char* number_str = bignum_to_binary_string(number);
+    uint32_t precision = strlen(number_str);
 
-    mpz_t number_gmp;
-    uint32_t conversion_success = mpz_init_set_str(number_gmp, number_str, 2);
+    assert(precision > BITS_PER_WORD);
 
-    if (conversion_success == 0)
-    {
-        // get the binary string back from gmp, so we can get rid of all leading
-        // zeros to find the real precision.
-        char* number_gmp_str = mpz_get_str(NULL, 2, number_gmp);
-        if (number_gmp_str != NULL)
-        {
-            uint32_t precision = strlen(number_gmp_str);
-
-            free(number_str);
-            free(number_gmp_str);
-            mpz_clear(number_gmp);
-
-            assert(precision > BITS_PER_WORD);
-
-            return precision;
-        }
-        else
-        {
-            printf("Error: could not allocate enough memory\n");
-        }
-    }
-    else
-    {
-        printf("Error: gmp could not convert bignum string to gmp format\n");
-        exit(EXIT_FAILURE);
-    }
+    free(number_str);
+    return precision;
 }
 
 /**
@@ -293,46 +238,30 @@ uint32_t get_bignum_precision(uint32_t* number)
 char* generate_bignum_string_less_than_bignum(uint32_t* bigger)
 {
     uint32_t precision = get_bignum_precision(bigger);
-    char* bigger_str = bignum_to_binary_string(bigger);
 
     mpz_t bigger_gmp;
-    uint32_t conversion_success = mpz_init_set_str(bigger_gmp, bigger_str, 2);
+    mpz_t smaller_gmp;
 
-    if (conversion_success == 0)
+    mpz_init(bigger_gmp);
+    mpz_init(smaller_gmp);
+
+    bignum_to_mpz_t(bigger, bigger_gmp);
+
+    do
     {
-        mpz_t smaller_gmp;
-        mpz_init(smaller_gmp);
-
-        do
-        {
-            // generate random number of at most precision bits
-            mpz_urandomb(smaller_gmp, random_state, precision);
-        }
-        while (mpz_cmp(smaller_gmp, bigger_gmp) >= 0);
-
-        // get binary string version of number
-        char* smaller_str = mpz_get_str(NULL, 2, smaller_gmp);
-        if (smaller_str != NULL)
-        {
-            pad_binary_string_with_zeros(&smaller_str);
-
-            free(bigger_str);
-            mpz_clear(bigger_gmp);
-            mpz_clear(smaller_gmp);
-
-            return smaller_str;
-        }
-        else
-        {
-            printf("Error: could not allocate enough memory\n");
-            exit(EXIT_FAILURE);
-        }
+        // generate random number of at most precision bits
+        mpz_urandomb(smaller_gmp, random_state, precision);
     }
-    else
-    {
-        printf("Error: gmp could not convert bignum string to gmp format\n");
-        exit(EXIT_FAILURE);
-    }
+    while (mpz_cmp(smaller_gmp, bigger_gmp) >= 0);
+
+    char* smaller_str = mpz_t_to_binary_string(smaller_gmp);
+
+    assert(strlen(smaller_str) == TOTAL_BIT_LENGTH);
+
+    mpz_clear(bigger_gmp);
+    mpz_clear(smaller_gmp);
+
+    return smaller_str;
 }
 
 /**
