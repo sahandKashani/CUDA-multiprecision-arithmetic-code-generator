@@ -424,6 +424,8 @@ void print_bignum_array(uint32_t* in)
 
         printf("\n");
     }
+
+    fflush(stdout);
 }
 
 /**
@@ -445,6 +447,8 @@ void print_coalesced_bignum_array(uint32_t* in)
 
         printf("\n");
     }
+
+    fflush(stdout);
 }
 
 /**

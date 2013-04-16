@@ -8,6 +8,16 @@
 #include <stdint.h>
 #include <assert.h>
 
+void binary_operator_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b, void (*kernel)(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b), void (*checking_function)(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b), char* operation_name);
+
+void addition_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b);
+__global__ void addition_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b);
+__device__ void addition(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b);
+
+void subtraction_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b);
+__global__ void subtraction_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b);
+__device__ void subtraction(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b);
+
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////// BENCHMARKS /////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -28,7 +38,7 @@ void addition_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
     assert(host_b != NULL);
     assert(host_c != NULL);
 
-    binary_operator_benchmark(host_c, host_a, host_b, addition_kernel, addition_check);
+    binary_operator_benchmark(host_c, host_a, host_b, addition_kernel, addition_check, "addition");
 }
 
 void subtraction_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
@@ -37,7 +47,7 @@ void subtraction_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
     assert(host_b != NULL);
     assert(host_c != NULL);
 
-    binary_operator_benchmark(host_c, host_a, host_b, subtraction_kernel, subtraction_check);
+    binary_operator_benchmark(host_c, host_a, host_b, subtraction_kernel, subtraction_check, "subtraction");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -122,13 +132,14 @@ __device__ void subtraction(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b)
 ////////////////////////// GENERIC LAUNCH CONFIGURATION ////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-void binary_operator_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b, void (*kernel)(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b), void (*checking_function)(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b))
+void binary_operator_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b, void (*kernel)(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b), void (*checking_function)(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b), char* operation_name)
 {
     assert(host_a != NULL);
     assert(host_b != NULL);
     assert(host_c != NULL);
     assert(kernel != NULL);
     assert(checking_function != NULL);
+    assert(operation_name != NULL);
 
     // arrange data in coalesced form
     bignum_array_to_coalesced_bignum_array(host_a);
@@ -157,7 +168,13 @@ void binary_operator_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* hos
     assert(dev_b_memcpy_succes == cudaSuccess);
 
     // execute kernel
+    printf("Performing \"%s\" on GPU ... ", operation_name);
+    fflush(stdout);
+
     kernel<<<BLOCKS_PER_GRID, THREADS_PER_BLOCK>>>(dev_c, dev_a, dev_b);
+
+    printf("done\n");
+    fflush(stdout);
 
     // copy results back to host
     cudaError dev_c_memcpy_success = cudaMemcpy(host_c, dev_c, NUMBER_OF_BIGNUMS * BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t), cudaMemcpyDeviceToHost);

@@ -9,67 +9,13 @@
 #include <stdint.h>
 #include <gmp.h>
 
-void binary_operator_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b, void (*op)(mpz_t rop, const mpz_t op1, const mpz_t op2), char op_character, const char* operation_name)
-{
-    assert(host_c != NULL);
-    assert(host_a != NULL);
-    assert(host_b != NULL);
-    assert(op != NULL);
-    assert(operation_name != NULL);
+void binary_operator_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b, void (*op)(mpz_t rop, const mpz_t op1, const mpz_t op2), char op_character, const char* operation_name);
+char* mpz_t_to_binary_2s_complement_string(mpz_t number);
+char* twos_complement_binary_string_of_negative_number(mpz_t negative_number);
 
-    printf("checking \"%s\" with gmp ... ", operation_name);
-    fflush(stdout);
-
-    bool results_correct = true;
-    for (uint32_t i = 0; results_correct && i < NUMBER_OF_BIGNUMS; i++)
-    {
-        char* bignum_a_str = bignum_to_binary_string(&host_a[IDX(i, 0)]);
-        char* bignum_b_str = bignum_to_binary_string(&host_b[IDX(i, 0)]);
-        char* bignum_c_str = bignum_to_binary_string(&host_c[IDX(i, 0)]);
-
-        assert(bignum_a_str != NULL);
-        assert(bignum_b_str != NULL);
-        assert(bignum_c_str != NULL);
-
-        mpz_t gmp_bignum_a;
-        mpz_t gmp_bignum_b;
-        mpz_t gmp_bignum_c;
-
-        mpz_init_set_str(gmp_bignum_a, bignum_a_str, 2);
-        mpz_init_set_str(gmp_bignum_b, bignum_b_str, 2);
-        mpz_init(gmp_bignum_c);
-
-        // GMP function which will calculate what our algorithm is supposed
-        // to calculate
-        op(gmp_bignum_c, gmp_bignum_a, gmp_bignum_b);
-
-        // get binary string result in 2's complement (same format as what
-        // the gpu is calculating)
-        char* gmp_bignum_c_str = mpz_t_to_binary_2s_complement_string(gmp_bignum_c);
-
-        if (strcmp(gmp_bignum_c_str, bignum_c_str) != 0)
-        {
-            printf("incorrect calculation at iteration %d\n", i);
-            printf("our algorithm:   %s\n               %c %s\n               = %s\n", bignum_a_str, op_character, bignum_b_str, bignum_c_str);
-            printf("\n");
-            printf("gmp algorithm:   %s\n               %c %s\n               = %s\n", bignum_a_str, op_character, bignum_b_str, gmp_bignum_c_str);
-
-            results_correct = false;
-        }
-
-        free(bignum_a_str);
-        free(bignum_b_str);
-        free(bignum_c_str);
-        free(gmp_bignum_c_str);
-
-        mpz_clear(gmp_bignum_a);
-        mpz_clear(gmp_bignum_b);
-        mpz_clear(gmp_bignum_c);
-    }
-
-    printf("done => ");
-    results_correct ? printf("correct\n") : printf("errors\n");
-}
+////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////// OPERATOR CHECKS //////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 /**
  * Checks if host_c == host_a + host_b. host_c is a value calculated with our
@@ -112,6 +58,79 @@ void subtraction_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
     binary_operator_check(host_c, host_a, host_b, mpz_sub, '-', "subtraction");
 }
 
+////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////// GENERIC CHECKS ///////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+void binary_operator_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b, void (*op)(mpz_t rop, const mpz_t op1, const mpz_t op2), char op_character, const char* operation_name)
+{
+    assert(host_c != NULL);
+    assert(host_a != NULL);
+    assert(host_b != NULL);
+    assert(op != NULL);
+    assert(operation_name != NULL);
+
+    printf("checking \"%s\" with gmp ... ", operation_name);
+    fflush(stdout);
+
+    bool results_correct = true;
+    for (uint32_t i = 0; results_correct && i < NUMBER_OF_BIGNUMS; i++)
+    {
+        mpz_t gmp_a;
+        mpz_t gmp_b;
+        mpz_t gmp_c;
+
+        mpz_init(gmp_a);
+        mpz_init(gmp_b);
+        mpz_init(gmp_c);
+
+        bignum_to_mpz_t(&host_a[IDX(i, 0)], gmp_a);
+        bignum_to_mpz_t(&host_b[IDX(i, 0)], gmp_b);
+        bignum_to_mpz_t(&host_c[IDX(i, 0)], gmp_c);
+
+        // GMP function which will calculate what our algorithm is supposed to
+        // calculate
+        op(gmp_c, gmp_a, gmp_b);
+
+        char* a_str = bignum_to_binary_string(&host_a[IDX(i, 0)]);
+        char* b_str = bignum_to_binary_string(&host_b[IDX(i, 0)]);
+        char* c_str = bignum_to_binary_string(&host_c[IDX(i, 0)]);
+
+        // get binary string result in 2's complement (same format as what the
+        // gpu is calculating)
+        char* gmp_c_str = mpz_t_to_binary_2s_complement_string(gmp_c);
+
+        if (strcmp(gmp_c_str, c_str) != 0)
+        {
+            printf("incorrect calculation at iteration %d\n", i);
+            printf("gpu algorithm:   %s\n               %c %s\n               = %s\n", a_str, op_character, b_str, c_str);
+            printf("\n");
+            printf("gmp algorithm:   %s\n               %c %s\n               = %s\n", a_str, op_character, b_str, gmp_c_str);
+
+            fflush(stdout);
+            results_correct = false;
+        }
+
+        free(a_str);
+        free(b_str);
+        free(c_str);
+
+        free(gmp_c_str);
+
+        mpz_clear(gmp_a);
+        mpz_clear(gmp_b);
+        mpz_clear(gmp_c);
+    }
+
+    printf("done => ");
+    results_correct ? printf("correct\n") : printf("errors\n");
+    fflush(stdout);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////// TWOS COMPLEMENT TOOLS ///////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
 /**
  * Returns a binary string of length TOTAL_BIT_LENGTH containing the 2's
  * complement representation of the number given as a parameter. If the number
@@ -123,23 +142,16 @@ void subtraction_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
  */
 char* mpz_t_to_binary_2s_complement_string(mpz_t number)
 {
-    char* number_str;
-
     // if number >= 0
     if (mpz_cmp_ui(number, 0) >= 0)
     {
         // get binary string representation (does not contain any symbol in
         // front of the string, since it is a positive number)
-        number_str = mpz_get_str(NULL, 2, number);
-        assert(number_str != NULL);
-
-        pad_binary_string_with_zeros(&number_str);
-        return number_str;
+        return mpz_t_to_binary_string(number);
     }
     else
     {
-        number_str = twos_complement_binary_string_of_negative_number(number);
-        return number_str;
+        return twos_complement_binary_string_of_negative_number(number);
     }
 }
 
@@ -154,16 +166,16 @@ char* mpz_t_to_binary_2s_complement_string(mpz_t number)
  */
 char* twos_complement_binary_string_of_negative_number(mpz_t negative_number)
 {
+    // number must be negative
+    assert(mpz_cmp_ui(negative_number, 0) < 0);
+
     // get absolute value of the negative number
     mpz_t abs_number;
     mpz_init(abs_number);
     mpz_abs(abs_number, negative_number);
 
     // get binary string representation of the absolute value.
-    char* abs_number_str = mpz_get_str(NULL, 2, abs_number);
-    assert(abs_number_str != NULL);
-
-    pad_binary_string_with_zeros(&abs_number_str);
+    char* abs_number_str = mpz_t_to_binary_string(abs_number);
 
     // Then, get the twos complement representation of the binary string using
     // -B = \bar{B} + 1
@@ -171,7 +183,6 @@ char* twos_complement_binary_string_of_negative_number(mpz_t negative_number)
     // find the index of the right-most bit set to 1
     uint32_t right_most_1_index = 0;
     bool right_most_1_not_found = true;
-
     for (uint32_t i = 0; right_most_1_not_found && i < TOTAL_BIT_LENGTH; i++)
     {
         if (abs_number_str[TOTAL_BIT_LENGTH - i - 1] == '1')

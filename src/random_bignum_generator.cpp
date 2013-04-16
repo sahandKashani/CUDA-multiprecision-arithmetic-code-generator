@@ -7,10 +7,10 @@
 #include <string.h>
 #include <gmp.h>
 
-char* generate_exact_precision_bignum_string(uint32_t precision);
-char* generate_bignum_string_less_than_bignum(uint32_t* bigger);
 bool precise_enough(mpz_t number, uint32_t precision);
 bool bignum_less_than_bignum(uint32_t* smaller, uint32_t* bigger);
+char* generate_exact_precision_bignum_string(uint32_t precision);
+char* generate_bignum_string_less_than_bignum(uint32_t* bigger);
 
 // current state of the random number generator
 gmp_randstate_t random_state;
@@ -23,6 +23,9 @@ void start_random_number_generator()
 {
     gmp_randinit_default(random_state);
     gmp_randseed_ui(random_state, SEED);
+
+    printf("Started random number generator\n");
+    fflush(stdout);
 }
 
 /**
@@ -36,6 +39,9 @@ void stop_random_number_generator()
 {
     // get memory back from gmp_randstate_t
     gmp_randclear(random_state);
+
+    printf("Stopped random number generator\n");
+    fflush(stdout);
 }
 
 /**

@@ -7,8 +7,6 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#include "bignum_conversions.h" // TO REMOVE
-
 void generate_modulus_and_operands_to_files(const char* host_m_file_name, const char* host_a_file_name, const char* host_b_file_name)
 {
     assert(host_a_file_name != NULL);
@@ -16,6 +14,9 @@ void generate_modulus_and_operands_to_files(const char* host_m_file_name, const 
     assert(host_m_file_name != NULL);
 
     start_random_number_generator();
+
+    printf("Generating modulus and operands to files ... ");
+    fflush(stdout);
 
     FILE* host_a_file = fopen(host_a_file_name, "w");
     FILE* host_b_file = fopen(host_b_file_name, "w");
@@ -62,6 +63,9 @@ void generate_modulus_and_operands_to_files(const char* host_m_file_name, const 
     free(host_b);
     free(host_m);
 
+    printf("done\n");
+    fflush(stdout);
+
     stop_random_number_generator();
 }
 
@@ -74,6 +78,9 @@ void read_bignum_array_from_file(const char* file_name, uint32_t* bignum, uint32
     FILE* file = fopen(file_name, "r");
     assert(file != NULL);
 
+    printf("Reading bignum array from file \"%s\" ... ", file_name);
+    fflush(stdout);
+
     for (uint32_t i = 0; i < amount_to_read; i++)
     {
         for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
@@ -85,6 +92,9 @@ void read_bignum_array_from_file(const char* file_name, uint32_t* bignum, uint32
     }
 
     fclose(file);
+
+    printf("done\n");
+    fflush(stdout);
 }
 
 void write_bignum_array_to_file(const char* file_name, uint32_t* bignum)
@@ -94,6 +104,9 @@ void write_bignum_array_to_file(const char* file_name, uint32_t* bignum)
 
     FILE* file = fopen(file_name, "w");
     assert(file != NULL);
+
+    printf("Writing bignum array to file \"%s\" ... ", file_name);
+    fflush(stdout);
 
     for (uint32_t i = 0; i < NUMBER_OF_BIGNUMS; i++)
     {
@@ -106,4 +119,7 @@ void write_bignum_array_to_file(const char* file_name, uint32_t* bignum)
     }
 
     fclose(file);
+
+    printf("done\n");
+    fflush(stdout);
 }
