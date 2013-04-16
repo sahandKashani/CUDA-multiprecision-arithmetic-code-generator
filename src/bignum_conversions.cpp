@@ -103,8 +103,8 @@ char** bignum_to_binary_string_array(uint32_t* bignum)
 {
     assert(bignum != NULL);
 
-    // make an array of strings which will each contain 1 of the
-    // BIGNUM_NUMBER_OF_WORDS words in the bignum
+    // make an array of strings where each element is a binary string containing
+    // one of the BIGNUM_NUMBER_OF_WORDS elements of the bignum.
     char** words = (char**) calloc(BIGNUM_NUMBER_OF_WORDS + 1, sizeof(char*));
     assert(words != NULL);
 
@@ -112,11 +112,6 @@ char** bignum_to_binary_string_array(uint32_t* bignum)
 
     for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
     {
-        words[i] = (char*) calloc(BITS_PER_WORD + 1, sizeof(char));
-        assert(words[i] != NULL);
-
-        words[i][BITS_PER_WORD] = '\0';
-
         // convert each bignum element to a string
         words[i] = uint32_t_to_binary_string(bignum[i]);
     }

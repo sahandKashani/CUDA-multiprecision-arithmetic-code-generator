@@ -9,7 +9,7 @@
 
 #include "bignum_conversions.h" // TO REMOVE
 
-void generate_random_bignum_modulus_and_operand_arrays_to_files(const char* host_m_file_name, const char* host_a_file_name, const char* host_b_file_name)
+void generate_modulus_and_operands_to_files(const char* host_m_file_name, const char* host_a_file_name, const char* host_b_file_name)
 {
     assert(host_a_file_name != NULL);
     assert(host_b_file_name != NULL);
@@ -39,7 +39,7 @@ void generate_random_bignum_modulus_and_operand_arrays_to_files(const char* host
         generate_exact_precision_bignum(host_m, BIT_RANGE);
 
         // generate operands which are smaller than the modulus
-        generate_bignum_less_than_bignum(host_m, host_a); // LEAK HERE
+        generate_bignum_less_than_bignum(host_m, host_a);
         generate_bignum_less_than_bignum(host_m, host_b);
 
         for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
