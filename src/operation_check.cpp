@@ -18,13 +18,10 @@ char* twos_complement_binary_string_of_negative_number(mpz_t negative_number);
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Checks if host_c == host_a + host_b. host_c is a value calculated with our
- * gpu algorithm. This function will use GMP to calculate the value that host_c
- * should have after the addition of host_a and host_b. If any differences are
- * found with the values computed by our gpu algorithm, an error is reported. If
- * you have data in any other formats than bignum*, you will have to rearrange
- * them to meet this pattern for the check to work.
- * @param host_c Result of the addition we have computed with our gpu algorithm.
+ * Checks if host_c == host_a + host_b by using gmp. All the parameters must
+ * represent bignum arrays, NOT coalesced bignum arrays.
+ * @param host_c Results of the additions we have computed with our gpu
+ *               algorithm.
  * @param host_a First operands.
  * @param host_b Second operands.
  */
@@ -38,13 +35,9 @@ void addition_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
 }
 
 /**
- * Checks if host_c == host_a - host_b. host_c is a value calculated with our
- * gpu algorithm. This function will use GMP to calculate the value that host_c
- * should have after the subtraction of host_b from host_a. If any differences
- * are found with the values computed by our gpu algorithm, an error is
- * reported. If you have data in any other formats than bignum*, you will have
- * to rearrange them to meet this pattern for the check to work.
- * @param host_c Result of the subtraction we have computed with our gpu
+ * Checks if host_c == host_a - host_b by using gmp. All the parameters must
+ * represent bignum arrays, NOT coalesced bignum arrays.
+ * @param host_c Results of the additions we have computed with our gpu
  *               algorithm.
  * @param host_a First operands.
  * @param host_b Second operands.
@@ -201,5 +194,6 @@ char* twos_complement_binary_string_of_negative_number(mpz_t negative_number)
 
     mpz_clear(abs_number);
 
+    assert(strlen(abs_number_str) == TOTAL_BIT_LENGTH);
     return abs_number_str;
 }

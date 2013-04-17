@@ -33,7 +33,7 @@ void start_random_number_generator()
  * this function, you can no longer reuse the number generator unless you call
  * start_random_number_generator() first. You can only use this function if a
  * prior call to start_random_number_generator() has been made, or else this
- * function will fail
+ * function will fail.
  */
 void stop_random_number_generator()
 {
@@ -47,7 +47,7 @@ void stop_random_number_generator()
 /**
  * Decides if a number has enough precision in bits.
  * @param  number    number to be tested.
- * @param  precision precision wanted in bits.
+ * @param  precision precision wanted in bits (must be > BITS_PER_WORD).
  * @return           true if the number has the given precision, or false
  *                   otherwise.
  */
@@ -68,8 +68,9 @@ bool precise_enough(mpz_t number, uint32_t precision)
  * Generates a binary string representation of a bignum with bit precision given
  * by the precision parameter. The binary string returned is of length
  * TOTAL_BIT_LENGTH.
- * @param  precision precision wanted in bits.
- * @return           binary string representation of the generated bignum.
+ * @param  precision precision wanted in bits (must be > BITS_PER_WORD).
+ * @return           binary string representation of the generated bignum
+ *                   (length = TOTAL_BIT_LENGTH).
  */
 char* generate_exact_precision_bignum_string(uint32_t precision)
 {
