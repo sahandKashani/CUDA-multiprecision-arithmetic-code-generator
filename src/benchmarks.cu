@@ -34,21 +34,22 @@ void benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
 
     add_benchmark(host_c, host_a, host_b);
     sub_benchmark(host_c, host_a, host_b);
+    mul_benchmark(host_c, host_a, host_b);
 }
 
 void add_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
 {
-    binary_operator_benchmark(host_c, host_a, host_b, add_kernel, addition_check, "addition");
+    binary_operator_benchmark(host_c, host_a, host_b, add_kernel, add_check, "addition");
 }
 
 void sub_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
 {
-    binary_operator_benchmark(host_c, host_a, host_b, sub_kernel, subtraction_check, "subtraction");
+    binary_operator_benchmark(host_c, host_a, host_b, sub_kernel, sub_check, "subtraction");
 }
 
 void mul_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
 {
-    binary_operator_benchmark(host_c, host_a, host_b, mul_kernel, multiplication_check, "multiplication");
+    binary_operator_benchmark(host_c, host_a, host_b, mul_kernel, mul_check, "multiplication");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -85,7 +86,7 @@ __device__ void add(uint32_t* c, uint32_t* a, uint32_t* b, uint32_t tid)
           "r" (b[COAL_IDX(0, tid)]));
 
     #pragma unroll
-    for (uint32_t i = 1; i < BIGNUM_NUMBER_OF_WORDS - 1; i++)
+    for (uint32_t i = 1; i < MAX_BIGNUM_NUMBER_OF_WORDS - 1; i++)
     {
         asm("addc.cc.u32 %0, %1, %2;"
             : "=r"(c[COAL_IDX(i, tid)])
@@ -94,9 +95,9 @@ __device__ void add(uint32_t* c, uint32_t* a, uint32_t* b, uint32_t tid)
     }
 
     asm("addc.u32 %0, %1, %2;"
-        : "=r"(c[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)])
-        : "r" (a[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)]),
-          "r" (b[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)]));
+        : "=r"(c[COAL_IDX(MAX_BIGNUM_NUMBER_OF_WORDS - 1, tid)])
+        : "r" (a[COAL_IDX(MAX_BIGNUM_NUMBER_OF_WORDS - 1, tid)]),
+          "r" (b[COAL_IDX(MAX_BIGNUM_NUMBER_OF_WORDS - 1, tid)]));
 }
 
 __device__ void sub(uint32_t* c, uint32_t* a, uint32_t* b, uint32_t tid)
@@ -107,7 +108,7 @@ __device__ void sub(uint32_t* c, uint32_t* a, uint32_t* b, uint32_t tid)
           "r" (b[COAL_IDX(0, tid)]));
 
     #pragma unroll
-    for (uint32_t i = 1; i < BIGNUM_NUMBER_OF_WORDS - 1; i++)
+    for (uint32_t i = 1; i < MAX_BIGNUM_NUMBER_OF_WORDS - 1; i++)
     {
         asm("subc.cc.u32 %0, %1, %2;"
             : "=r"(c[COAL_IDX(i, tid)])
@@ -116,14 +117,20 @@ __device__ void sub(uint32_t* c, uint32_t* a, uint32_t* b, uint32_t tid)
     }
 
     asm("subc.u32 %0, %1, %2;"
-        : "=r"(c[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)])
-        : "r" (a[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)]),
-          "r" (b[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)]));
+        : "=r"(c[COAL_IDX(MAX_BIGNUM_NUMBER_OF_WORDS - 1, tid)])
+        : "r" (a[COAL_IDX(MAX_BIGNUM_NUMBER_OF_WORDS - 1, tid)]),
+          "r" (b[COAL_IDX(MAX_BIGNUM_NUMBER_OF_WORDS - 1, tid)]));
 }
 
 __device__ void mul(uint32_t* c, uint32_t* a, uint32_t* b, uint32_t tid)
 {
-
+    // ATTENTION: Assuming "a" and "b" are n-bit bignums, their multiplication
+    // can give a bignum of length 2n-bits. Since we are coding a generic
+    // multiplication, we will use this information to do less loops, so we use
+    // MIN_BIGNUM_NUMBER_OF_WORDS to represent "a" and "b", and
+    // MAX_BIGNUM_NUMBER_OF_WORDS to represent c = a * b.
+    uint32_t a_local[MIN_BIGNUM_NUMBER_OF_WORDS];
+    uint32_t b_local[MIN_BIGNUM_NUMBER_OF_WORDS];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -150,17 +157,17 @@ void binary_operator_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* hos
     uint32_t* dev_c;
 
     // allocate gpu memory
-    cudaError dev_a_malloc_success = cudaMalloc((void**) &dev_a, NUMBER_OF_BIGNUMS * BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
-    cudaError dev_b_malloc_success = cudaMalloc((void**) &dev_b, NUMBER_OF_BIGNUMS * BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
-    cudaError dev_c_malloc_success = cudaMalloc((void**) &dev_c, NUMBER_OF_BIGNUMS * BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
+    cudaError dev_a_malloc_success = cudaMalloc((void**) &dev_a, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
+    cudaError dev_b_malloc_success = cudaMalloc((void**) &dev_b, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
+    cudaError dev_c_malloc_success = cudaMalloc((void**) &dev_c, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
 
     assert(dev_a_malloc_success == cudaSuccess);
     assert(dev_b_malloc_success == cudaSuccess);
     assert(dev_c_malloc_success == cudaSuccess);
 
     // copy operands to device memory
-    cudaError dev_a_memcpy_succes = cudaMemcpy(dev_a, host_a, NUMBER_OF_BIGNUMS * BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t), cudaMemcpyHostToDevice);
-    cudaError dev_b_memcpy_succes = cudaMemcpy(dev_b, host_b, NUMBER_OF_BIGNUMS * BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t), cudaMemcpyHostToDevice);
+    cudaError dev_a_memcpy_succes = cudaMemcpy(dev_a, host_a, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t), cudaMemcpyHostToDevice);
+    cudaError dev_b_memcpy_succes = cudaMemcpy(dev_b, host_b, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t), cudaMemcpyHostToDevice);
 
     assert(dev_a_memcpy_succes == cudaSuccess);
     assert(dev_b_memcpy_succes == cudaSuccess);
@@ -175,7 +182,7 @@ void binary_operator_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* hos
     fflush(stdout);
 
     // copy results back to host
-    cudaError dev_c_memcpy_success = cudaMemcpy(host_c, dev_c, NUMBER_OF_BIGNUMS * BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t), cudaMemcpyDeviceToHost);
+    cudaError dev_c_memcpy_success = cudaMemcpy(host_c, dev_c, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t), cudaMemcpyDeviceToHost);
 
     assert(dev_c_memcpy_success == cudaSuccess);
 

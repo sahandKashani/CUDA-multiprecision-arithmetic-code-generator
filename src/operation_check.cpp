@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <math.h>
 #include <gmp.h>
 
 void binary_operator_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b, void (*op)(mpz_t rop, const mpz_t op1, const mpz_t op2), char op_character, const char* operation_name);
@@ -25,7 +26,7 @@ char* twos_complement_binary_string_of_negative_number(mpz_t negative_number);
  * @param host_a First operands.
  * @param host_b Second operands.
  */
-void addition_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
+void add_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
 {
     assert(host_a != NULL);
     assert(host_b != NULL);
@@ -42,13 +43,30 @@ void addition_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
  * @param host_a First operands.
  * @param host_b Second operands.
  */
-void subtraction_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
+void sub_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
 {
     assert(host_a != NULL);
     assert(host_b != NULL);
     assert(host_c != NULL);
 
     binary_operator_check(host_c, host_a, host_b, mpz_sub, '-', "subtraction");
+}
+
+/**
+ * Checks if host_c == host_a * host_b by using gmp. All the parameters must
+ * represent bignum arrays, NOT coalesced bignum arrays.
+ * @param host_c Results of the additions we have computed with our gpu
+ *               algorithm.
+ * @param host_a First operands.
+ * @param host_b Second operands.
+ */
+void mul_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
+{
+    assert(host_a != NULL);
+    assert(host_b != NULL);
+    assert(host_c != NULL);
+
+    binary_operator_check(host_c, host_a, host_b, mpz_mul, '*', "multiplication");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -69,36 +87,47 @@ void binary_operator_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b,
     bool results_correct = true;
     for (uint32_t i = 0; results_correct && i < NUMBER_OF_BIGNUMS; i++)
     {
-        mpz_t gmp_a;
-        mpz_t gmp_b;
+        mpz_t a;
+        mpz_t b;
+        mpz_t our_c;
         mpz_t gmp_c;
 
-        mpz_init(gmp_a);
-        mpz_init(gmp_b);
+        mpz_init(a);
+        mpz_init(b);
+        mpz_init(our_c);
         mpz_init(gmp_c);
 
-        bignum_to_mpz_t(&host_a[IDX(i, 0)], gmp_a);
-        bignum_to_mpz_t(&host_b[IDX(i, 0)], gmp_b);
-        bignum_to_mpz_t(&host_c[IDX(i, 0)], gmp_c);
+        bignum_to_mpz_t(&host_a[IDX(i, 0)], a);
+        bignum_to_mpz_t(&host_b[IDX(i, 0)], b);
+        bignum_to_mpz_t(&host_c[IDX(i, 0)], our_c);
 
         // GMP function which will calculate what our algorithm is supposed to
         // calculate
-        op(gmp_c, gmp_a, gmp_b);
+        op(gmp_c, a, b);
 
         char* a_str = bignum_to_binary_string(&host_a[IDX(i, 0)]);
         char* b_str = bignum_to_binary_string(&host_b[IDX(i, 0)]);
-        char* c_str = bignum_to_binary_string(&host_c[IDX(i, 0)]);
+        char* our_c_str = bignum_to_binary_string(&host_c[IDX(i, 0)]);
 
         // get binary string result in 2's complement (same format as what the
         // gpu is calculating)
         char* gmp_c_str = mpz_t_to_binary_2s_complement_string(gmp_c);
 
-        if (strcmp(gmp_c_str, c_str) != 0)
+        if (strcmp(gmp_c_str, our_c_str) != 0)
         {
-            printf("incorrect calculation at iteration %d\n", i);
-            printf("gpu algorithm:   %s\n               %c %s\n               = %s\n", a_str, op_character, b_str, c_str);
-            printf("\n");
-            printf("gmp algorithm:   %s\n               %c %s\n               = %s\n", a_str, op_character, b_str, gmp_c_str);
+            gmp_printf("incorrect calculation at iteration %d\n", i);
+
+            gmp_printf("gpu algorithm:   %s = %Zd\n"
+                       "               %c %s = %Zd\n"
+                       "               = %s = %Zd\n",
+                       a_str, a, op_character, b_str, b, our_c_str, our_c);
+
+            gmp_printf("\n");
+
+            gmp_printf("gpu algorithm:   %s = %Zd\n"
+                       "               %c %s = %Zd\n"
+                       "               = %s = %Zd\n",
+                       a_str, a, op_character, b_str, b, gmp_c_str, gmp_c);
 
             fflush(stdout);
             results_correct = false;
@@ -106,12 +135,12 @@ void binary_operator_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b,
 
         free(a_str);
         free(b_str);
-        free(c_str);
-
+        free(our_c_str);
         free(gmp_c_str);
 
-        mpz_clear(gmp_a);
-        mpz_clear(gmp_b);
+        mpz_clear(a);
+        mpz_clear(b);
+        mpz_clear(our_c);
         mpz_clear(gmp_c);
     }
 

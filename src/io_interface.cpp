@@ -26,9 +26,9 @@ void generate_modulus_and_operands_to_files(const char* host_m_file_name, const 
     assert(host_b_file != NULL);
     assert(host_m_file != NULL);
 
-    uint32_t* host_a = (uint32_t*) calloc(BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
-    uint32_t* host_b = (uint32_t*) calloc(BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
-    uint32_t* host_m = (uint32_t*) calloc(BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
+    uint32_t* host_a = (uint32_t*) calloc(MAX_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
+    uint32_t* host_b = (uint32_t*) calloc(MAX_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
+    uint32_t* host_m = (uint32_t*) calloc(MAX_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
 
     assert(host_a != NULL);
     assert(host_b != NULL);
@@ -43,7 +43,7 @@ void generate_modulus_and_operands_to_files(const char* host_m_file_name, const 
         generate_bignum_less_than_bignum(host_m, host_a);
         generate_bignum_less_than_bignum(host_m, host_b);
 
-        for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
+        for (uint32_t j = 0; j < MAX_BIGNUM_NUMBER_OF_WORDS; j++)
         {
             fprintf(host_a_file, "%u ", host_a[j]);
             fprintf(host_b_file, "%u ", host_b[j]);
@@ -83,7 +83,7 @@ void read_bignum_array_from_file(const char* file_name, uint32_t* bignum, uint32
 
     for (uint32_t i = 0; i < amount_to_read; i++)
     {
-        for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
+        for (uint32_t j = 0; j < MAX_BIGNUM_NUMBER_OF_WORDS; j++)
         {
             fscanf(file, "%u", &bignum[IDX(i, j)]);
         }
@@ -110,7 +110,7 @@ void write_bignum_array_to_file(const char* file_name, uint32_t* bignum)
 
     for (uint32_t i = 0; i < NUMBER_OF_BIGNUMS; i++)
     {
-        for (uint32_t j = 0; j < BIGNUM_NUMBER_OF_WORDS; j++)
+        for (uint32_t j = 0; j < MAX_BIGNUM_NUMBER_OF_WORDS; j++)
         {
             fprintf(file, "%u ", bignum[IDX(i, j)]);
         }
