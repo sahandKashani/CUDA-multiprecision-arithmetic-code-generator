@@ -131,6 +131,26 @@ __device__ void mul(uint32_t* c, uint32_t* a, uint32_t* b, uint32_t tid)
     // MAX_BIGNUM_NUMBER_OF_WORDS to represent c = a * b.
     uint32_t a_local[MIN_BIGNUM_NUMBER_OF_WORDS];
     uint32_t b_local[MIN_BIGNUM_NUMBER_OF_WORDS];
+    uint32_t c_local[MAX_BIGNUM_NUMBER_OF_WORDS];
+
+    // load coalesced data into these NORMAL local bignum arrays.
+    for (uint32_t i = 0; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
+    {
+        a_local[i] = a[COAL_IDX(i, tid)];
+        b_local[i] = b[COAL_IDX(i, tid)];
+    }
+
+    // extended-precision multiply: [C[3],C[2],C[1],C[0]] = [A[1],A[0]] * [B[1],B[0]]
+    // mul.lo.u32     C[0],A[0],B[0]     ; // C[0]  = (A[0]*B[0]).[31:0]            , no  carry-out
+    // mul.hi.u32     C[1],A[0],B[0]     ; // C[1]  = (A[0]*B[0]).[63:32]           , no  carry-out
+    // mad.lo.cc.u32  C[1],A[1],B[0],C[1]; // C[1] += (A[1]*B[0]).[31:0]            , may carry-out
+    // madc.hi.u32    C[2],A[1],B[0],0   ; // C[2]  = (A[1]*B[0]).[63:32] + carry-in, no  carry-out
+    // mad.lo.cc.u32  C[1],A[0],B[1],C[1]; // C[1] += (A[0]*B[1]).[31:0]            , may carry-out
+    // madc.hi.cc.u32 C[2],A[0],B[1],C[2]; // C[2] += (A[0]*B[1]).[63:32] + carry-in, may carry-out
+    // addc.u32       C[3],0   ,0        ; // C[3]  = carry-in                      , no  carry-out
+    // mad.lo.cc.u32  C[2],A[1],B[1],C[2]; // C[2] += (A[1]*B[1]).[31:0]            , may carry-out
+    // madc.hi.u32    C[3],A[1],B[1],C[3]; // C[3] += (A[1]*B[1]).[63:32] + carry-in
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
