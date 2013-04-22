@@ -3,7 +3,6 @@
 #include "bignum_conversions.h"
 #include "constants.h"
 #include "operation_check.h"
-#include "ptx_inline_operations.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -11,11 +10,17 @@
 
 void binary_operator_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b, void (*kernel)(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b), void (*checking_function)(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b), char* operation_name);
 
-void addition_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b);
-__global__ void addition_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b);
+void add_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b);
+void sub_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b);
+void mul_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b);
 
-void subtraction_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b);
-__global__ void subtraction_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b);
+__global__ void add_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b);
+__global__ void sub_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b);
+__global__ void mul_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b);
+
+__device__ void add(uint32_t* c, uint32_t* a, uint32_t* b, uint32_t tid);
+__device__ void sub(uint32_t* c, uint32_t* a, uint32_t* b, uint32_t tid);
+__device__ void mul(uint32_t* c, uint32_t* a, uint32_t* b, uint32_t tid);
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////// BENCHMARKS /////////////////////////////////
@@ -27,61 +32,98 @@ void benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
     assert(host_b != NULL);
     assert(host_c != NULL);
 
-    addition_benchmark(host_c, host_a, host_b);
-    subtraction_benchmark(host_c, host_a, host_b);
+    add_benchmark(host_c, host_a, host_b);
+    sub_benchmark(host_c, host_a, host_b);
 }
 
-void addition_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
+void add_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
 {
-    assert(host_a != NULL);
-    assert(host_b != NULL);
-    assert(host_c != NULL);
-
-    binary_operator_benchmark(host_c, host_a, host_b, addition_kernel, addition_check, "addition");
+    binary_operator_benchmark(host_c, host_a, host_b, add_kernel, addition_check, "addition");
 }
 
-void subtraction_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
+void sub_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
 {
-    assert(host_a != NULL);
-    assert(host_b != NULL);
-    assert(host_c != NULL);
+    binary_operator_benchmark(host_c, host_a, host_b, sub_kernel, subtraction_check, "subtraction");
+}
 
-    binary_operator_benchmark(host_c, host_a, host_b, subtraction_kernel, subtraction_check, "subtraction");
+void mul_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
+{
+    binary_operator_benchmark(host_c, host_a, host_b, mul_kernel, multiplication_check, "multiplication");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////// KERNELS ///////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-__global__ void addition_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b)
+__global__ void add_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b)
 {
-    // ptx_add(dev_c, dev_a, dev_b, blockIdx.x * blockDim.x + threadIdx.x);
-
     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
+    add(dev_c, dev_a, dev_b, tid);
+}
 
+__global__ void sub_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b)
+{
+    uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
+    sub(dev_c, dev_a, dev_b, tid);
+}
+
+__global__ void mul_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b)
+{
+    uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
+    mul(dev_c, dev_a, dev_b, tid);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////// OPERATIONS /////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+__device__ void add(uint32_t* c, uint32_t* a, uint32_t* b, uint32_t tid)
+{
     asm("add.cc.u32 %0, %1, %2;"
-        : "=r"(dev_c[COAL_IDX(0, tid)])
-        : "r" (dev_a[COAL_IDX(0, tid)]),
-          "r" (dev_b[COAL_IDX(0, tid)]));
+        : "=r"(c[COAL_IDX(0, tid)])
+        : "r" (a[COAL_IDX(0, tid)]),
+          "r" (b[COAL_IDX(0, tid)]));
 
     #pragma unroll
     for (uint32_t i = 1; i < BIGNUM_NUMBER_OF_WORDS - 1; i++)
     {
         asm("addc.cc.u32 %0, %1, %2;"
-            : "=r"(dev_c[COAL_IDX(i, tid)])
-            : "r" (dev_a[COAL_IDX(i, tid)]),
-              "r" (dev_b[COAL_IDX(i, tid)]));
+            : "=r"(c[COAL_IDX(i, tid)])
+            : "r" (a[COAL_IDX(i, tid)]),
+              "r" (b[COAL_IDX(i, tid)]));
     }
 
     asm("addc.u32 %0, %1, %2;"
-        : "=r"(dev_c[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)])
-        : "r" (dev_a[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)]),
-          "r" (dev_b[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)]));
+        : "=r"(c[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)])
+        : "r" (a[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)]),
+          "r" (b[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)]));
 }
 
-__global__ void subtraction_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b)
+__device__ void sub(uint32_t* c, uint32_t* a, uint32_t* b, uint32_t tid)
 {
-    ptx_sub(dev_c, dev_a, dev_b, blockIdx.x * blockDim.x + threadIdx.x);
+    asm("sub.cc.u32 %0, %1, %2;"
+        : "=r"(c[COAL_IDX(0, tid)])
+        : "r" (a[COAL_IDX(0, tid)]),
+          "r" (b[COAL_IDX(0, tid)]));
+
+    #pragma unroll
+    for (uint32_t i = 1; i < BIGNUM_NUMBER_OF_WORDS - 1; i++)
+    {
+        asm("subc.cc.u32 %0, %1, %2;"
+            : "=r"(c[COAL_IDX(i, tid)])
+            : "r" (a[COAL_IDX(i, tid)]),
+              "r" (b[COAL_IDX(i, tid)]));
+    }
+
+    asm("subc.u32 %0, %1, %2;"
+        : "=r"(c[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)])
+        : "r" (a[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)]),
+          "r" (b[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)]));
+}
+
+__device__ void mul(uint32_t* c, uint32_t* a, uint32_t* b, uint32_t tid)
+{
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
