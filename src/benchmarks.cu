@@ -71,142 +71,129 @@ __global__ void subtraction_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* d
 __device__ void addition(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b)
 {
     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
-    uint32_t stride = blockDim.x * gridDim.x;
 
-    while (tid < NUMBER_OF_BIGNUMS)
+    asm("add.cc.u32 %0, %1, %2;"
+        : "=r"(dev_c[COAL_IDX(0, tid)])
+        : "r" (dev_a[COAL_IDX(0, tid)]),
+          "r" (dev_b[COAL_IDX(0, tid)]));
+
+    #pragma unroll
+    for (uint32_t i = 1; i < BIGNUM_NUMBER_OF_WORDS - 1; i++)
     {
-        asm("add.cc.u32 %0, %1, %2;"
-            : "=r"(dev_c[COAL_IDX(0, tid)])
-            : "r" (dev_a[COAL_IDX(0, tid)]),
-              "r" (dev_b[COAL_IDX(0, tid)]));
-
-        #pragma unroll
-        for (uint32_t i = 1; i < BIGNUM_NUMBER_OF_WORDS - 1; i++)
-        {
-            asm("addc.cc.u32 %0, %1, %2;"
-                : "=r"(dev_c[COAL_IDX(i, tid)])
-                : "r" (dev_a[COAL_IDX(i, tid)]),
-                  "r" (dev_b[COAL_IDX(i, tid)]));
-        }
-
-        asm("addc.u32 %0, %1, %2;"
-            : "=r"(dev_c[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)])
-            : "r" (dev_a[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)]),
-              "r" (dev_b[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)]));
-
-        tid += stride;
+        asm("addc.cc.u32 %0, %1, %2;"
+            : "=r"(dev_c[COAL_IDX(i, tid)])
+            : "r" (dev_a[COAL_IDX(i, tid)]),
+              "r" (dev_b[COAL_IDX(i, tid)]));
     }
+
+    asm("addc.u32 %0, %1, %2;"
+        : "=r"(dev_c[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)])
+        : "r" (dev_a[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)]),
+          "r" (dev_b[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)]));
 }
 
 __device__ void subtraction(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b)
 {
     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
-    uint32_t stride = blockDim.x * gridDim.x;
 
-    while (tid < NUMBER_OF_BIGNUMS)
+    asm("sub.cc.u32 %0, %1, %2;"
+        : "=r"(dev_c[COAL_IDX(0, tid)])
+        : "r" (dev_a[COAL_IDX(0, tid)]),
+          "r" (dev_b[COAL_IDX(0, tid)]));
+
+    #pragma unroll
+    for (uint32_t i = 1; i < BIGNUM_NUMBER_OF_WORDS - 1; i++)
     {
-        asm("sub.cc.u32 %0, %1, %2;"
-            : "=r"(dev_c[COAL_IDX(0, tid)])
-            : "r" (dev_a[COAL_IDX(0, tid)]),
-              "r" (dev_b[COAL_IDX(0, tid)]));
-
-        #pragma unroll
-        for (uint32_t i = 1; i < BIGNUM_NUMBER_OF_WORDS - 1; i++)
-        {
-            asm("subc.cc.u32 %0, %1, %2;"
-                : "=r"(dev_c[COAL_IDX(i, tid)])
-                : "r" (dev_a[COAL_IDX(i, tid)]),
-                  "r" (dev_b[COAL_IDX(i, tid)]));
-        }
-
-        asm("subc.u32 %0, %1, %2;"
-            : "=r"(dev_c[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)])
-            : "r" (dev_a[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)]),
-              "r" (dev_b[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)]));
-
-        tid += stride;
+        asm("subc.cc.u32 %0, %1, %2;"
+            : "=r"(dev_c[COAL_IDX(i, tid)])
+            : "r" (dev_a[COAL_IDX(i, tid)]),
+              "r" (dev_b[COAL_IDX(i, tid)]));
     }
+
+    asm("subc.u32 %0, %1, %2;"
+        : "=r"(dev_c[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)])
+        : "r" (dev_a[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)]),
+          "r" (dev_b[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)]));
 }
 
-__device__ void modular_addition(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b, uint32_t* dev_m)
-{
-    uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
-    uint32_t stride = blockDim.x * gridDim.x;
+// __device__ void modular_addition(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b, uint32_t* dev_m)
+// {
+//     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
+//     uint32_t stride = blockDim.x * gridDim.x;
 
-    while (tid < NUMBER_OF_BIGNUMS)
-    {
-        // addition
-        asm("add.cc.u32 %0, %1, %2;"
-            : "=r"(dev_c[COAL_IDX(0, tid)])
-            : "r" (dev_a[COAL_IDX(0, tid)]),
-              "r" (dev_b[COAL_IDX(0, tid)]));
+//     while (tid < NUMBER_OF_BIGNUMS)
+//     {
+//         // addition
+//         asm("add.cc.u32 %0, %1, %2;"
+//             : "=r"(dev_c[COAL_IDX(0, tid)])
+//             : "r" (dev_a[COAL_IDX(0, tid)]),
+//               "r" (dev_b[COAL_IDX(0, tid)]));
 
-        #pragma unroll
-        for (uint32_t i = 1; i < BIGNUM_NUMBER_OF_WORDS - 1; i++)
-        {
-            asm("addc.cc.u32 %0, %1, %2;"
-                : "=r"(dev_c[COAL_IDX(i, tid)])
-                : "r" (dev_a[COAL_IDX(i, tid)]),
-                  "r" (dev_b[COAL_IDX(i, tid)]));
-        }
+//         #pragma unroll
+//         for (uint32_t i = 1; i < BIGNUM_NUMBER_OF_WORDS - 1; i++)
+//         {
+//             asm("addc.cc.u32 %0, %1, %2;"
+//                 : "=r"(dev_c[COAL_IDX(i, tid)])
+//                 : "r" (dev_a[COAL_IDX(i, tid)]),
+//                   "r" (dev_b[COAL_IDX(i, tid)]));
+//         }
 
-        asm("addc.u32 %0, %1, %2;"
-            : "=r"(dev_c[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)])
-            : "r" (dev_a[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)]),
-              "r" (dev_b[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)]));
+//         asm("addc.u32 %0, %1, %2;"
+//             : "=r"(dev_c[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)])
+//             : "r" (dev_a[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)]),
+//               "r" (dev_b[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)]));
 
-        // subtraction
-        asm("sub.cc.u32 %0, %0, %1;"
-            : "+r"(dev_c[COAL_IDX(0, tid)])
-            : "r" (dev_m[COAL_IDX(0, tid)]));
+//         // subtraction
+//         asm("sub.cc.u32 %0, %0, %1;"
+//             : "+r"(dev_c[COAL_IDX(0, tid)])
+//             : "r" (dev_m[COAL_IDX(0, tid)]));
 
-        #pragma unroll
-        for (uint32_t i = 1; i < BIGNUM_NUMBER_OF_WORDS - 1; i++)
-        {
-            asm("subc.cc.u32 %0, %0, %1;"
-                : "+r"(dev_c[COAL_IDX(i, tid)])
-                : "r" (dev_m[COAL_IDX(i, tid)]));
-        }
+//         #pragma unroll
+//         for (uint32_t i = 1; i < BIGNUM_NUMBER_OF_WORDS - 1; i++)
+//         {
+//             asm("subc.cc.u32 %0, %0, %1;"
+//                 : "+r"(dev_c[COAL_IDX(i, tid)])
+//                 : "r" (dev_m[COAL_IDX(i, tid)]));
+//         }
 
-        // we want the borrow bit (unlike for normal subtraction)
-        asm("subc.cc.u32 %0, %0, %1;"
-            : "+r"(dev_c[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)])
-            : "r" (dev_m[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)]));
+//         // we want the borrow bit (unlike for normal subtraction)
+//         asm("subc.cc.u32 %0, %0, %1;"
+//             : "+r"(dev_c[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)])
+//             : "r" (dev_m[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)]));
 
-        uint32_t borrow[BIGNUM_NUMBER_OF_WORDS];
-        asm("subc.u32 %0, 0, ");
-        for
+//         uint32_t borrow[BIGNUM_NUMBER_OF_WORDS];
+//         asm("subc.u32 %0, 0, ");
 
-        uint32_t mask[BIGNUM_NUMBER_OF_WORDS];
-        for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
-        {
-            mask[i] = 0;
-        }
+//         uint32_t mask[BIGNUM_NUMBER_OF_WORDS];
+//         for (uint32_t i = 0; i < BIGNUM_NUMBER_OF_WORDS; i++)
+//         {
+//             mask[i] = 0;
+//         }
 
-        // mask = 0 until now
-        // now do mask = mask - mask
+//         // mask = 0 until now
+//         // now do mask = mask - mask
 
-        // subtraction
-        asm("subc.cc.u32 %0, %0, %1;"
-            : "+r"(dev_c[COAL_IDX(0, tid)])
-            : "r" (dev_m[COAL_IDX(0, tid)]));
+//         // subtraction
+//         asm("subc.cc.u32 %0, %0, %1;"
+//             : "+r"(dev_c[COAL_IDX(0, tid)])
+//             : "r" (dev_m[COAL_IDX(0, tid)]));
 
-        #pragma unroll
-        for (uint32_t i = 1; i < BIGNUM_NUMBER_OF_WORDS - 1; i++)
-        {
-            asm("subc.cc.u32 %0, %0, %1;"
-                : "+r"(dev_c[COAL_IDX(i, tid)])
-                : "r" (dev_m[COAL_IDX(i, tid)]));
-        }
+//         #pragma unroll
+//         for (uint32_t i = 1; i < BIGNUM_NUMBER_OF_WORDS - 1; i++)
+//         {
+//             asm("subc.cc.u32 %0, %0, %1;"
+//                 : "+r"(dev_c[COAL_IDX(i, tid)])
+//                 : "r" (dev_m[COAL_IDX(i, tid)]));
+//         }
 
-        // we want the borrow bit (unlike for normal subtraction)
-        asm("subc.cc.u32 %0, %0, %1;"
-            : "+r"(dev_c[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)])
-            : "r" (dev_m[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)]));
+//         // we want the borrow bit (unlike for normal subtraction)
+//         asm("subc.cc.u32 %0, %0, %1;"
+//             : "+r"(dev_c[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)])
+//             : "r" (dev_m[COAL_IDX(BIGNUM_NUMBER_OF_WORDS - 1, tid)]));
 
-        tid += stride;
-    }
-}
+//         tid += stride;
+//     }
+// }
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////// GENERIC LAUNCH CONFIGURATION ////////////////////////

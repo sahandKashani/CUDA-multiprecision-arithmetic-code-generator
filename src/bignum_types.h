@@ -64,7 +64,7 @@
 
 // 0 < i < N = NUMBER_OF_BIGNUMS
 // 0 < j < H = BIGNUM_NUMBER_OF_WORDS
-#define IDX(i, j) (((i) * BIGNUM_NUMBER_OF_WORDS) + (j))
+#define IDX(i, j) (((i) * (BIGNUM_NUMBER_OF_WORDS)) + (j))
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////// COALESCED_BIGNUM ////////////////////////////////
@@ -101,6 +101,6 @@
 
 // 0 < i < H = BIGNUM_NUMBER_OF_WORDS
 // 0 < j < N = NUMBER_OF_BIGNUMS
-#define COAL_IDX(i, j) (((i) * NUMBER_OF_BIGNUMS) + (j))
+#define COAL_IDX(i, j) (((i) * (NUMBER_OF_BIGNUMS)) + (j))
 
 #endif
