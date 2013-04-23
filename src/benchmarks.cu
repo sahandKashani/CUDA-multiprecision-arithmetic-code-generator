@@ -78,60 +78,60 @@ __global__ void mul_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b)
 /////////////////////////////////// OPERATIONS /////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-__device__ void add(uint32_t* c, uint32_t* a, uint32_t* b, uint32_t tid)
+__device__ void add(uint32_t* c_glo, uint32_t* a_glo, uint32_t* b_glo, uint32_t tid)
 {
     asm("add.cc.u32 %0, %1, %2;"
-        : "=r"(c[COAL_IDX(0, tid)])
-        : "r" (a[COAL_IDX(0, tid)]),
-          "r" (b[COAL_IDX(0, tid)]));
+        : "=r"(c_glo[COAL_IDX(0, tid)])
+        : "r" (a_glo[COAL_IDX(0, tid)]),
+          "r" (b_glo[COAL_IDX(0, tid)]));
 
     #pragma unroll
     for (uint32_t i = 1; i < MAX_BIGNUM_NUMBER_OF_WORDS - 1; i++)
     {
         asm("addc.cc.u32 %0, %1, %2;"
-            : "=r"(c[COAL_IDX(i, tid)])
-            : "r" (a[COAL_IDX(i, tid)]),
-              "r" (b[COAL_IDX(i, tid)]));
+            : "=r"(c_glo[COAL_IDX(i, tid)])
+            : "r" (a_glo[COAL_IDX(i, tid)]),
+              "r" (b_glo[COAL_IDX(i, tid)]));
     }
 
     asm("addc.u32 %0, %1, %2;"
-        : "=r"(c[COAL_IDX(MAX_BIGNUM_NUMBER_OF_WORDS - 1, tid)])
-        : "r" (a[COAL_IDX(MAX_BIGNUM_NUMBER_OF_WORDS - 1, tid)]),
-          "r" (b[COAL_IDX(MAX_BIGNUM_NUMBER_OF_WORDS - 1, tid)]));
+        : "=r"(c_glo[COAL_IDX(MAX_BIGNUM_NUMBER_OF_WORDS - 1, tid)])
+        : "r" (a_glo[COAL_IDX(MAX_BIGNUM_NUMBER_OF_WORDS - 1, tid)]),
+          "r" (b_glo[COAL_IDX(MAX_BIGNUM_NUMBER_OF_WORDS - 1, tid)]));
 }
 
-__device__ void sub(uint32_t* c, uint32_t* a, uint32_t* b, uint32_t tid)
+__device__ void sub(uint32_t* c_glo, uint32_t* a_glo, uint32_t* b_glo, uint32_t tid)
 {
     asm("sub.cc.u32 %0, %1, %2;"
-        : "=r"(c[COAL_IDX(0, tid)])
-        : "r" (a[COAL_IDX(0, tid)]),
-          "r" (b[COAL_IDX(0, tid)]));
+        : "=r"(c_glo[COAL_IDX(0, tid)])
+        : "r" (a_glo[COAL_IDX(0, tid)]),
+          "r" (b_glo[COAL_IDX(0, tid)]));
 
     #pragma unroll
     for (uint32_t i = 1; i < MAX_BIGNUM_NUMBER_OF_WORDS - 1; i++)
     {
         asm("subc.cc.u32 %0, %1, %2;"
-            : "=r"(c[COAL_IDX(i, tid)])
-            : "r" (a[COAL_IDX(i, tid)]),
-              "r" (b[COAL_IDX(i, tid)]));
+            : "=r"(c_glo[COAL_IDX(i, tid)])
+            : "r" (a_glo[COAL_IDX(i, tid)]),
+              "r" (b_glo[COAL_IDX(i, tid)]));
     }
 
     asm("subc.u32 %0, %1, %2;"
-        : "=r"(c[COAL_IDX(MAX_BIGNUM_NUMBER_OF_WORDS - 1, tid)])
-        : "r" (a[COAL_IDX(MAX_BIGNUM_NUMBER_OF_WORDS - 1, tid)]),
-          "r" (b[COAL_IDX(MAX_BIGNUM_NUMBER_OF_WORDS - 1, tid)]));
+        : "=r"(c_glo[COAL_IDX(MAX_BIGNUM_NUMBER_OF_WORDS - 1, tid)])
+        : "r" (a_glo[COAL_IDX(MAX_BIGNUM_NUMBER_OF_WORDS - 1, tid)]),
+          "r" (b_glo[COAL_IDX(MAX_BIGNUM_NUMBER_OF_WORDS - 1, tid)]));
 }
 
-__device__ void mul(uint32_t* c, uint32_t* a, uint32_t* b, uint32_t tid)
+__device__ void mul(uint32_t* c_glo, uint32_t* a_glo, uint32_t* b_glo, uint32_t tid)
 {
     // ATTENTION: Assuming "a" and "b" are n-bit bignums, their multiplication
     // can give a bignum of length 2n-bits. Since we are coding a generic
     // multiplication, we will use this information to do less loops, so we use
     // MIN_BIGNUM_NUMBER_OF_WORDS to represent "a" and "b", and
-    // MAX_BIGNUM_NUMBER_OF_WORDS to represent c = a * b.
-    uint32_t a_local[MIN_BIGNUM_NUMBER_OF_WORDS];
-    uint32_t b_local[MIN_BIGNUM_NUMBER_OF_WORDS];
-    uint32_t c_local[MAX_BIGNUM_NUMBER_OF_WORDS];
+    // MAX_BIGNUM_NUMBER_OF_WORDS to represent "c".
+    uint32_t a_loc[MIN_BIGNUM_NUMBER_OF_WORDS];
+    uint32_t b_loc[MIN_BIGNUM_NUMBER_OF_WORDS];
+    uint32_t c_loc[MAX_BIGNUM_NUMBER_OF_WORDS];
     uint32_t carry[MAX_BIGNUM_NUMBER_OF_WORDS];
 
     // Example of the schoolbook multiplication algorithm we will use:
@@ -202,16 +202,9 @@ __device__ void mul(uint32_t* c, uint32_t* a, uint32_t* b, uint32_t tid)
     // -----------------------------------------------------------------------
     // | C[9] | C[8] | C[7] | C[6] | C[5] | C[4] | C[3] | C[2] | C[1] | C[0] |
 
-    // load coalesced data into these NORMAL local bignum arrays.
-    for (uint32_t i = 0; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
-    {
-        a_local[i] = a[COAL_IDX(i, tid)];
-        b_local[i] = b[COAL_IDX(i, tid)];
-    }
-
     // A = operand 1, B = operand 2, D = carry, C = result
     //
-    // mad.lo.cc.u32 C[0], B[0], A[0], 0
+    // mad.lo.u32    C[0], B[0], A[0], 0
     //
     // mad.hi.u32    C[1], B[0], A[1], 0
     // mad.lo.cc.u32 C[1], B[0], A[1], C[1]
@@ -233,12 +226,6 @@ __device__ void mul(uint32_t* c, uint32_t* a, uint32_t* b, uint32_t tid)
     // addc.u32       C[3], 0   , 0         ; // C[3]  = carry-in                       , no  carry-out
     // mad.lo.cc.u32  C[2], B[1], A[1], C[2]; // C[2] += (A[1]*B[1]).[31:0]             , may carry-out
     // madc.hi.u32    C[3], B[1], A[1], C[3]; // C[3] += (A[1]*B[1]).[63:32] + carry-in
-
-    // write result back to global memory (in coalesced form)
-    for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
-    {
-        c[COAL_IDX(i, tid)] = c_local[i];
-    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
