@@ -133,6 +133,74 @@ __device__ void mul(uint32_t* c, uint32_t* a, uint32_t* b, uint32_t tid)
     uint32_t b_local[MIN_BIGNUM_NUMBER_OF_WORDS];
     uint32_t c_local[MAX_BIGNUM_NUMBER_OF_WORDS];
 
+    // Example of the schoolbook multiplication algorithm we will use:
+    //
+    //                            A[4] A[3] A[2] A[1] A[0]
+    //                          * B[4] B[3] B[2] B[1] B[0]
+    // ---------------------------------------------------
+    //                                           B[0]*A[0]
+    //                                      B[0]*A[1]
+    //                                 B[0]*A[2]
+    //                            B[0]*A[3]
+    //                       B[0]*A[4]
+    //                                      B[1]*A[0]
+    //                                 B[1]*A[1]
+    //                            B[1]*A[2]
+    //                       B[1]*A[3]
+    //                  B[1]*A[4]
+    //                                 B[2]*A[0]
+    //                            B[2]*A[1]
+    //                       B[2]*A[2]
+    //                  B[2]*A[3]
+    //             B[2]*A[4]
+    //                            B[3]*A[0]
+    //                       B[3]*A[1]
+    //                  B[3]*A[2]
+    //             B[3]*A[3]
+    //        B[3]*A[4]
+    //                       B[4]*A[0]
+    //                  B[4]*A[1]
+    //             B[4]*A[2]
+    //        B[4]*A[3]
+    // + B[4]*A[4]
+    // ---------------------------------------------------
+    //   C[9] C[8] C[7] C[6] C[5] C[4] C[3] C[2] C[1] C[0]
+
+    // Because of CUDA carry propagation problems (the carry flag is only kept
+    // for the next assembly instruction), we will have to order the steps in
+    // the following way:
+    //
+    //                            A[4] A[3] A[2] A[1] A[0]
+    //                          * B[4] B[3] B[2] B[1] B[0]
+    // ---------------------------------------------------
+    //                                           B[0]*A[0]
+    //                                      B[0]*A[1]
+    //                                      B[1]*A[0]
+    //                                 B[0]*A[2]
+    //                                 B[1]*A[1]
+    //                                 B[2]*A[0]
+    //                            B[0]*A[3]
+    //                            B[1]*A[2]
+    //                            B[2]*A[1]
+    //                            B[3]*A[0]
+    //                       B[0]*A[4]
+    //                       B[1]*A[3]
+    //                       B[2]*A[2]
+    //                       B[3]*A[1]
+    //                       B[4]*A[0]
+    //                  B[1]*A[4]
+    //                  B[2]*A[3]
+    //                  B[3]*A[2]
+    //                  B[4]*A[1]
+    //             B[2]*A[4]
+    //             B[3]*A[3]
+    //             B[4]*A[2]
+    //        B[3]*A[4]
+    //        B[4]*A[3]
+    // + B[4]*A[4]
+    // ---------------------------------------------------
+    //   C[9] C[8] C[7] C[6] C[5] C[4] C[3] C[2] C[1] C[0]
+
     // load coalesced data into these NORMAL local bignum arrays.
     for (uint32_t i = 0; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
     {
@@ -151,6 +219,11 @@ __device__ void mul(uint32_t* c, uint32_t* a, uint32_t* b, uint32_t tid)
     // mad.lo.cc.u32  C[2],A[1],B[1],C[2]; // C[2] += (A[1]*B[1]).[31:0]            , may carry-out
     // madc.hi.u32    C[3],A[1],B[1],C[3]; // C[3] += (A[1]*B[1]).[63:32] + carry-in
 
+    // write result back to global memory (in coalesced form)
+    for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
+    {
+        c[COAL_IDX(i, tid)] = c_local[i];
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
