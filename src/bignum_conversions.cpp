@@ -413,19 +413,29 @@ void print_bignum_array(uint32_t* in)
 {
     assert(in != NULL);
 
-    uint32_t print_width = ceil(log10(pow(2, BITS_PER_WORD) - 1));
-
     for (uint32_t i = 0; i < NUMBER_OF_BIGNUMS; i++)
     {
-        for (uint32_t j = 0; j < MAX_BIGNUM_NUMBER_OF_WORDS; j++)
-        {
-            printf("%*u    ", print_width, in[IDX(i, j)]);
-        }
-
+        print_bignum(&in[IDX(i, 0)]);
         printf("\n");
     }
 
     fflush(stdout);
+}
+
+/**
+ * Prints the contents of 1 bignum on the standard output.
+ * @param in bignum array to be printed.
+ */
+void print_bignum(uint32_t* in)
+{
+    assert(in != NULL);
+
+    uint32_t print_width = ceil(log10(pow(2, BITS_PER_WORD) - 1));
+
+    for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
+    {
+        printf("%*u    ", print_width, in[i]);
+    }
 }
 
 /**

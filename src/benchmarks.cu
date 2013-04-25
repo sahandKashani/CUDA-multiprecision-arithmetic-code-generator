@@ -18,13 +18,13 @@ __global__ void add_glo_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b
 __global__ void add_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b);
 __global__ void sub_glo_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b);
 __global__ void sub_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b);
-__global__ void mul_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b);
+__global__ void mul_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b);
 
 __device__ void add_glo(uint32_t* c_glo, uint32_t* a_glo, uint32_t* b_glo, uint32_t tid);
 __device__ void add_loc(uint32_t* c_loc, uint32_t* a_loc, uint32_t* b_loc);
 __device__ void sub_glo(uint32_t* c_glo, uint32_t* a_glo, uint32_t* b_glo, uint32_t tid);
 __device__ void sub_loc(uint32_t* c_loc, uint32_t* a_loc, uint32_t* b_loc);
-__device__ void mul_glo(uint32_t* c_glo, uint32_t* a_glo, uint32_t* b_glo, uint32_t tid);
+__device__ void mul_loc(uint32_t* c_glo, uint32_t* a_glo, uint32_t* b_glo);
 __device__ void mul_word_loc(uint32_t* c_loc, uint32_t* a_loc, uint32_t b_loc, uint32_t shift);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -37,8 +37,8 @@ void benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
     assert(host_b != NULL);
     assert(host_c != NULL);
 
-    add_benchmark(host_c, host_a, host_b);
-    sub_benchmark(host_c, host_a, host_b);
+    // add_benchmark(host_c, host_a, host_b);
+    // sub_benchmark(host_c, host_a, host_b);
     mul_benchmark(host_c, host_a, host_b);
 }
 
@@ -56,7 +56,7 @@ void sub_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
 
 void mul_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
 {
-    // binary_operator_benchmark(host_c, host_a, host_b, mul_kernel, mul_check, "multiplication");
+    binary_operator_benchmark(host_c, host_a, host_b, mul_loc_kernel, mul_check, "multiplication");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -71,27 +71,29 @@ __global__ void add_glo_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b
 
 __global__ void add_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b)
 {
-    // uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
+    uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
 
     uint32_t a[MAX_BIGNUM_NUMBER_OF_WORDS];
     uint32_t b[MAX_BIGNUM_NUMBER_OF_WORDS];
     uint32_t c[MAX_BIGNUM_NUMBER_OF_WORDS];
 
-    // for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
-    // {
-    //     a[i] = dev_a[COAL_IDX(i, tid)];
-    //     b[i] = dev_b[COAL_IDX(i, tid)];
-    //     c[i] = dev_c[COAL_IDX(i, tid)];
-    // }
+    #pragma unroll
+    for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
+    {
+        a[i] = dev_a[COAL_IDX(i, tid)];
+        b[i] = dev_b[COAL_IDX(i, tid)];
+        c[i] = dev_c[COAL_IDX(i, tid)];
+    }
 
     add_loc(c, a, b);
 
-    // for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
-    // {
-    //     dev_a[COAL_IDX(i, tid)] = a[i];
-    //     dev_b[COAL_IDX(i, tid)] = b[i];
-    //     dev_c[COAL_IDX(i, tid)] = c[i];
-    // }
+    #pragma unroll
+    for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
+    {
+        dev_a[COAL_IDX(i, tid)] = a[i];
+        dev_b[COAL_IDX(i, tid)] = b[i];
+        dev_c[COAL_IDX(i, tid)] = c[i];
+    }
 }
 
 __global__ void sub_glo_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b)
@@ -102,33 +104,56 @@ __global__ void sub_glo_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b
 
 __global__ void sub_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b)
 {
-    // uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
+    uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
 
     uint32_t a[MAX_BIGNUM_NUMBER_OF_WORDS];
     uint32_t b[MAX_BIGNUM_NUMBER_OF_WORDS];
     uint32_t c[MAX_BIGNUM_NUMBER_OF_WORDS];
 
-    // for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
-    // {
-    //     a[i] = dev_a[COAL_IDX(i, tid)];
-    //     b[i] = dev_b[COAL_IDX(i, tid)];
-    //     c[i] = dev_c[COAL_IDX(i, tid)];
-    // }
+    #pragma unroll
+    for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
+    {
+        a[i] = dev_a[COAL_IDX(i, tid)];
+        b[i] = dev_b[COAL_IDX(i, tid)];
+        c[i] = dev_c[COAL_IDX(i, tid)];
+    }
 
     sub_loc(c, a, b);
 
-    // for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
-    // {
-    //     dev_a[COAL_IDX(i, tid)] = a[i];
-    //     dev_b[COAL_IDX(i, tid)] = b[i];
-    //     dev_c[COAL_IDX(i, tid)] = c[i];
-    // }
+    #pragma unroll
+    for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
+    {
+        dev_a[COAL_IDX(i, tid)] = a[i];
+        dev_b[COAL_IDX(i, tid)] = b[i];
+        dev_c[COAL_IDX(i, tid)] = c[i];
+    }
 }
 
-__global__ void mul_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b)
+__global__ void mul_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b)
 {
-    // uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
-    // mul(dev_c, dev_a, dev_b, tid);
+    uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
+
+    uint32_t a[MAX_BIGNUM_NUMBER_OF_WORDS];
+    uint32_t b[MAX_BIGNUM_NUMBER_OF_WORDS];
+    uint32_t c[MAX_BIGNUM_NUMBER_OF_WORDS];
+
+    #pragma unroll
+    for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
+    {
+        a[i] = dev_a[COAL_IDX(i, tid)];
+        b[i] = dev_b[COAL_IDX(i, tid)];
+        c[i] = dev_c[COAL_IDX(i, tid)];
+    }
+
+    mul_loc(c, a, b);
+
+    #pragma unroll
+    for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
+    {
+        dev_a[COAL_IDX(i, tid)] = a[i];
+        dev_b[COAL_IDX(i, tid)] = b[i];
+        dev_c[COAL_IDX(i, tid)] = c[i];
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -223,7 +248,7 @@ __device__ void sub_loc(uint32_t* c_loc, uint32_t* a_loc, uint32_t* b_loc)
           "r" (b_loc[MAX_BIGNUM_NUMBER_OF_WORDS - 1]));
 }
 
-__device__ void mul_glo(uint32_t* c_glo, uint32_t* a_glo, uint32_t* b_glo, uint32_t tid)
+__device__ void mul_loc(uint32_t* c_loc, uint32_t* a_loc, uint32_t* b_loc)
 {
     // ATTENTION: Assuming "a" and "b" are n-bit bignums, their multiplication
     // can give a bignum of length 2n-bits. Since we are coding a generic
@@ -299,6 +324,10 @@ __device__ void mul_glo(uint32_t* c_glo, uint32_t* a_glo, uint32_t* b_glo, uint3
     // -----------------------------------------------------------------------
     // | C[9] | C[8] | C[7] | C[6] | C[5] | C[4] | C[3] | C[2] | C[1] | C[0] |
 
+    // But these loops are very difficult to code in a generic way for them to
+    // work for any value of MIN_BIGNUM_NUMBER_OF_WORDS and
+    // MAX_BIGNUM_NUMBER_OF_WORDS. So we will use the following derivative:
+
     // Alternatively, we could use our addition algorithm, and do bignum
     // multiplication with bigger chunks, then add the intermediary results in
     // the following:
@@ -313,6 +342,19 @@ __device__ void mul_glo(uint32_t* c_glo, uint32_t* a_glo, uint32_t* b_glo, uint3
     // + A[4]---A[3]---A[2]---A[1]---A[0] * B[4] |      |      |      |      |
     // -----------------------------------------------------------------------
     // | C[9] | C[8] | C[7] | C[6] | C[5] | C[4] | C[3] | C[2] | C[1] | C[0] |
+
+    // we are multiplying 2 bignums, each of which are held on
+    // MAX_BIGNUM_NUMBER_OF_WORDS, but we know the data is actually on
+    // MIN_BIGNUM_NUMBER_OF_WORDS.
+
+    uint32_t tmp[MAX_BIGNUM_NUMBER_OF_WORDS];
+
+    #pragma unroll
+    for (uint32_t i = 0; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
+    {
+        mul_word_loc(tmp, a_loc, b_loc[i], i);
+        add_loc(c_loc, c_loc, tmp);
+    }
 }
 
 __device__ void mul_word_loc(uint32_t* c_loc, uint32_t* a_loc, uint32_t b_loc, uint32_t shift)
@@ -346,22 +388,18 @@ __device__ void mul_word_loc(uint32_t* c_loc, uint32_t* a_loc, uint32_t b_loc, u
     // Example assembly for 5-word bignum multiplication:
     //
     // mad.lo.u32     C[shift]    , B, A[0], 0;
-    //
     // madc.hi.cc.u32 C[shift + 1], B, A[0], 0;
     // mad.lo.cc.u32  C[shift + 1], B, A[1], C[shift + 1];
-    //
     // madc.hi.cc.u32 C[shift + 2], B, A[1], 0;
     // mad.lo.cc.u32  C[shift + 2], B, A[2], C[shift + 2];
-    //
     // madc.hi.cc.u32 C[shift + 3], B, A[2], 0;
     // mad.lo.cc.u32  C[shift + 3], B, A[3], C[shift + 3];
-    //
     // madc.hi.cc.u32 C[shift + 4], B, A[3], 0;
     // mad.lo.cc.u32  C[shift + 4], B, A[4], C[shift + 4];
-    //
-    // madc.hi.u32    C[5], B, A[4], 0;
+    // madc.hi.u32    C[shift + 5], B, A[4], 0;
 
     // set leading and trailing values of c_loc to 0
+    #pragma unroll
     for (uint32_t i = 0; i < shift; i++)
     {
         c_loc[i] = 0;
@@ -370,20 +408,27 @@ __device__ void mul_word_loc(uint32_t* c_loc, uint32_t* a_loc, uint32_t b_loc, u
 
     asm("mad.lo.u32 %0, %1, %2, 0;"
         : "=r"(c_loc[shift])
-        : "r" (b_loc), "r" (a_loc[0]));
+        : "r" (b_loc),
+          "r" (a_loc[0]));
 
+    // ATTENTION: here we loop until MIN_BIGNUM_NUMBER_OF_WORDS, because we are
+    // trying to optimize the number of loops we use. We can do this because we
+    // know the actual bit-length of the operands.
     #pragma unroll
     for (uint32_t i = 1; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
     {
         asm("madc.hi.cc.u32 %0, %1, %2, 0;"
             "mad.lo.cc.u32  %0, %1, %3, %0;"
             : "=r"(c_loc[shift + i])
-            : "r" (b_loc), "r" (a_loc[i - 1]), "r" (a_loc[i]));
+            : "r" (b_loc),
+              "r" (a_loc[i - 1]),
+              "r" (a_loc[i]));
     }
 
     asm("madc.hi.u32 %0, %1, %2, 0;"
         : "=r"(c_loc[shift + MIN_BIGNUM_NUMBER_OF_WORDS])
-        : "r" (b_loc), "r" (a_loc[MAX_BIGNUM_NUMBER_OF_WORDS - 1]));
+        : "r" (b_loc),
+          "r" (a_loc[MAX_BIGNUM_NUMBER_OF_WORDS - 1]));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

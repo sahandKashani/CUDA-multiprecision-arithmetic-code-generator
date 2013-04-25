@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-#define THREADS_PER_BLOCK 512
-#define BLOCKS_PER_GRID 512
+#define THREADS_PER_BLOCK 1
+#define BLOCKS_PER_GRID 1
 
 #define NUMBER_OF_BIGNUMS ((uint32_t) (THREADS_PER_BLOCK) * (BLOCKS_PER_GRID))
 

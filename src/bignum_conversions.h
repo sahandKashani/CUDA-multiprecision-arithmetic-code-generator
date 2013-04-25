@@ -20,6 +20,7 @@ void pad_binary_string_with_zeros(char** old_str);
 void binary_string_to_bignum(char* str, uint32_t* number);
 void bignum_array_to_coalesced_bignum_array(uint32_t* in);
 void coalesced_bignum_array_to_bignum_array(uint32_t* in);
+void print_bignum(uint32_t* in);
 void print_bignum_array(uint32_t* in);
 void print_coalesced_bignum_array(uint32_t* in);
 void mpz_t_to_bignum(mpz_t number, uint32_t* bignum);
