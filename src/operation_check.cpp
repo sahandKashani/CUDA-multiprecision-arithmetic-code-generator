@@ -117,17 +117,14 @@ void binary_operator_check(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b,
         {
             gmp_printf("incorrect calculation at iteration %d\n", i);
 
-            gmp_printf("gpu algorithm:   %s = %Zd\n"
-                       "               %c %s = %Zd\n"
-                       "               = %s = %Zd\n",
-                       a_str, a, op_character, b_str, b, our_c_str, our_c);
-
-            gmp_printf("\n");
-
-            gmp_printf("gmp algorithm:   %s = %Zd\n"
-                       "               %c %s = %Zd\n"
-                       "               = %s = %Zd\n",
-                       a_str, a, op_character, b_str, b, gmp_c_str, gmp_c);
+            gmp_printf("        %s = %Zd\n"
+                       "      %c %s = %Zd\n"
+                       " gpu: = %s = %Zd\n"
+                       " gmp: = %s = %Zd\n",
+                       a_str, a,
+                       op_character, b_str, b,
+                       our_c_str, our_c,
+                       gmp_c_str, gmp_c);
 
             fflush(stdout);
             results_correct = false;
