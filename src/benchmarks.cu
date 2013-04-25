@@ -27,6 +27,20 @@ __device__ void sub_loc(uint32_t* c_loc, uint32_t* a_loc, uint32_t* b_loc);
 __device__ void mul_loc(uint32_t* c_glo, uint32_t* a_glo, uint32_t* b_glo);
 __device__ void mul_word_loc(uint32_t* c_loc, uint32_t* a_loc, uint32_t b_loc, uint32_t shift);
 
+/**
+ * Prints the contents of 1 bignum on the standard output.
+ * @param in bignum array to be printed.
+ */
+__device__ void dev_print_bignum(uint32_t* in)
+{
+    assert(in != NULL);
+
+    for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
+    {
+        printf("%u    ", in[i]);
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////// BENCHMARKS /////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -37,8 +51,8 @@ void benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
     assert(host_b != NULL);
     assert(host_c != NULL);
 
-    // add_benchmark(host_c, host_a, host_b);
-    // sub_benchmark(host_c, host_a, host_b);
+    add_benchmark(host_c, host_a, host_b);
+    sub_benchmark(host_c, host_a, host_b);
     mul_benchmark(host_c, host_a, host_b);
 }
 
@@ -82,7 +96,6 @@ __global__ void add_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b
     {
         a[i] = dev_a[COAL_IDX(i, tid)];
         b[i] = dev_b[COAL_IDX(i, tid)];
-        c[i] = dev_c[COAL_IDX(i, tid)];
     }
 
     add_loc(c, a, b);
@@ -90,8 +103,6 @@ __global__ void add_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b
     #pragma unroll
     for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
     {
-        dev_a[COAL_IDX(i, tid)] = a[i];
-        dev_b[COAL_IDX(i, tid)] = b[i];
         dev_c[COAL_IDX(i, tid)] = c[i];
     }
 }
@@ -115,7 +126,6 @@ __global__ void sub_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b
     {
         a[i] = dev_a[COAL_IDX(i, tid)];
         b[i] = dev_b[COAL_IDX(i, tid)];
-        c[i] = dev_c[COAL_IDX(i, tid)];
     }
 
     sub_loc(c, a, b);
@@ -123,8 +133,6 @@ __global__ void sub_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b
     #pragma unroll
     for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
     {
-        dev_a[COAL_IDX(i, tid)] = a[i];
-        dev_b[COAL_IDX(i, tid)] = b[i];
         dev_c[COAL_IDX(i, tid)] = c[i];
     }
 }
@@ -142,7 +150,6 @@ __global__ void mul_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b
     {
         a[i] = dev_a[COAL_IDX(i, tid)];
         b[i] = dev_b[COAL_IDX(i, tid)];
-        c[i] = dev_c[COAL_IDX(i, tid)];
     }
 
     mul_loc(c, a, b);
@@ -150,8 +157,6 @@ __global__ void mul_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b
     #pragma unroll
     for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
     {
-        dev_a[COAL_IDX(i, tid)] = a[i];
-        dev_b[COAL_IDX(i, tid)] = b[i];
         dev_c[COAL_IDX(i, tid)] = c[i];
     }
 }
@@ -352,8 +357,27 @@ __device__ void mul_loc(uint32_t* c_loc, uint32_t* a_loc, uint32_t* b_loc)
     #pragma unroll
     for (uint32_t i = 0; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
     {
+        // printf("a_loc = ");
+        // dev_print_bignum(a_loc);
+        // printf("\n");
+
+        // printf("b_loc = %u\n", b_loc[i]);
+
+        // printf("tmp_before_multiplication = ");
+        // dev_print_bignum(tmp);
+        // printf("\n");
+
         mul_word_loc(tmp, a_loc, b_loc[i], i);
+
+        // printf("tmp_after_multiplication = ");
+        // dev_print_bignum(tmp);
+        // printf("\n");
+
         add_loc(c_loc, c_loc, tmp);
+
+        // printf("tmp_after_add = ");
+        // dev_print_bignum(tmp);
+        // printf("\n");
     }
 }
 
@@ -400,11 +424,17 @@ __device__ void mul_word_loc(uint32_t* c_loc, uint32_t* a_loc, uint32_t b_loc, u
 
     // set leading and trailing values of c_loc to 0
     #pragma unroll
-    for (uint32_t i = 0; i < shift; i++)
+    for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
     {
         c_loc[i] = 0;
-        c_loc[MAX_BIGNUM_NUMBER_OF_WORDS - i] = 0;
     }
+
+    // #pragma unroll
+    // for (uint32_t i = 0; i < shift; i++)
+    // {
+    //     c_loc[i] = 0;
+    //     c_loc[MAX_BIGNUM_NUMBER_OF_WORDS - i] = 0;
+    // }
 
     asm("mad.lo.u32 %0, %1, %2, 0;"
         : "=r"(c_loc[shift])
@@ -458,7 +488,6 @@ void binary_operator_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* hos
     cudaError dev_a_malloc_success = cudaMalloc((void**) &dev_a, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
     cudaError dev_b_malloc_success = cudaMalloc((void**) &dev_b, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
     cudaError dev_c_malloc_success = cudaMalloc((void**) &dev_c, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
-
     assert(dev_a_malloc_success == cudaSuccess);
     assert(dev_b_malloc_success == cudaSuccess);
     assert(dev_c_malloc_success == cudaSuccess);
@@ -466,9 +495,12 @@ void binary_operator_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* hos
     // copy operands to device memory
     cudaError dev_a_memcpy_succes = cudaMemcpy(dev_a, host_a, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t), cudaMemcpyHostToDevice);
     cudaError dev_b_memcpy_succes = cudaMemcpy(dev_b, host_b, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t), cudaMemcpyHostToDevice);
-
     assert(dev_a_memcpy_succes == cudaSuccess);
     assert(dev_b_memcpy_succes == cudaSuccess);
+
+    // set result values to 0
+    cudaError dev_c_memset_success = cudaMemset(dev_c, 0, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
+    assert(dev_c_memset_success == cudaSuccess);
 
     // execute kernel
     printf("Performing \"%s\" on GPU ... ", operation_name);

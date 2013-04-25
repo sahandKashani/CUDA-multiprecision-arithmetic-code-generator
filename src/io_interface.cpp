@@ -43,6 +43,13 @@ void generate_modulus_and_operands_to_files(const char* host_m_file_name, const 
         generate_bignum_less_than_bignum(host_m, host_a);
         generate_bignum_less_than_bignum(host_m, host_b);
 
+        // // to remove
+        // host_b[0] = 5;
+        // for (uint32_t i = 1; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
+        // {
+        //     host_b[i] = 0;
+        // }
+
         for (uint32_t j = 0; j < MAX_BIGNUM_NUMBER_OF_WORDS; j++)
         {
             fprintf(host_a_file, "%u ", host_a[j]);
