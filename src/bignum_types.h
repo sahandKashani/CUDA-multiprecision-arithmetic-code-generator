@@ -10,7 +10,7 @@
 #define BITS_PER_WORD 32
 
 // change this value at will to have bigger numbers
-#define BIT_RANGE ((uint32_t) 51)
+#define BIT_RANGE ((uint32_t) 33)
 
 // NEVER CHANGE THESE VALUES
 #define MIN_BIGNUM_NUMBER_OF_WORDS CEILING(BIT_RANGE, BITS_PER_WORD)

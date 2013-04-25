@@ -27,10 +27,7 @@ __device__ void sub_loc(uint32_t* c_loc, uint32_t* a_loc, uint32_t* b_loc);
 __device__ void mul_loc(uint32_t* c_glo, uint32_t* a_glo, uint32_t* b_glo);
 __device__ void mul_word_loc(uint32_t* c_loc, uint32_t* a_loc, uint32_t b_loc, uint32_t shift);
 
-/**
- * Prints the contents of 1 bignum on the standard output.
- * @param in bignum array to be printed.
- */
+// To remove
 __device__ void dev_print_bignum(uint32_t* in)
 {
     assert(in != NULL);
@@ -51,8 +48,8 @@ void benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
     assert(host_b != NULL);
     assert(host_c != NULL);
 
-    add_benchmark(host_c, host_a, host_b);
-    sub_benchmark(host_c, host_a, host_b);
+    // add_benchmark(host_c, host_a, host_b);
+    // sub_benchmark(host_c, host_a, host_b);
     mul_benchmark(host_c, host_a, host_b);
 }
 
@@ -513,8 +510,15 @@ void binary_operator_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* hos
 
     // copy results back to host
     cudaError dev_c_memcpy_success = cudaMemcpy(host_c, dev_c, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t), cudaMemcpyDeviceToHost);
-
     assert(dev_c_memcpy_success == cudaSuccess);
+
+    // set all values to 0 before freeing
+    cudaError dev_a_cleanup_memset_success = cudaMemset(dev_a, 0, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
+    cudaError dev_b_cleanup_memset_success = cudaMemset(dev_b, 0, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
+    cudaError dev_c_cleanup_memset_success = cudaMemset(dev_c, 0, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
+    assert(dev_a_cleanup_memset_success == cudaSuccess);
+    assert(dev_b_cleanup_memset_success == cudaSuccess);
+    assert(dev_c_cleanup_memset_success == cudaSuccess);
 
     // put data back to non-coalesced form
     coalesced_bignum_array_to_bignum_array(host_a);
