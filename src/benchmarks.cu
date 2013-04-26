@@ -8,49 +8,6 @@
 #include <stdint.h>
 #include <assert.h>
 
-#define add_loc_asm(c_loc, a_loc, b_loc) {\
-asm(\
-"add.cc.u32 %0, %9, %18;"\
-"addc.cc.u32 %1, %10, %19;"\
-"addc.cc.u32 %2, %11, %20;"\
-"addc.cc.u32 %3, %12, %21;"\
-"addc.cc.u32 %4, %13, %22;"\
-"addc.cc.u32 %5, %14, %23;"\
-"addc.cc.u32 %6, %15, %24;"\
-"addc.cc.u32 %7, %16, %25;"\
-"addc.u32 %8, %17, %26;"\
-:\
-"=r"(c_loc[0]),\
-"=r"(c_loc[1]),\
-"=r"(c_loc[2]),\
-"=r"(c_loc[3]),\
-"=r"(c_loc[4]),\
-"=r"(c_loc[5]),\
-"=r"(c_loc[6]),\
-"=r"(c_loc[7]),\
-"=r"(c_loc[8])\
-:\
-"r"(a_loc[0]),\
-"r"(a_loc[1]),\
-"r"(a_loc[2]),\
-"r"(a_loc[3]),\
-"r"(a_loc[4]),\
-"r"(a_loc[5]),\
-"r"(a_loc[6]),\
-"r"(a_loc[7]),\
-"r"(a_loc[8]),\
-"r"(b_loc[0]),\
-"r"(b_loc[1]),\
-"r"(b_loc[2]),\
-"r"(b_loc[3]),\
-"r"(b_loc[4]),\
-"r"(b_loc[5]),\
-"r"(b_loc[6]),\
-"r"(b_loc[7]),\
-"r"(b_loc[8])\
-);\
-}
-
 void binary_operator_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b, void (*kernel)(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b), void (*checking_function)(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b), char* operation_name);
 
 void add_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b);
