@@ -25,7 +25,7 @@ __device__ void add_loc(uint32_t* c_loc, uint32_t* a_loc, uint32_t* b_loc);
 __device__ void sub_glo(uint32_t* c_glo, uint32_t* a_glo, uint32_t* b_glo, uint32_t tid);
 __device__ void sub_loc(uint32_t* c_loc, uint32_t* a_loc, uint32_t* b_loc);
 __device__ void mul_loc(uint32_t* c_glo, uint32_t* a_glo, uint32_t* b_glo);
-__device__ void mul_word_loc(uint32_t* c_loc, uint32_t* a_loc, uint32_t b_loc, uint32_t shift);
+__device__ void mul_with_one_word_loc(uint32_t* c_loc, uint32_t* a_loc, uint32_t b_loc, uint32_t shift);
 
 // To remove
 __device__ void dev_print_bignum(uint32_t* in)
@@ -350,35 +350,36 @@ __device__ void mul_loc(uint32_t* c_loc, uint32_t* a_loc, uint32_t* b_loc)
     // MIN_BIGNUM_NUMBER_OF_WORDS.
 
     uint32_t tmp[MAX_BIGNUM_NUMBER_OF_WORDS];
+    mul_with_one_word_loc(c_loc, a_loc, b_loc[0], 0);
 
-    #pragma unroll
-    for (uint32_t i = 0; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
-    {
-        // printf("a_loc = ");
-        // dev_print_bignum(a_loc);
-        // printf("\n");
+    // #pragma unroll
+    // for (uint32_t i = 0; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
+    // {
+    //     // printf("a_loc = ");
+    //     // dev_print_bignum(a_loc);
+    //     // printf("\n");
 
-        // printf("b_loc = %u\n", b_loc[i]);
+    //     // printf("b_loc = %u\n", b_loc[i]);
 
-        // printf("tmp_before_multiplication = ");
-        // dev_print_bignum(tmp);
-        // printf("\n");
+    //     // printf("tmp_before_multiplication = ");
+    //     // dev_print_bignum(tmp);
+    //     // printf("\n");
 
-        mul_word_loc(tmp, a_loc, b_loc[i], i);
+    //     mul_with_one_word_loc(tmp, a_loc, b_loc[i], i);
 
-        // printf("tmp_after_multiplication = ");
-        // dev_print_bignum(tmp);
-        // printf("\n");
+    //     // printf("tmp_after_multiplication = ");
+    //     // dev_print_bignum(tmp);
+    //     // printf("\n");
 
-        add_loc(c_loc, c_loc, tmp);
+    //     add_loc(c_loc, c_loc, tmp);
 
-        // printf("tmp_after_add = ");
-        // dev_print_bignum(tmp);
-        // printf("\n");
-    }
+    //     // printf("tmp_after_add = ");
+    //     // dev_print_bignum(tmp);
+    //     // printf("\n");
+    // }
 }
 
-__device__ void mul_word_loc(uint32_t* c_loc, uint32_t* a_loc, uint32_t b_loc, uint32_t shift)
+__device__ void mul_with_one_word_loc(uint32_t* c_loc, uint32_t* a_loc, uint32_t b_loc, uint32_t shift)
 {
     // Example algorithm execution on 5-word bignums with shift = 0:
     //
@@ -408,54 +409,68 @@ __device__ void mul_word_loc(uint32_t* c_loc, uint32_t* a_loc, uint32_t b_loc, u
 
     // Example assembly for 5-word bignum multiplication:
     //
-    // mad.lo.u32     C[shift]    , B, A[0], 0;
-    // madc.hi.cc.u32 C[shift + 1], B, A[0], 0;
-    // mad.lo.cc.u32  C[shift + 1], B, A[1], C[shift + 1];
-    // madc.hi.cc.u32 C[shift + 2], B, A[1], 0;
-    // mad.lo.cc.u32  C[shift + 2], B, A[2], C[shift + 2];
-    // madc.hi.cc.u32 C[shift + 3], B, A[2], 0;
-    // mad.lo.cc.u32  C[shift + 3], B, A[3], C[shift + 3];
-    // madc.hi.cc.u32 C[shift + 4], B, A[3], 0;
-    // mad.lo.cc.u32  C[shift + 4], B, A[4], C[shift + 4];
-    // madc.hi.u32    C[shift + 5], B, A[4], 0;
+    // mad.lo.u32    C[shift]    , B, A[0], 0;
+    // mad.hi.u32    C[shift + 1], B, A[0], 0;
+    //
+    // mad.lo.cc.u32 C[shift + 1], B, A[1], C[shift + 1];
+    // madc.hi.u32   C[shift + 2], B, A[1], 0;
+    //
+    // mad.lo.cc.u32 C[shift + 2], B, A[2], C[shift + 2];
+    // madc.hi.u32   C[shift + 3], B, A[2], 0;
+    //
+    // mad.lo.cc.u32 C[shift + 3], B, A[3], C[shift + 3];
+    // madc.hi.u32   C[shift + 4], B, A[3], 0;
+    //
+    // mad.lo.cc.u32 C[shift + 4], B, A[4], C[shift + 4];
+    // madc.hi.u32   C[shift + 5], B, A[4], 0;
 
     // set leading and trailing values of c_loc to 0
     #pragma unroll
-    for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
+    for (uint32_t i = 0; i < shift; i++)
     {
         c_loc[i] = 0;
+        c_loc[MAX_BIGNUM_NUMBER_OF_WORDS - i] = 0;
     }
 
+    asm("mad.lo.u32    %0, %6, %7 ,  0;"
+        "mad.hi.u32    %1, %6, %7 ,  0;"
+        "mad.lo.cc.u32 %1, %6, %8 , %1;"
+        "madc.hi.u32   %2, %6, %8 ,  0;"
+        "mad.lo.cc.u32 %2, %6, %9 , %2;"
+        "madc.hi.u32   %3, %6, %9 ,  0;"
+        "mad.lo.cc.u32 %3, %6, %10, %3;"
+        "madc.hi.u32   %4, %6, %10,  0;"
+        "mad.lo.cc.u32 %4, %6, %11, %4;"
+        "madc.hi.u32   %5, %6, %11,  0;"
+        : "=r"(c_loc[shift]),
+          "=r"(c_loc[shift + 1]),
+          "=r"(c_loc[shift + 2]),
+          "=r"(c_loc[shift + 3]),
+          "=r"(c_loc[shift + 4]),
+          "=r"(c_loc[shift + 5])
+        : "r" (b_loc),
+          "r" (a_loc[0]),
+          "r" (a_loc[1]),
+          "r" (a_loc[2]),
+          "r" (a_loc[3]),
+          "r" (a_loc[4]));
+
+    // // ATTENTION: here we loop until MIN_BIGNUM_NUMBER_OF_WORDS (included),
+    // // because we are trying to optimize the number of loops we use. We can do
+    // // this because we know the actual bit-length of the operands.
     // #pragma unroll
-    // for (uint32_t i = 0; i < shift; i++)
+    // for (uint32_t i = 1; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
     // {
-    //     c_loc[i] = 0;
-    //     c_loc[MAX_BIGNUM_NUMBER_OF_WORDS - i] = 0;
+    //     asm("mad.lo.cc.u32 %0, %1, %2, %0;"
+    //         : "=r"(c_loc[shift + i])
+    //         : "r" (b_loc),
+    //           "r" (a_loc[i]));
+
+    //     asm("madc.hi.u32 %0, %1, %2, 0;"
+    //         : "=r"(c_loc[shift + i + 1])
+    //         : "r" (b_loc),
+    //           "r" (a_loc[i]));
     // }
-
-    asm("mad.lo.u32 %0, %1, %2, 0;"
-        : "=r"(c_loc[shift])
-        : "r" (b_loc),
-          "r" (a_loc[0]));
-
-    // ATTENTION: here we loop until MIN_BIGNUM_NUMBER_OF_WORDS, because we are
-    // trying to optimize the number of loops we use. We can do this because we
-    // know the actual bit-length of the operands.
-    #pragma unroll
-    for (uint32_t i = 1; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
-    {
-        asm("madc.hi.cc.u32 %0, %1, %2, 0;"
-            "mad.lo.cc.u32  %0, %1, %3, %0;"
-            : "=r"(c_loc[shift + i])
-            : "r" (b_loc),
-              "r" (a_loc[i - 1]),
-              "r" (a_loc[i]));
-    }
-
-    asm("madc.hi.u32 %0, %1, %2, 0;"
-        : "=r"(c_loc[shift + MIN_BIGNUM_NUMBER_OF_WORDS])
-        : "r" (b_loc),
-          "r" (a_loc[MAX_BIGNUM_NUMBER_OF_WORDS - 1]));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
