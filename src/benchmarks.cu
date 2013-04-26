@@ -186,24 +186,62 @@ __device__ void add_glo(uint32_t* c_glo, uint32_t* a_glo, uint32_t* b_glo, uint3
 
 __device__ void add_loc(uint32_t* c_loc, uint32_t* a_loc, uint32_t* b_loc)
 {
-    asm("add.cc.u32 %0, %1, %2;"
-        : "=r"(c_loc[0])
+    asm("add.cc.u32  %0, %9 , %18;"
+        "addc.cc.u32 %1, %10, %19;"
+        "addc.cc.u32 %2, %11, %20;"
+        "addc.cc.u32 %3, %12, %21;"
+        "addc.cc.u32 %4, %13, %22;"
+        "addc.cc.u32 %5, %14, %23;"
+        "addc.cc.u32 %6, %15, %24;"
+        "addc.cc.u32 %7, %16, %25;"
+        "addc.u32    %8, %17, %26;"
+        : "=r"(c_loc[0]),
+          "=r"(c_loc[1]),
+          "=r"(c_loc[2]),
+          "=r"(c_loc[3]),
+          "=r"(c_loc[4]),
+          "=r"(c_loc[5]),
+          "=r"(c_loc[6]),
+          "=r"(c_loc[7]),
+          "=r"(c_loc[8])
         : "r" (a_loc[0]),
-          "r" (b_loc[0]));
+          "r" (a_loc[1]),
+          "r" (a_loc[2]),
+          "r" (a_loc[3]),
+          "r" (a_loc[4]),
+          "r" (a_loc[5]),
+          "r" (a_loc[6]),
+          "r" (a_loc[7]),
+          "r" (a_loc[8]),
+          "r" (b_loc[0]),
+          "r" (b_loc[1]),
+          "r" (b_loc[2]),
+          "r" (b_loc[3]),
+          "r" (b_loc[4]),
+          "r" (b_loc[5]),
+          "r" (b_loc[6]),
+          "r" (b_loc[7]),
+          "r" (b_loc[8])
+          );
 
-    #pragma unroll
-    for (uint32_t i = 1; i < MAX_BIGNUM_NUMBER_OF_WORDS - 1; i++)
-    {
-        asm("addc.cc.u32 %0, %1, %2;"
-            : "=r"(c_loc[i])
-            : "r" (a_loc[i]),
-              "r" (b_loc[i]));
-    }
+    // asm("add.cc.u32 %0, %1, %2;"
+    //     : "=r"(c_loc[0])
+    //     : "r" (a_loc[0]),
+    //       "r" (b_loc[0]));
 
-    asm("addc.u32 %0, %1, %2;"
-        : "=r"(c_loc[MAX_BIGNUM_NUMBER_OF_WORDS - 1])
-        : "r" (a_loc[MAX_BIGNUM_NUMBER_OF_WORDS - 1]),
-          "r" (b_loc[MAX_BIGNUM_NUMBER_OF_WORDS - 1]));
+    // #pragma unroll
+    // for (uint32_t i = 1; i < MAX_BIGNUM_NUMBER_OF_WORDS - 1; i++)
+    // {
+    //     asm("addc.cc.u32 %0, %1, %2;"
+    //         : "=r"(c_loc[i])
+    //         : "r" (a_loc[i]),
+    //           "r" (b_loc[i]));
+    // }
+
+    // asm("addc.u32 %0, %1, %2;"
+    //     : "=r"(c_loc[MAX_BIGNUM_NUMBER_OF_WORDS - 1])
+    //     : "r" (a_loc[MAX_BIGNUM_NUMBER_OF_WORDS - 1]),
+    //       "r" (b_loc[MAX_BIGNUM_NUMBER_OF_WORDS - 1]));
 }
 
 __device__ void sub_glo(uint32_t* c_glo, uint32_t* a_glo, uint32_t* b_glo, uint32_t tid)
@@ -350,33 +388,14 @@ __device__ void mul_loc(uint32_t* c_loc, uint32_t* a_loc, uint32_t* b_loc)
     // MIN_BIGNUM_NUMBER_OF_WORDS.
 
     uint32_t tmp[MAX_BIGNUM_NUMBER_OF_WORDS];
-    mul_with_one_word_loc(c_loc, a_loc, b_loc[0], 0);
+    // mul_with_one_word_loc(c_loc, a_loc, b_loc[0], 0);
 
-    // #pragma unroll
-    // for (uint32_t i = 0; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
-    // {
-    //     // printf("a_loc = ");
-    //     // dev_print_bignum(a_loc);
-    //     // printf("\n");
-
-    //     // printf("b_loc = %u\n", b_loc[i]);
-
-    //     // printf("tmp_before_multiplication = ");
-    //     // dev_print_bignum(tmp);
-    //     // printf("\n");
-
-    //     mul_with_one_word_loc(tmp, a_loc, b_loc[i], i);
-
-    //     // printf("tmp_after_multiplication = ");
-    //     // dev_print_bignum(tmp);
-    //     // printf("\n");
-
-    //     add_loc(c_loc, c_loc, tmp);
-
-    //     // printf("tmp_after_add = ");
-    //     // dev_print_bignum(tmp);
-    //     // printf("\n");
-    // }
+    #pragma unroll
+    for (uint32_t i = 0; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
+    {
+        mul_with_one_word_loc(tmp, a_loc, b_loc[i], i);
+        add_loc(c_loc, c_loc, tmp);
+    }
 }
 
 __device__ void mul_with_one_word_loc(uint32_t* c_loc, uint32_t* a_loc, uint32_t b_loc, uint32_t shift)
