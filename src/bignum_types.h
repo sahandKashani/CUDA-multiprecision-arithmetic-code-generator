@@ -4,18 +4,11 @@
 #include "constants.h"
 #include <stdint.h>
 
-#define CEILING(x, y) (((x) + (y) - 1) / (y))
-
-// NEVER CHANGE THIS VALUE
 #define BITS_PER_WORD 32
-
-// change this value at will to have bigger numbers
-#define BIT_RANGE ((uint32_t) 131)
-
-// NEVER CHANGE THESE VALUES
-#define MIN_BIGNUM_NUMBER_OF_WORDS CEILING(BIT_RANGE, BITS_PER_WORD)
-#define MAX_BIGNUM_NUMBER_OF_WORDS CEILING(2 * BIT_RANGE, BITS_PER_WORD)
-#define TOTAL_BIT_LENGTH (MAX_BIGNUM_NUMBER_OF_WORDS * BITS_PER_WORD)
+#define BIT_RANGE 131
+#define MIN_BIGNUM_NUMBER_OF_WORDS 5
+#define MAX_BIGNUM_NUMBER_OF_WORDS 9
+#define TOTAL_BIT_LENGTH 288
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////// BIGNUM /////////////////////////////////////

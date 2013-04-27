@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define SEED ((uint32_t) 12345)
+#define SEED 12345
 
 void start_random_number_generator();
 void stop_random_number_generator();

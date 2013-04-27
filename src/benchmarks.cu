@@ -95,8 +95,7 @@ __global__ void add_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b
         b[i] = dev_b[COAL_IDX(i, tid)];
     }
 
-    // add_loc(c, a, b);
-    add_loc_asm(c, a, b);
+    add_loc(c, a, b);
 
     #pragma unroll
     for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)

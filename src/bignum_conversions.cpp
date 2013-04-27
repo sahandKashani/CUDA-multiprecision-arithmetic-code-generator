@@ -252,7 +252,7 @@ void flip_string_array(char** array)
     assert(array != NULL);
 
     char* tmp;
-    uint32_t middle_of_array = CEILING(MAX_BIGNUM_NUMBER_OF_WORDS, 2);
+    uint32_t middle_of_array = (uint32_t) ceil(MAX_BIGNUM_NUMBER_OF_WORDS / 2.0);
 
     for (uint32_t i = 0; i < middle_of_array; i++)
     {
