@@ -111,12 +111,91 @@ def sub_glo():
     asm = [line.replace('add', 'sub') for line in asm];
     return asm;
 
+def mul_loc():
+    # sum until min_bignum_number_of_words, because we know that a number is
+    # actually represented on those number of words, but the result is on
+    # max_bignum_number_of_words.
+
+    asm = [];
+
+    # header ###################################################################
+    asm.append("#define mul_loc(c_loc, a_loc, b_loc) {");
+    asm.append("asm(\"{\"");
+
+    mul_index_tuples = [];
+
+    # get product tuple indexes in array A and B ###############################
+    # +1 for inclusive range
+    for index_sum in range(2 * min_bignum_number_of_words - 2 + 1):
+        shift_index_tuples = [];
+        for i in range(min_bignum_number_of_words + 1):
+            for j in range(min_bignum_number_of_words + 1):
+                if (i + j == index_sum) and (i < min_bignum_number_of_words) and (j < min_bignum_number_of_words):
+                    shift_index_tuples.append((i, j));
+        mul_index_tuples.append(shift_index_tuples);
+
+    # assembly statements ######################################################
+    asm.append("\"reg.u32 carry;\"");
+    asm.append("\"mul.lo C[0], B[0], A[0];\"");
+
+    for i in range(1, len(mul_index_tuples)):
+        c_index = i;
+
+        if i != 1:
+            asm.append("\"add.u32 C[" + str(c_index) + "], carry, 0;\"");
+
+        asm.append("\"add.u32 carry, 0, 0;\"");
+
+        for k in range(len(mul_index_tuples[i - 1])):
+            b_index = mul_index_tuples[c_index - 1][k][0];
+            a_index = mul_index_tuples[c_index - 1][k][1];
+            if (c_index - 1) == 0:
+                asm.append("\"mul.hi.u32 C[" + str(c_index) + "], B[" + str(b_index) + "], A[" + str(a_index) + "];\"");
+            else:
+                asm.append("\"mad.hi.cc.u32 C[" + str(c_index) + "], B[" + str(b_index) + "], A[" + str(a_index) + "], C[" + str(c_index) + "];\"");
+                asm.append("\"addc.u32 carry, carry, 0;\"");
+
+        for j in range(len(mul_index_tuples[i])):
+            b_index = mul_index_tuples[c_index][j][0];
+            a_index = mul_index_tuples[c_index][j][1];
+            asm.append("\"mad.lo.cc.u32 C[" + str(c_index) + "], B[" + str(b_index) + "], A[" + str(a_index) + "], C[" + str(c_index) + "];\"");
+            asm.append("\"addc.u32 carry, carry, 0;\"");
+
+    if max_bignum_number_of_words == 2 * min_bignum_number_of_words:
+        asm.append("\"mad.hi.u32 C[" + str(max_bignum_number_of_words - 1) + "], B[" + str(min_bignum_number_of_words - 1) + "], A[" + str(min_bignum_number_of_words - 1) + "], carry;\"");
+
+    asm.append("\"}\"");
+
+    # assembly operands ########################################################
+    # asm.append(":");
+    # for i in range(max_bignum_number_of_words - 1):
+    #     asm.append("\"=r\"(c_loc[" + str(i) + "]),");
+    # asm.append("\"=r\"(c_loc[" + str(max_bignum_number_of_words - 1) + "])");
+
+    # asm.append(":");
+    # for i in range(max_bignum_number_of_words):
+    #     asm.append("\"r\"(a_loc[" + str(i) + "]),");
+
+    # for i in range(max_bignum_number_of_words - 1):
+    #     asm.append("\"r\"(b_loc[" + str(i) + "]),");
+    # asm.append("\"r\"(b_loc[" + str(max_bignum_number_of_words - 1) + "])");
+
+    # close asm statement
+    asm.append(");");
+
+    add_backslash_to_end_of_elements_in_list(asm);
+
+    # footer ###################################################################
+    asm.append("}");
+
+    return asm;
+
 # MAIN #########################################################################
 set_constants();
 
 # needed for COAL_IDX
 print("#include \"bignum_types.h\"\n");
 
-macros_to_print = [add_loc, add_glo, sub_loc, sub_glo];
+macros_to_print = [add_loc, add_glo, sub_loc, sub_glo, mul_loc];
 for func in macros_to_print:
     print("\n".join(func()) + "\n");
