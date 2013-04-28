@@ -124,9 +124,9 @@ def mul_loc():
 
     mul_index_tuples = [];
 
-    # get product tuple indexes in array A and B ###############################
-    # +1 for inclusive range
-    for index_sum in range(2 * min_bignum_number_of_words - 2 + 1):
+    # generate tuples of indexes in arrays A and B that are to be multiplied
+    # together +1 for inclusive range
+    for index_sum in range(2 * min_bignum_number_of_words - 1):
         shift_index_tuples = [];
         for i in range(min_bignum_number_of_words + 1):
             for j in range(min_bignum_number_of_words + 1):
@@ -136,49 +136,63 @@ def mul_loc():
 
     # assembly statements ######################################################
     asm.append("\"reg.u32 carry;\"");
-    asm.append("\"mul.lo C[0], B[0], A[0];\"");
+    asm.append("\"mul.lo c_loc[0], b_loc[0], a_loc[0];\"");
 
     for i in range(1, len(mul_index_tuples)):
         c_index = i;
 
+        # there is no carry to add to c_loc[1] in the very first iteration
         if i != 1:
-            asm.append("\"add.u32 C[" + str(c_index) + "], carry, 0;\"");
+            asm.append("\"add.u32 c_loc[" + str(c_index) + "], carry, 0;\"");
 
         asm.append("\"add.u32 carry, 0, 0;\"");
 
+        # .hi bit operations
         for k in range(len(mul_index_tuples[i - 1])):
             b_index = mul_index_tuples[c_index - 1][k][0];
             a_index = mul_index_tuples[c_index - 1][k][1];
+
+            # in the first iteration, we don't have any carry-out, or any older
+            # value of c_loc[1] to add, so we just do a normal mul instead of mad.
             if (c_index - 1) == 0:
-                asm.append("\"mul.hi.u32 C[" + str(c_index) + "], B[" + str(b_index) + "], A[" + str(a_index) + "];\"");
+                asm.append("\"mul.hi.u32 c_loc[" + str(c_index) + "], b_loc[" + str(b_index) + "], a_loc[" + str(a_index) + "];\"");
             else:
-                asm.append("\"mad.hi.cc.u32 C[" + str(c_index) + "], B[" + str(b_index) + "], A[" + str(a_index) + "], C[" + str(c_index) + "];\"");
+                # multiply add, with carry-out this time.
+                asm.append("\"mad.hi.cc.u32 c_loc[" + str(c_index) + "], b_loc[" + str(b_index) + "], a_loc[" + str(a_index) + "], c_loc[" + str(c_index) + "];\"");
                 asm.append("\"addc.u32 carry, carry, 0;\"");
 
+        # .lo bit operations
         for j in range(len(mul_index_tuples[i])):
             b_index = mul_index_tuples[c_index][j][0];
             a_index = mul_index_tuples[c_index][j][1];
-            asm.append("\"mad.lo.cc.u32 C[" + str(c_index) + "], B[" + str(b_index) + "], A[" + str(a_index) + "], C[" + str(c_index) + "];\"");
-            asm.append("\"addc.u32 carry, carry, 0;\"");
+            asm.append("\"mad.lo.cc.u32 c_loc[" + str(c_index) + "], b_loc[" + str(b_index) + "], a_loc[" + str(a_index) + "], c_loc[" + str(c_index) + "];\"");
 
+            # in the second last shift iteration of the multiplication, if we
+            # are at the last step, we no longer need to add the carry unless if
+            # the result is indeed on 2 * min_bignum_number_of_words.
+            if not ((i == len(mul_index_tuples) - 1) and (j == len(mul_index_tuples[i]) - 1)) or (max_bignum_number_of_words == 2 * min_bignum_number_of_words):
+                asm.append("\"addc.u32 carry, carry, 0;\"");
+
+    # if it is possible for the multiplication of 2 bignums to give a result of
+    # size 2 * min_bignum_number_of_words, then calculate the final value of C
     if max_bignum_number_of_words == 2 * min_bignum_number_of_words:
-        asm.append("\"mad.hi.u32 C[" + str(max_bignum_number_of_words - 1) + "], B[" + str(min_bignum_number_of_words - 1) + "], A[" + str(min_bignum_number_of_words - 1) + "], carry;\"");
+        asm.append("\"mad.hi.u32 c_loc[" + str(max_bignum_number_of_words - 1) + "], b_loc[" + str(min_bignum_number_of_words - 1) + "], a_loc[" + str(min_bignum_number_of_words - 1) + "], carry;\"");
 
     asm.append("\"}\"");
 
     # assembly operands ########################################################
-    # asm.append(":");
-    # for i in range(max_bignum_number_of_words - 1):
-    #     asm.append("\"=r\"(c_loc[" + str(i) + "]),");
-    # asm.append("\"=r\"(c_loc[" + str(max_bignum_number_of_words - 1) + "])");
+    asm.append(":");
+    for i in range(max_bignum_number_of_words - 1):
+        asm.append("\"=r\"(c_loc[" + str(i) + "]),");
+    asm.append("\"=r\"(c_loc[" + str(max_bignum_number_of_words - 1) + "])");
 
-    # asm.append(":");
-    # for i in range(max_bignum_number_of_words):
-    #     asm.append("\"r\"(a_loc[" + str(i) + "]),");
+    asm.append(":");
+    for i in range(min_bignum_number_of_words):
+        asm.append("\"r\"(a_loc[" + str(i) + "]),");
 
-    # for i in range(max_bignum_number_of_words - 1):
-    #     asm.append("\"r\"(b_loc[" + str(i) + "]),");
-    # asm.append("\"r\"(b_loc[" + str(max_bignum_number_of_words - 1) + "])");
+    for i in range(min_bignum_number_of_words - 1):
+        asm.append("\"r\"(b_loc[" + str(i) + "]),");
+    asm.append("\"r\"(b_loc[" + str(max_bignum_number_of_words - 1) + "])");
 
     # close asm statement
     asm.append(");");
@@ -187,6 +201,18 @@ def mul_loc():
 
     # footer ###################################################################
     asm.append("}");
+
+    # create dictionary between c_loc[x] and the register operand names. Do the
+    # same for a_loc[x] and b_loc[x]. We need the dictionary to change all
+    # occurences of c_loc, a_loc, and b_loc by register operand names.
+    # c_loc_to_reg = {i: str(i) for i in range(max_bignum_number_of_words)};
+    # b_loc_to_reg = {i: str(max_bignum_number_of_words + i) for i in range(min_bignum_number_of_words)};
+    # a_loc_to_reg = {i: str(max_bignum_number_of_words + min_bignum_number_of_words + i) for i in range(min_bignum_number_of_words)};
+
+    # # replace all occurences of c_loc, a_loc, and b_loc by their respective
+    # # register operands:
+    # for i in range(len(asm)):
+    #     asm[i] = re.sub(r"c_loc\[(\d+)\]", "%" + c_loc_to_reg[r"\1"], asm[i]);
 
     return asm;
 
