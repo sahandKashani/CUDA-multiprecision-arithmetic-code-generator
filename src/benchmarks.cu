@@ -32,9 +32,9 @@ void benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
     assert(host_b != NULL);
     assert(host_c != NULL);
 
-    add_benchmark(host_c, host_a, host_b);
+    // add_benchmark(host_c, host_a, host_b);
     // sub_benchmark(host_c, host_a, host_b);
-    // mul_benchmark(host_c, host_a, host_b);
+    mul_benchmark(host_c, host_a, host_b);
 }
 
 void add_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)

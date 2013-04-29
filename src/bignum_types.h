@@ -5,10 +5,10 @@
 #include <stdint.h>
 
 #define BITS_PER_WORD 32
-#define BIT_RANGE 131
-#define MIN_BIGNUM_NUMBER_OF_WORDS 5
-#define MAX_BIGNUM_NUMBER_OF_WORDS 9
-#define TOTAL_BIT_LENGTH 288
+#define BIT_RANGE 33
+#define MIN_BIGNUM_NUMBER_OF_WORDS 2
+#define MAX_BIGNUM_NUMBER_OF_WORDS 3
+#define TOTAL_BIT_LENGTH 96
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////// BIGNUM /////////////////////////////////////
