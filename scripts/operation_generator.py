@@ -1,44 +1,5 @@
-import math;
+from constants import *;
 import re;
-
-bit_range = 33;
-threads_per_block = 1;
-blocks_per_grid = 1;
-
-bits_per_word = 32;
-min_bignum_number_of_words = math.ceil(bit_range / bits_per_word);
-max_bignum_number_of_words = math.ceil((2 * bit_range) / bits_per_word);
-total_bit_length = max_bignum_number_of_words * bits_per_word;
-random_bignum_generator_seed = 12345;
-number_of_bignums = threads_per_block * blocks_per_grid;
-
-def set_constants():
-    # bignum_types.h ###########################################################
-    with open('../src/bignum_types.h', 'r') as input_file:
-        contents = [line for line in input_file];
-        contents = [re.sub(r"#define BITS_PER_WORD \d+", r"#define BITS_PER_WORD " + str(bits_per_word), line) for line in contents];
-        contents = [re.sub(r"#define BIT_RANGE \d+", r"#define BIT_RANGE " + str(bit_range), line) for line in contents];
-        contents = [re.sub(r"#define MIN_BIGNUM_NUMBER_OF_WORDS \d+", r"#define MIN_BIGNUM_NUMBER_OF_WORDS " + str(min_bignum_number_of_words), line) for line in contents];
-        contents = [re.sub(r"#define MAX_BIGNUM_NUMBER_OF_WORDS \d+", r"#define MAX_BIGNUM_NUMBER_OF_WORDS " + str(max_bignum_number_of_words), line) for line in contents];
-        contents = [re.sub(r"#define TOTAL_BIT_LENGTH \d+", r"#define TOTAL_BIT_LENGTH " + str(total_bit_length), line) for line in contents];
-    with open('../src/bignum_types.h', 'w') as output_file:
-        output_file.write("".join(contents));
-
-    # random_bignum_generator.h ################################################
-    with open('../src/random_bignum_generator.h', 'r') as input_file:
-        contents = [line for line in input_file];
-        contents = [re.sub(r"#define SEED \d+", r"#define SEED " + str(random_bignum_generator_seed), line) for line in contents];
-    with open('../src/random_bignum_generator.h', 'w') as output_file:
-        output_file.write("".join(contents));
-
-    # constants.h ##############################################################
-    with open('../src/constants.h', 'r') as input_file:
-        contents = [line for line in input_file];
-        contents = [re.sub(r"#define THREADS_PER_BLOCK \d+", r"#define THREADS_PER_BLOCK " + str(threads_per_block), line) for line in contents];
-        contents = [re.sub(r"#define BLOCKS_PER_GRID \d+", r"#define BLOCKS_PER_GRID " + str(blocks_per_grid), line) for line in contents];
-        contents = [re.sub(r"#define NUMBER_OF_BIGNUMS \d+", r"#define NUMBER_OF_BIGNUMS " + str(number_of_bignums), line) for line in contents];
-    with open('../src/constants.h', 'w') as output_file:
-        output_file.write("".join(contents));
 
 def add_backslash_to_end_of_elements_in_list(list):
     for i in range(len(list)):
@@ -114,7 +75,7 @@ def add_loc():
     add_backslash_to_end_of_elements_in_list(asm);
 
     # footer ###################################################################
-    asm.append(r'}');
+    asm.append(r'}' + '\n');
 
     return asm;
 
@@ -191,7 +152,7 @@ def mul_doc():
 // + B[4] * A[4] |      |      |      |      |      |      |      |      |
 // -----------------------------------------------------------------------
 // | C[9] | C[8] | C[7] | C[6] | C[5] | C[4] | C[3] | C[2] | C[1] | C[0] |
-
+//
 // Because of CUDA carry propagation problems (the carry flag is only kept
 // for the next assembly instruction), we will have to order the steps in
 // the following way:
@@ -347,7 +308,7 @@ def mul_loc():
     add_backslash_to_end_of_elements_in_list(asm);
 
     # footer ###################################################################
-    asm.append(r'}');
+    asm.append(r'}' + '\n');
 
     return asm;
 
@@ -357,12 +318,16 @@ def mul_glo():
     asm = [re.sub(r'_loc\[(\d+)\]', r'_glo[COAL_IDX(\1, tid)]', line) for line in asm];
     return asm;
 
-# MAIN #########################################################################
-set_constants();
+def generate_operations():
+    macros_to_print = [add_doc, add_loc, add_glo, sub_doc, sub_loc, sub_glo, mul_doc, mul_loc, mul_glo];
 
-# needed for COAL_IDX
-print(r'#include "bignum_types.h"' + '\n');
+    all_lines = [];
 
-macros_to_print = [add_doc, add_loc, add_glo, sub_doc, sub_loc, sub_glo, mul_doc, mul_loc, mul_glo];
-for func in macros_to_print:
-    print('\n'.join(func()) + '\n');
+    # needed for COAL_IDX
+    all_lines.append(r'#include "bignum_types.h"' + '\n');
+
+    for func in macros_to_print:
+        all_lines.extend(func());
+
+    with open(file_name_operations_h, 'w') as operations_h:
+        operations_h.write('\n'.join(all_lines));

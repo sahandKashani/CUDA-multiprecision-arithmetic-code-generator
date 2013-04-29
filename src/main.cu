@@ -9,9 +9,9 @@
 
 int main(void)
 {
-    const char* host_a_file_name = "../data/host_a.txt";
-    const char* host_b_file_name = "../data/host_b.txt";
-    const char* host_m_file_name = "../data/host_m.txt";
+    const char* host_a_file_name = "../data/bignum_array_a.txt";
+    const char* host_b_file_name = "../data/bignum_array_b.txt";
+    const char* host_m_file_name = "../data/bignum_array_m.txt";
 
     // host operands (host_a, host_b) and results (host_c)
     uint32_t* host_a = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));

@@ -51,7 +51,7 @@ void sub_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
 
 void mul_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b)
 {
-    binary_operator_benchmark(host_c, host_a, host_b, mul_glo_kernel, mul_check, "global multiplication");
+    // binary_operator_benchmark(host_c, host_a, host_b, mul_glo_kernel, mul_check, "global multiplication");
     binary_operator_benchmark(host_c, host_a, host_b, mul_loc_kernel, mul_check, "local multiplication");
 }
 
