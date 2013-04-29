@@ -180,6 +180,29 @@ def mul_loc():
 
     asm.append("\"}\"");
 
+    # create dictionary between c_loc[x] and the register operand names. Do the
+    # same for a_loc[x] and b_loc[x]. We need the dictionary to change all
+    # occurences of c_loc, a_loc, and b_loc by register operand names.
+    c_loc_to_reg = {i: '%' + str(i) for i in range(max_bignum_number_of_words)};
+    b_loc_to_reg = {i: '%' + str(max_bignum_number_of_words + i) for i in range(min_bignum_number_of_words)};
+    a_loc_to_reg = {i: '%' + str(max_bignum_number_of_words + min_bignum_number_of_words + i) for i in range(min_bignum_number_of_words)};
+
+    def c_loc_to_reg_replacer(matchobj):
+        return c_loc_to_reg[int(matchobj.group(1))];
+
+    def b_loc_to_reg_replacer(matchobj):
+        return b_loc_to_reg[int(matchobj.group(1))];
+
+    def a_loc_to_reg_replacer(matchobj):
+        return a_loc_to_reg[int(matchobj.group(1))];
+
+    # replace all occurences of c_loc, a_loc, and b_loc by their respective
+    # register operands:
+    for i in range(len(asm)):
+        asm[i] = re.sub(r"c_loc\[(\d+)\]", c_loc_to_reg_replacer, asm[i]);
+        asm[i] = re.sub(r"b_loc\[(\d+)\]", b_loc_to_reg_replacer, asm[i]);
+        asm[i] = re.sub(r"a_loc\[(\d+)\]", a_loc_to_reg_replacer, asm[i]);
+
     # assembly operands ########################################################
     asm.append(":");
     for i in range(max_bignum_number_of_words - 1):
@@ -202,18 +225,12 @@ def mul_loc():
     # footer ###################################################################
     asm.append("}");
 
-    # create dictionary between c_loc[x] and the register operand names. Do the
-    # same for a_loc[x] and b_loc[x]. We need the dictionary to change all
-    # occurences of c_loc, a_loc, and b_loc by register operand names.
-    # c_loc_to_reg = {i: str(i) for i in range(max_bignum_number_of_words)};
-    # b_loc_to_reg = {i: str(max_bignum_number_of_words + i) for i in range(min_bignum_number_of_words)};
-    # a_loc_to_reg = {i: str(max_bignum_number_of_words + min_bignum_number_of_words + i) for i in range(min_bignum_number_of_words)};
+    return asm;
 
-    # # replace all occurences of c_loc, a_loc, and b_loc by their respective
-    # # register operands:
-    # for i in range(len(asm)):
-    #     asm[i] = re.sub(r"c_loc\[(\d+)\]", "%" + c_loc_to_reg[r"\1"], asm[i]);
-
+def mul_glo():
+    asm = mul_loc();
+    asm = [line.replace('mul_loc(c_loc, a_loc, b_loc)', 'mul_glo(c_glo, a_glo, b_glo, tid)') for line in asm];
+    asm = [re.sub(r"_loc\[(\d+)\]", r"_glo[COAL_IDX(\1, tid)]", line) for line in asm];
     return asm;
 
 # MAIN #########################################################################
@@ -222,6 +239,6 @@ set_constants();
 # needed for COAL_IDX
 print("#include \"bignum_types.h\"\n");
 
-macros_to_print = [add_loc, add_glo, sub_loc, sub_glo, mul_loc];
+macros_to_print = [add_loc, add_glo, sub_loc, sub_glo, mul_loc, mul_glo];
 for func in macros_to_print:
     print("\n".join(func()) + "\n");
