@@ -9,9 +9,9 @@
 
 int main(void)
 {
-    const char* host_a_file_name = "../data/coalesced_a.txt";
-    const char* host_b_file_name = "../data/coalesced_b.txt";
-    const char* host_m_file_name = "../data/coalesced_m.txt";
+    const char* host_a_file_name = "../data/bignum_array_a.txt";
+    const char* host_b_file_name = "../data/bignum_array_b.txt";
+    const char* host_m_file_name = "../data/bignum_array_m.txt";
 
     // host operands (host_a, host_b) and results (host_c)
     uint32_t* host_a = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
@@ -24,10 +24,13 @@ int main(void)
     assert(host_c != NULL);
     assert(host_m != NULL);
 
+    // generate operands to files
+    generate_modulus_and_operands_to_files(host_m_file_name, host_a_file_name, host_b_file_name);
+
     // read operands from files back to memory
-    read_coalesced_bignum_array_from_file(host_a_file_name, host_a);
-    read_coalesced_bignum_array_from_file(host_b_file_name, host_b);
-    read_coalesced_bignum_array_from_file(host_m_file_name, host_m);
+    read_bignum_array_from_file(host_a_file_name, host_a, NUMBER_OF_BIGNUMS);
+    read_bignum_array_from_file(host_b_file_name, host_b, NUMBER_OF_BIGNUMS);
+    read_bignum_array_from_file(host_m_file_name, host_m, NUMBER_OF_BIGNUMS);
 
     benchmark(host_c, host_a, host_b);
 
