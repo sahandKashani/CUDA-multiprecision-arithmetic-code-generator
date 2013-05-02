@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-void read_coalesced_bignum_array_from_file(const char* file_name, uint32_t* bignum);
-void write_coalesced_bignum_array_to_file(const char* file_name, uint32_t* bignum);
+void read_coalesced_bignums_from_file(const char* file_name, uint32_t* bignums);
+void write_coalesced_bignums_to_file(const char* file_name, uint32_t* bignums);
 
 #endif

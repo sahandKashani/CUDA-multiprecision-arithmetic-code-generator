@@ -35,7 +35,7 @@ write_numbers_to_file_coalesced(m, file_name_m)
 write_numbers_to_file_coalesced(a, file_name_a)
 write_numbers_to_file_coalesced(b, file_name_b)
 
-# set constants in c code ######################################################
+# set constants in C code ######################################################
 with open('../src/bignum_types.h', 'r') as input_file:
     contents = [line for line in input_file]
     contents = [re.sub(r"#define BITS_PER_WORD \d+", r"#define BITS_PER_WORD " + str(bits_per_word), line) for line in contents]
@@ -62,5 +62,5 @@ with open('../src/main.cu', 'r') as input_file:
 with open('../src/main.cu', 'w') as output_file:
     output_file.write("".join(contents))
 
-# generate operations ##########################################################
+# generate macros for gpu operations ###########################################
 generate_operations()

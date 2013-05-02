@@ -1,7 +1,7 @@
 #include "bignum_types.h"
+#include "input_output.h"
 #include "constants.h"
-#include "benchmarks.cuh"
-#include "io_interface.h"
+// #include "benchmarks.cuh"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -25,11 +25,20 @@ int main(void)
     assert(host_m != NULL);
 
     // read operands from files back to memory
-    read_coalesced_bignum_array_from_file(host_a_file_name, host_a);
-    read_coalesced_bignum_array_from_file(host_b_file_name, host_b);
-    read_coalesced_bignum_array_from_file(host_m_file_name, host_m);
+    read_coalesced_bignums_from_file(host_a_file_name, host_a);
+    read_coalesced_bignums_from_file(host_b_file_name, host_b);
+    read_coalesced_bignums_from_file(host_m_file_name, host_m);
 
-    benchmark(host_c, host_a, host_b);
+    for (int i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
+    {
+        for (int j = 0; j < NUMBER_OF_BIGNUMS; j++)
+        {
+            printf("%x ", host_a[COAL_IDX(i, j)]);
+        }
+        printf("\n");
+    }
+
+    // benchmark(host_c, host_a, host_b);
 
     free(host_a);
     free(host_b);
