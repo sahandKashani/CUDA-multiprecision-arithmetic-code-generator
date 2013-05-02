@@ -28,3 +28,16 @@ def write_numbers_to_file_coalesced(numbers, file_name):
             for i in range(number_of_bignums):
                 f.write(to_hex_string(numbers[i][j])[2:] + " ")
             f.write('\n')
+
+def read_numbers_from_file_coalesced(file_name):
+    with open(file_name, 'r') as f:
+        coalesced_numbers = [line.split() for line in f]
+
+    numbers = []
+    for j in range(max_bignum_number_of_words):
+        number = []
+        for i in range(number_of_bignums):
+            number.append(coalesced_numbers[j][i])
+        numbers.append(number)
+
+    print(numbers)
