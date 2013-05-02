@@ -1,18 +1,13 @@
 #include "bignum_types.h"
 #include "input_output.h"
+#include "benchmarks.h"
 #include "constants.h"
-// #include "benchmarks.cuh"
-#include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <assert.h>
 
 int main(void)
 {
-    const char* host_a_file_name = "../data/coalesced_a.txt";
-    const char* host_b_file_name = "../data/coalesced_b.txt";
-    const char* host_m_file_name = "../data/coalesced_m.txt";
-
     // host operands (host_a, host_b) and results (host_c)
     uint32_t* host_a = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
     uint32_t* host_b = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
@@ -25,20 +20,14 @@ int main(void)
     assert(host_m != NULL);
 
     // read operands from files back to memory
-    read_coalesced_bignums_from_file(host_a_file_name, host_a);
-    read_coalesced_bignums_from_file(host_b_file_name, host_b);
-    read_coalesced_bignums_from_file(host_m_file_name, host_m);
+    read_coalesced_bignums_from_file(COALESCED_A_FILE_NAME, host_a);
+    read_coalesced_bignums_from_file(COALESCED_B_FILE_NAME, host_b);
+    read_coalesced_bignums_from_file(COALESCED_M_FILE_NAME, host_m);
 
-    for (int i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
-    {
-        for (int j = 0; j < NUMBER_OF_BIGNUMS; j++)
-        {
-            printf("%x ", host_a[COAL_IDX(i, j)]);
-        }
-        printf("\n");
-    }
-
-    // benchmark(host_c, host_a, host_b);
+    // benchmarks
+    add_benchmark(host_c, host_a, host_b, ADD_RESULTS_FILE_NAME);
+    sub_benchmark(host_c, host_a, host_b, SUB_RESULTS_FILE_NAME);
+    mul_benchmark(host_c, host_a, host_b, MUL_RESULTS_FILE_NAME);
 
     free(host_a);
     free(host_b);

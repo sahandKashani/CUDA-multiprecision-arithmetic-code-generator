@@ -26,5 +26,5 @@ def write_numbers_to_file_coalesced(numbers, file_name):
     with open(file_name, 'w') as f:
         for j in range(max_bignum_number_of_words):
             for i in range(number_of_bignums):
-                f.write(to_hex_string(numbers[i][j]) + " ")
+                f.write(to_hex_string(numbers[i][j])[2:] + " ")
             f.write('\n')
