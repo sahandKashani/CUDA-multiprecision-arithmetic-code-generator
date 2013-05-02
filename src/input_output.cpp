@@ -49,7 +49,7 @@ void write_coalesced_bignums_to_file(const char* file_name, uint32_t* bignums)
     {
         for (uint32_t j = 0; j < NUMBER_OF_BIGNUMS; j++)
         {
-            fprintf(file, "%x ", bignums[COAL_IDX(i, j)]);
+            fprintf(file, "%08x ", bignums[COAL_IDX(i, j)]);
         }
         fprintf(file, "\n");
     }

@@ -1,10 +1,10 @@
 import re
 
 def is_binary_string(element):
-    return type(element) is str and bool(re.match(r"0b[01]+", element))
+    return type(element) is str and bool(re.match(r"^0b[01]+$", element))
 
 def is_hex_string(element):
-    return type(element) is str and bool(re.match(r"0x[0-9a-fA-F]+", element))
+    return type(element) is str and bool(re.match(r"^0x[0-9a-fA-F]+$", element))
 
 def is_int(element):
     return type(element) is int

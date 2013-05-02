@@ -32,8 +32,9 @@ b = []
 
 for i in range(number_of_bignums):
     m.append(k_bit_rand_int(precision))
-    a.append(k_bit_rand_int_less_than(m[i], precision))
-    b.append(k_bit_rand_int_less_than(m[i], precision))
+for i in m:
+    a.append(k_bit_rand_int_less_than(i, precision))
+    b.append(k_bit_rand_int_less_than(i, precision))
 
 write_numbers_to_file_coalesced(m, coalesced_m_file_name)
 write_numbers_to_file_coalesced(a, coalesced_a_file_name)

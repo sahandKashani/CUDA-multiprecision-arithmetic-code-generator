@@ -1,27 +1,20 @@
 from constants import seed
-
-from types_and_conversions import to_binary_string
-from types_and_conversions import to_int
-
 import random
 
 # initialize the random number generator
 random.seed(seed)
 
-def get_precision(element):
-    return len(to_binary_string(element)[2:])
-
 def k_bit_rand_int(precision):
+    assert precision > 0
     while True:
-        number = to_int(random.getrandbits(precision))
-        if get_precision(number) == precision:
+        number = random.getrandbits(precision)
+        if len(bin(number)[2:]) == precision:
             return number
 
 def k_bit_rand_int_less_than(upper_bound, precision):
-    upper_bound = to_int(upper_bound)
-    number = 0
-
-    while number == 0 or number >= upper_bound:
+    assert upper_bound > 0
+    assert precision > 0
+    while True:
         number = k_bit_rand_int(precision)
-
-    return number
+        if number != 0 and number < upper_bound:
+            return number
