@@ -1,65 +1,64 @@
-from types_and_conversions import to_int
-from types_and_conversions import to_hex_string
-from types_and_conversions import to_binary_string
-
-from constants import bits_per_word
+from constants import total_hex_length
 from constants import total_bit_length
-from constants import number_of_bignums
-from constants import max_bignum_number_of_words
+from constants import hex_digits_per_word
 
-def real_int_value(element):
-    binary = list(reversed(to_binary_string(element)[2:]))
+def real_int_value(binary):
+    assert len(binary) == total_bit_length
 
+    # real binary string is given, so have to flip it for (2 ** i) to work
     value = 0
-    for i in range(len(binary)):
-        power = int(binary[i], 2) * (2 ** i)
-        if i != len(binary):
+    for i, b in enumerate(reversed(binary)):
+        power = int(b, 2) * (2 ** i)
+        if i != total_bit_length - 1:
             value += power
         else:
             value -= power
 
     return value
 
-def to_int_parts(number):
-    number = to_binary_string(number)[2:].rjust(total_bit_length, '0')
-
-    parts = []
-    indexes = [bits_per_word * k for k in range(max_bignum_number_of_words)]
-
-    for i in indexes:
-        part = number[i:(i + bits_per_word)]
-        parts.append(int(part, 2))
-
-    parts.reverse()
-    return parts
-
-def from_number_parts(parts):
-    padded = []
-    for i in range(len(parts)):
-        binary_part = to_binary_string('0x' + parts[i])[2:]
-        pad_char = '0'
-        if i == len(parts) - 1:
-            pad_char = binary_part[0]
-        padded.append(binary_part.rjust(bits_per_word, pad_char))
-
-    return real_int_value('0b' + "".join(reversed(padded)))
-
-def write_numbers_to_file_coalesced(numbers, file_name):
+def write_positive_numbers_to_file_coalesced(numbers, file_name):
     for n in numbers:
         assert n > 0
 
-    hex_numbers = [hex(n).rjust(total_bit_length / 4, '0') for n in numbers]
-    split_indexes = [i * (bits_per_word / 4) for i in range()]
-    hex_numbers_split = [hex_numbers[]
+    number_of_split_indexes = total_hex_length // hex_digits_per_word
+    split_indexes = [i * hex_digits_per_word for i in range(number_of_split_indexes)]
 
-    numbers = [to_int_parts(number) for number in numbers]
+    # no '0x'
+    full_hex_numbers = [hex(n)[2:].rjust(total_hex_length, '0') for n in numbers]
+
+    hex_parts_normal = []
+    for hex_n in full_hex_numbers:
+        parts = [hex_n[i:(i + hex_digits_per_word)] for i in split_indexes]
+
+        # "little" endian
+        parts.reverse()
+        hex_parts_normal.append(parts)
+
+    # "transpose" the matrix of numbers to have them in coalesced form
+    hex_parts_coalesced = zip(*hex_parts_normal)
 
     with open(file_name, 'w') as f:
-        for j in range(max_bignum_number_of_words):
-            for i in range(number_of_bignums):
-                f.write(to_hex_string(numbers[i][j])[2:].rjust(8, '0') + " ")
-            f.write('\n')
+        for line in hex_parts_coalesced:
+            for col in line:
+                f.write(col + " ")
+            f.write("\n")
 
 def read_numbers_from_file_coalesced(file_name):
     with open(file_name, 'r') as f:
-        return list(map(from_number_parts, zip(*[line.split() for line in f])))
+        hex_parts_coalesced = [line.split() for line in f]
+
+    hex_parts_normal = zip(*hex_parts_coalesced)
+
+    int_values = []
+    for hex_parts in hex_parts_normal:
+        # no '0x'
+        # remove "little endianness"
+        full_hex_number = "".join(reversed(hex_parts))
+
+        # no '0b'
+        full_bin_number = bin(int(full_hex_number, 16))[2:].rjust(4 * total_hex_length, '0')
+
+        int_value = real_int_value(full_bin_number)
+        int_values.append(int_value)
+
+    return int_values
