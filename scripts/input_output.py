@@ -20,13 +20,11 @@ def write_positive_numbers_to_file_coalesced(numbers, file_name):
     for n in numbers:
         assert n > 0
 
-    number_of_split_indexes = total_hex_length // hex_digits_per_word
-    split_indexes = [i * hex_digits_per_word for i in range(number_of_split_indexes)]
-
     # no '0x'
     full_hex_numbers = [hex(n)[2:].rjust(total_hex_length, '0') for n in numbers]
 
     hex_parts_normal = []
+    split_indexes = [i * hex_digits_per_word for i in range(total_hex_length // hex_digits_per_word)]
     for hex_n in full_hex_numbers:
         parts = [hex_n[i:(i + hex_digits_per_word)] for i in split_indexes]
 

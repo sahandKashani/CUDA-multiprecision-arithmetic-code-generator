@@ -19,6 +19,6 @@ hex_digits_per_word = bits_per_word // 4
 min_bignum_number_of_words = math.ceil(precision / bits_per_word)
 max_bignum_number_of_words = math.ceil((2 * precision) / bits_per_word)
 total_bit_length = max_bignum_number_of_words * bits_per_word
-total_hex_length = total_bit_length // 4
+total_hex_length = max_bignum_number_of_words * hex_digits_per_word
 number_of_bignums = threads_per_block * blocks_per_grid
 file_name_operations_h = r'../src/operations.h'

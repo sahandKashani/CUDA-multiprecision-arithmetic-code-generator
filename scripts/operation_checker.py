@@ -2,9 +2,6 @@
 
 from input_output import read_numbers_from_file_coalesced
 
-from types_and_conversions import to_binary_string
-
-from constants import precision
 from constants import coalesced_a_file_name
 from constants import coalesced_b_file_name
 from constants import add_results_file_name
