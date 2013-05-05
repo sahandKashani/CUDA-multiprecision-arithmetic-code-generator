@@ -18,7 +18,7 @@ def binary_operator_check(result_file_name, op1, op2, op_name, py_op_symbol):
         if c != expected:
             error = True
             print("error")
-            print("\n" + op_name + "error:")
+            print("\n" + op_name + " error:")
             print("a        = " + int_to_hex_str(a))
             print("b        = " + int_to_hex_str(b))
             print("c        = " + int_to_hex_str(c))
