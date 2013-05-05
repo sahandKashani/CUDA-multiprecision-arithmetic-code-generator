@@ -321,6 +321,13 @@ def mul_glo():
     asm = [re.sub(r'_loc\[(\d+)\]', r'_glo[COAL_IDX(\1, tid)]', line) for line in asm]
     return asm
 
+def add_m_loc():
+    # Do a+b-m.
+    # Do mask=0-borrow.
+    # And use this to add m but actually adding m[i]&mask
+    print(2)
+    pass
+
 def generate_operations():
     macros_to_print = [add_doc, add_loc, add_glo, sub_doc, sub_loc, sub_glo, mul_doc, mul_loc, mul_glo]
 
