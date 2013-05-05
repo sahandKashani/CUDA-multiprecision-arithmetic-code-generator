@@ -8,6 +8,8 @@ from constants import add_results_file_name
 from constants import sub_results_file_name
 from constants import mul_results_file_name
 
+from conversions import int_to_hex_str
+
 # operands
 a = read_numbers_from_file_coalesced(coalesced_a_file_name)
 b = read_numbers_from_file_coalesced(coalesced_b_file_name)
@@ -23,10 +25,10 @@ for (op1, op2, result) in zip(a, b, add_results):
         error = True
         print("error")
         print("\nadd error:")
-        print("op1             = " + str(op1))
-        print("op2             = " + str(op2))
-        print("result          = " + str(result))
-        print("expected_result = " + str(expected_result))
+        print("op1             = " + int_to_hex_str(op1))
+        print("op2             = " + int_to_hex_str(op2))
+        print("result          = " + int_to_hex_str(result))
+        print("expected_result = " + int_to_hex_str(expected_result))
         break
 
 if not error:
@@ -42,10 +44,10 @@ for (op1, op2, result) in zip(a, b, sub_results):
         error = True
         print("error")
         print("\nsub error:")
-        print("op1             = " + str(op1))
-        print("op2             = " + str(op2))
-        print("result          = " + str(result))
-        print("expected_result = " + str(expected_result))
+        print("op1             = " + int_to_hex_str(op1))
+        print("op2             = " + int_to_hex_str(op2))
+        print("result          = " + int_to_hex_str(result))
+        print("expected_result = " + int_to_hex_str(expected_result))
         break
 
 if not error:
@@ -61,10 +63,10 @@ for (op1, op2, result) in zip(a, b, mul_results):
         error = True
         print("error")
         print("\nmul error:")
-        print("op1             = " + str(op1))
-        print("op2             = " + str(op2))
-        print("result          = " + str(result))
-        print("expected_result = " + str(expected_result))
+        print("op1             = " + int_to_hex_str(op1))
+        print("op2             = " + int_to_hex_str(op2))
+        print("result          = " + int_to_hex_str(result))
+        print("expected_result = " + int_to_hex_str(expected_result))
         break
 
 if not error:

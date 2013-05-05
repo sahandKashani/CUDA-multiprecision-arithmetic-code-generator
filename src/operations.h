@@ -416,7 +416,7 @@ asm("{"\
 "r"(b_loc[1]),\
 "r"(b_loc[2]),\
 "r"(b_loc[3]),\
-"r"(b_loc[8])\
+"r"(b_loc[4])\
 );\
 }
 
@@ -554,6 +554,6 @@ asm("{"\
 "r"(b_glo[COAL_IDX(1, tid)]),\
 "r"(b_glo[COAL_IDX(2, tid)]),\
 "r"(b_glo[COAL_IDX(3, tid)]),\
-"r"(b_glo[COAL_IDX(8, tid)])\
+"r"(b_glo[COAL_IDX(4, tid)])\
 );\
 }

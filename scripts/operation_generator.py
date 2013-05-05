@@ -303,7 +303,7 @@ def mul_loc():
 
     for i in range(min_bignum_number_of_words - 1):
         asm.append(r'"r"(b_loc[' + str(i) + r']),')
-    asm.append(r'"r"(b_loc[' + str(max_bignum_number_of_words - 1) + r'])')
+    asm.append(r'"r"(b_loc[' + str(min_bignum_number_of_words - 1) + r'])')
 
     # close asm statement
     asm.append(r');')
