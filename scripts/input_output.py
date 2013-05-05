@@ -4,7 +4,7 @@ from constants import hex_digits_per_word
 from conversions import hex_str_to_int
 from conversions import int_to_hex_str
 
-def write_positive_numbers_to_file_coalesced(numbers, file_name):
+def write_numbers_to_file_coalesced(numbers, file_name):
     # no '0x'
     full_hex_numbers = [int_to_hex_str(n)[2:] for n in numbers]
 

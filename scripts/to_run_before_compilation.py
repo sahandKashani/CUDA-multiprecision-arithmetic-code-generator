@@ -1,9 +1,5 @@
-#!/usr/bin/env python3
-
 from constants import precision
-from constants import bits_per_word
 from constants import blocks_per_grid
-from constants import total_bit_length
 from constants import threads_per_block
 from constants import number_of_bignums
 from constants import benchmark_iterations
@@ -19,7 +15,7 @@ from constants import mul_results_file_name
 from random_number_generator import k_bit_rand_int
 from random_number_generator import k_bit_rand_int_less_than
 
-from input_output import write_positive_numbers_to_file_coalesced
+from input_output import write_numbers_to_file_coalesced
 
 from operation_generator import generate_operations
 
@@ -30,15 +26,17 @@ m = []
 a = []
 b = []
 
+print("Generating random numbers ... ", end = '')
 for i in range(number_of_bignums):
     m.append(k_bit_rand_int(precision))
 for i in m:
     a.append(k_bit_rand_int_less_than(i, precision))
     b.append(k_bit_rand_int_less_than(i, precision))
+print("done")
 
-write_positive_numbers_to_file_coalesced(m, coalesced_m_file_name)
-write_positive_numbers_to_file_coalesced(a, coalesced_a_file_name)
-write_positive_numbers_to_file_coalesced(b, coalesced_b_file_name)
+write_numbers_to_file_coalesced(m, coalesced_m_file_name)
+write_numbers_to_file_coalesced(a, coalesced_a_file_name)
+write_numbers_to_file_coalesced(b, coalesced_b_file_name)
 
 # set constants in C code ######################################################
 with open('../src/bignum_types.h', 'r') as input_file:
