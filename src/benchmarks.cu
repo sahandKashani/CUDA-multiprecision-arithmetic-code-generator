@@ -26,7 +26,7 @@ __global__ void mul_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b
 
 void add_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b, const char* output_file_name)
 {
-    binary_operator_benchmark(host_c, host_a, host_b, add_glo_kernel, "add_glo");
+    // binary_operator_benchmark(host_c, host_a, host_b, add_glo_kernel, "add_glo");
     binary_operator_benchmark(host_c, host_a, host_b, add_loc_kernel, "add_loc");
 
     write_coalesced_bignums_to_file(output_file_name, host_c);
@@ -34,7 +34,7 @@ void add_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b, const c
 
 void sub_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* host_b, const char* output_file_name)
 {
-    binary_operator_benchmark(host_c, host_a, host_b, sub_glo_kernel, "sub_glo");
+    // binary_operator_benchmark(host_c, host_a, host_b, sub_glo_kernel, "sub_glo");
     binary_operator_benchmark(host_c, host_a, host_b, sub_loc_kernel, "sub_loc");
 
     write_coalesced_bignums_to_file(output_file_name, host_c);
@@ -157,15 +157,10 @@ __global__ void mul_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b
     }
 
     // #pragma unroll
-    // for (uint32_t i = 0; i < BENCHMARK_ITERATIONS; i++)
-    // {
+    for (uint32_t i = 0; i < BENCHMARK_ITERATIONS; i++)
+    {
         mul_loc(c, a, b);
-        mul_loc(c, a, b);
-        mul_loc(c, a, b);
-        mul_loc(c, a, b);
-        mul_loc(c, a, b);
-        mul_loc(c, a, b);
-    // }
+    }
 
     // #pragma unroll
     for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)

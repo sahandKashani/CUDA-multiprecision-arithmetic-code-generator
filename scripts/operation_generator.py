@@ -179,7 +179,7 @@ def mul_loc():
 
     # header ###################################################################
     asm.append(r'#define mul_loc(c_loc, a_loc, b_loc) {')
-    asm.append(r'asm("{"')
+    asm.append(r'asm("{\n\t"')
 
     mul_index_tuples = []
 
@@ -194,17 +194,17 @@ def mul_loc():
         mul_index_tuples.append(shift_index_tuples)
 
     # assembly statements ######################################################
-    asm.append(r'".reg .u32 %carry;"')
-    asm.append(r'"mul.lo.u32 c_loc[0], b_loc[0], a_loc[0];"')
+    asm.append(r'"    .reg .u32 carry;\n\t"')
+    asm.append(r'"    mul.lo.u32 c_loc[0], b_loc[0], a_loc[0];\n\t"')
 
     for i in range(1, len(mul_index_tuples)):
         c_index = i
 
         # there is no carry to add to c_loc[1] in the very first iteration
         if i != 1:
-            asm.append(r'"add.u32 c_loc[' + str(c_index) + r'], %carry, 0;"')
+            asm.append(r'"    add.u32 c_loc[' + str(c_index) + r'], carry, 0;\n\t"')
 
-        asm.append(r'"add.u32 %carry, 0, 0;"')
+        asm.append(r'"    add.u32 carry, 0, 0;\n\t"')
 
         # .hi bit operations
         for k in range(len(mul_index_tuples[i - 1])):
@@ -212,30 +212,31 @@ def mul_loc():
             a_index = mul_index_tuples[c_index - 1][k][1]
 
             # in the first iteration, we don't have any carry-out, or any older
-            # value of c_loc[1] to add, so we just do a normal mul instead of mad.
+            # value of c_loc[1] to add, so we just do a normal mul instead of
+            # mad.
             if (c_index - 1) == 0:
-                asm.append(r'"mul.hi.u32 c_loc[' + str(c_index) + r'], b_loc[' + str(b_index) + r'], a_loc[' + str(a_index) + r'];"')
+                asm.append(r'"    mul.hi.u32 c_loc[' + str(c_index) + r'], b_loc[' + str(b_index) + r'], a_loc[' + str(a_index) + r'];\n\t"')
             else:
                 # multiply add, with carry-out this time.
-                asm.append(r'"mad.hi.cc.u32 c_loc[' + str(c_index) + r'], b_loc[' + str(b_index) + r'], a_loc[' + str(a_index) + r'], c_loc[' + str(c_index) + r'];"')
-                asm.append(r'"addc.u32 %carry, %carry, 0;"')
+                asm.append(r'"    mad.hi.cc.u32 c_loc[' + str(c_index) + r'], b_loc[' + str(b_index) + r'], a_loc[' + str(a_index) + r'], c_loc[' + str(c_index) + r'];\n\t"')
+                asm.append(r'"    addc.u32 carry, carry, 0;\n\t"')
 
         # .lo bit operations
         for j in range(len(mul_index_tuples[i])):
             b_index = mul_index_tuples[c_index][j][0]
             a_index = mul_index_tuples[c_index][j][1]
-            asm.append(r'"mad.lo.cc.u32 c_loc[' + str(c_index) + r'], b_loc[' + str(b_index) + r'], a_loc[' + str(a_index) + r'], c_loc[' + str(c_index) + r'];"')
+            asm.append(r'"    mad.lo.cc.u32 c_loc[' + str(c_index) + r'], b_loc[' + str(b_index) + r'], a_loc[' + str(a_index) + r'], c_loc[' + str(c_index) + r'];\n\t"')
 
             # in the second last shift iteration of the multiplication, if we
             # are at the last step, we no longer need to add the carry unless if
             # the result is indeed on 2 * min_bignum_number_of_words.
             if not ((i == len(mul_index_tuples) - 1) and (j == len(mul_index_tuples[i]) - 1)) or (max_bignum_number_of_words == 2 * min_bignum_number_of_words):
-                asm.append(r'"addc.u32 %carry, %carry, 0;"')
+                asm.append(r'"    addc.u32 carry, carry, 0;\n\t"')
 
     # if it is possible for the multiplication of 2 bignums to give a result of
     # size 2 * min_bignum_number_of_words, then calculate the final value of C
     if max_bignum_number_of_words == 2 * min_bignum_number_of_words:
-        asm.append(r'"mad.hi.u32 c_loc[' + str(max_bignum_number_of_words - 1) + r'], b_loc[' + str(min_bignum_number_of_words - 1) + r'], a_loc[' + str(min_bignum_number_of_words - 1) + r'], %carry;"')
+        asm.append(r'"    mad.hi.u32 c_loc[' + str(max_bignum_number_of_words - 1) + r'], b_loc[' + str(min_bignum_number_of_words - 1) + r'], a_loc[' + str(min_bignum_number_of_words - 1) + r'], carry;\n\t"')
 
     asm.append(r'"}"')
 
@@ -270,11 +271,11 @@ def mul_loc():
 
     asm.append(r':')
     for i in range(min_bignum_number_of_words):
-        asm.append(r'"r"(a_loc[' + str(i) + r']),')
+        asm.append(r'"r"(b_loc[' + str(i) + r']),')
 
     for i in range(min_bignum_number_of_words - 1):
-        asm.append(r'"r"(b_loc[' + str(i) + r']),')
-    asm.append(r'"r"(b_loc[' + str(min_bignum_number_of_words - 1) + r'])')
+        asm.append(r'"r"(a_loc[' + str(i) + r']),')
+    asm.append(r'"r"(a_loc[' + str(min_bignum_number_of_words - 1) + r'])')
 
     # close asm statement
     asm.append(r');')
@@ -295,7 +296,6 @@ def mul_loc_2():
 
     # header ###################################################################
     asm.append('#define mul_loc(c_loc, a_loc, b_loc) {\\')
-    # asm.append(r'asm("{"')
 
     mul_index_tuples = []
 
@@ -310,21 +310,17 @@ def mul_loc_2():
         mul_index_tuples.append(shift_index_tuples)
 
     # assembly statements ######################################################
-    # asm.append(r'".reg .u32 %carry;"')
-    asm.append('    uint32_t carry;                                                                                  \\')
-    # asm.append(r'"mul.lo.u32 c_loc[0], b_loc[0], a_loc[0];"')
-    asm.append('    asm("mul.lo.u32    %0, %1, %2    ;" : "=r"(c_loc[0]) : "r"(b_loc[0]), "r"(a_loc[0])            );\\')
+    asm.append('    uint32_t carry = 0;\\')
+    asm.append('    asm("mul.lo.u32    %0, %1, %2    ;" : "=r"(c_loc[0]) : "r"(b_loc[0]), "r"(a_loc[0]));\\')
 
     for i in range(1, len(mul_index_tuples)):
         c_index = i
 
         # there is no carry to add to c_loc[1] in the very first iteration
         if i != 1:
-            # asm.append(r'"add.u32 c_loc[' + str(c_index) + r'], %carry, 0;"')
-            asm.append('    asm("add.u32       %0, %1,  0    ;" : "=r"(c_loc[' + str(c_index) + ']) : "r"(carry)                              );\\')
+            asm.append('    asm("add.u32       %0, %1,  0    ;" : "=r"(c_loc[' + str(c_index) + ']) : "r"(carry));\\')
 
-        # asm.append(r'"add.u32 %carry, 0, 0;"')
-        asm.append('    asm("add.u32       %0,  0,  0    ;" : "=r"(carry)    :                                         );\\')
+        asm.append('    asm("add.u32       %0,  0,  0    ;" : "=r"(carry));\\')
 
         # .hi bit operations
         for k in range(len(mul_index_tuples[i - 1])):
@@ -335,40 +331,34 @@ def mul_loc_2():
             # value of c_loc[1] to add, so we just do a normal mul instead of
             # mad.
             if (c_index - 1) == 0:
-                # asm.append(r'"mul.hi.u32 c_loc[' + str(c_index) + r'], b_loc[' + str(b_index) + r'], a_loc[' + str(a_index) + r'];"')
-                asm.append('    asm("mul.hi.u32    %0, %1, %2    ;" : "=r"(c_loc[' + str(c_index) + ']) : "r"(b_loc[' + str(b_index) + ']), "r"(a_loc[' + str(a_index) + '])            );\\')
+                asm.append('    asm("mul.hi.u32    %0, %1, %2    ;" : "=r"(c_loc[' + str(c_index) + ']) : "r"(b_loc[' + str(b_index) + ']), "r"(a_loc[' + str(a_index) + ']));\\')
             else:
                 # multiply add, with carry-out this time.
-                # asm.append(r'"mad.hi.cc.u32 c_loc[' + str(c_index) + r'], b_loc[' + str(b_index) + r'], a_loc[' + str(a_index) + r'], c_loc[' + str(c_index) + r'];"')
-                asm.append('    asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c_loc[' + str(c_index) + ']) : "r"(b_loc[' + str(b_index) + ']), "r"(a_loc[' + str(a_index) + '])            );\\')
-                # asm.append(r'"addc.u32 %carry, %carry, 0;"')
-                asm.append('    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry)    :                                         );\\')
+                asm.append('    asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c_loc[' + str(c_index) + ']) : "r"(b_loc[' + str(b_index) + ']), "r"(a_loc[' + str(a_index) + ']));\\')
+                asm.append('    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\\')
 
         # .lo bit operations
         for j in range(len(mul_index_tuples[i])):
             b_index = mul_index_tuples[c_index][j][0]
             a_index = mul_index_tuples[c_index][j][1]
-            # asm.append(r'"mad.lo.cc.u32 c_loc[' + str(c_index) + r'], b_loc[' + str(b_index) + r'], a_loc[' + str(a_index) + r'], c_loc[' + str(c_index) + r'];"')
-            asm.append('    asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c_loc[' + str(c_index) + ']) : "r"(b_loc[' + str(b_index) + ']), "r"(a_loc[' + str(a_index) + '])            );\\')
+            asm.append('    asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c_loc[' + str(c_index) + ']) : "r"(b_loc[' + str(b_index) + ']), "r"(a_loc[' + str(a_index) + ']));\\')
 
             # in the second last shift iteration of the multiplication, if we
             # are at the last step, we no longer need to add the carry unless if
             # the result is indeed on 2 * min_bignum_number_of_words.
             if not ((i == len(mul_index_tuples) - 1) and (j == len(mul_index_tuples[i]) - 1)) or (max_bignum_number_of_words == 2 * min_bignum_number_of_words):
-                # asm.append(r'"addc.u32 %carry, %carry, 0;"')
-                asm.append('    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry)    :                                         );\\')
+                asm.append('    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\\')
 
     # if it is possible for the multiplication of 2 bignums to give a result of
     # size 2 * min_bignum_number_of_words, then calculate the final value of C
     if max_bignum_number_of_words == 2 * min_bignum_number_of_words:
-        # asm.append(r'"mad.hi.u32 c_loc[' + str(max_bignum_number_of_words - 1) + r'], b_loc[' + str(min_bignum_number_of_words - 1) + r'], a_loc[' + str(min_bignum_number_of_words - 1) + r'], %carry;"')
         asm.append('    asm("mad.hi.u32    %0, %1, %2, %3;" : "=r"(c_loc[' + str(max_bignum_number_of_words - 1) + ']) : "r"(b_loc[' + str(min_bignum_number_of_words - 1) + ']), "r"(a_loc[' + str(min_bignum_number_of_words - 1) + ']), "r"(carry));\\')
 
     asm.append(r'}' + '\n')
     return asm
 
 def mul_glo():
-    asm = mul_loc_2()
+    asm = mul_loc()
     asm = [line.replace(r'mul_loc(c_loc, a_loc, b_loc)', r'mul_glo(c_glo, a_glo, b_glo, tid)') for line in asm]
     asm = [re.sub(r'_loc\[(\d+)\]', r'_glo[COAL_IDX(\1, tid)]', line) for line in asm]
     return asm

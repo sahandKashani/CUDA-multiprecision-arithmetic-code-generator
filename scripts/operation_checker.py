@@ -13,12 +13,12 @@ def binary_operator_check(result_file_name, op1, op2, op_name, py_op_symbol):
     print("Checking \"" + op_name + "\" results => ", end = '')
 
     error = False
-    for (a, b, c) in zip(op1, op2, res):
+    for (i, a, b, c) in zip(range(len(res)), op1, op2, res):
         expected = eval('a' + py_op_symbol + 'b')
         if c != expected:
             error = True
             print("error")
-            print("\n" + op_name + " error:")
+            print("\n" + op_name + " error from thread " + str(i) + ":")
             print("a        = " + int_to_hex_str(a))
             print("b        = " + int_to_hex_str(b))
             print("c        = " + int_to_hex_str(c))
@@ -34,6 +34,6 @@ print("Checking operation results:")
 a = read_numbers_from_file_coalesced(coalesced_a_file_name)
 b = read_numbers_from_file_coalesced(coalesced_b_file_name)
 
-binary_operator_check(add_results_file_name, a, b, "add", "+")
-binary_operator_check(sub_results_file_name, a, b, "sub", "-")
+# binary_operator_check(add_results_file_name, a, b, "add", "+")
+# binary_operator_check(sub_results_file_name, a, b, "sub", "-")
 binary_operator_check(mul_results_file_name, a, b, "mul", "*")

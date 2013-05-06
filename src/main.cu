@@ -25,8 +25,8 @@ int main(void)
     read_coalesced_bignums_from_file(COALESCED_M_FILE_NAME, host_m);
 
     // benchmarks
-    add_benchmark(host_c, host_a, host_b, ADD_RESULTS_FILE_NAME);
-    sub_benchmark(host_c, host_a, host_b, SUB_RESULTS_FILE_NAME);
+    // add_benchmark(host_c, host_a, host_b, ADD_RESULTS_FILE_NAME);
+    // sub_benchmark(host_c, host_a, host_b, SUB_RESULTS_FILE_NAME);
     mul_benchmark(host_c, host_a, host_b, MUL_RESULTS_FILE_NAME);
 
     free(host_a);
