@@ -136,8 +136,10 @@ def add_loc():
     asm.append('#define add_loc(c_loc, a_loc, b_loc) {\\')
     asm.append('    asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\\')
     for i in range(1, max_bignum_number_of_words - 1):
+    # for i in range(1, min_bignum_number_of_words - 1):
         asm.append('    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(a_loc[' + str(i) + ']), "r"(b_loc[' + str(i) + ']));\\')
     asm.append('    asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(max_bignum_number_of_words - 1) + ']) : "r"(a_loc[' + str(max_bignum_number_of_words - 1) + ']), "r"(b_loc[' + str(max_bignum_number_of_words - 1) + ']));\\')
+    # asm.append('    asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(min_bignum_number_of_words - 1) + ']) : "r"(a_loc[' + str(min_bignum_number_of_words - 1) + ']), "r"(b_loc[' + str(min_bignum_number_of_words - 1) + ']));\\')
     asm.append(r'}' + '\n')
     return asm
 
@@ -148,8 +150,15 @@ def add_glo():
     return asm
 
 def sub_loc():
-    asm = add_loc()
-    asm = [line.replace('add', 'sub') for line in asm]
+    asm = []
+    asm.append('#define sub_loc(c_loc, a_loc, b_loc) {\\')
+    asm.append('    asm("sub.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\\')
+    for i in range(1, max_bignum_number_of_words - 1):
+    # for i in range(1, min_bignum_number_of_words - 1):
+        asm.append('    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(a_loc[' + str(i) + ']), "r"(b_loc[' + str(i) + ']));\\')
+    asm.append('    asm("subc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(max_bignum_number_of_words - 1) + ']) : "r"(a_loc[' + str(max_bignum_number_of_words - 1) + ']), "r"(b_loc[' + str(max_bignum_number_of_words - 1) + ']));\\')
+    # asm.append('    asm("subc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(min_bignum_number_of_words - 1) + ']) : "r"(a_loc[' + str(min_bignum_number_of_words - 1) + ']), "r"(b_loc[' + str(min_bignum_number_of_words - 1) + ']));\\')
+    asm.append(r'}' + '\n')
     return asm
 
 def sub_glo():
@@ -277,6 +286,86 @@ def mul_loc():
 
     return asm
 
+def mul_loc_2():
+    # sum until min_bignum_number_of_words, because we know that a number is
+    # actually represented on those number of words, but the result is on
+    # max_bignum_number_of_words.
+
+    asm = []
+
+    # header ###################################################################
+    asm.append('#define mul_loc(c_loc, a_loc, b_loc) {\\')
+    # asm.append(r'asm("{"')
+
+    mul_index_tuples = []
+
+    # generate tuples of indexes in arrays A and B that are to be multiplied
+    # together +1 for inclusive range
+    for index_sum in range(2 * min_bignum_number_of_words - 1):
+        shift_index_tuples = []
+        for i in range(min_bignum_number_of_words + 1):
+            for j in range(min_bignum_number_of_words + 1):
+                if (i + j == index_sum) and (i < min_bignum_number_of_words) and (j < min_bignum_number_of_words):
+                    shift_index_tuples.append((i, j))
+        mul_index_tuples.append(shift_index_tuples)
+
+    # assembly statements ######################################################
+    # asm.append(r'".reg .u32 %carry;"')
+    asm.append('    uint32_t carry;                                                                      \\')
+    # asm.append(r'"mul.lo.u32 c_loc[0], b_loc[0], a_loc[0];"')
+    asm.append('    asm("mul.lo.u32    %0, %1, %2    ;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\\')
+
+    for i in range(1, len(mul_index_tuples)):
+        c_index = i
+
+        # there is no carry to add to c_loc[1] in the very first iteration
+        if i != 1:
+            # asm.append(r'"add.u32 c_loc[' + str(c_index) + r'], %carry, 0;"')
+            asm.append('    asm("add.u32       %0, %1,  0    ;" : "=r"(c_loc[' + str(c_index) + ']) : "r"(carry)                  );\\')
+
+        # asm.append(r'"add.u32 %carry, 0, 0;"')
+        asm.append('    asm("add.u32       %0,  0,  0    ;" : "=r"(carry)    :                             );\\')
+
+        # .hi bit operations
+        for k in range(len(mul_index_tuples[i - 1])):
+            b_index = mul_index_tuples[c_index - 1][k][0]
+            a_index = mul_index_tuples[c_index - 1][k][1]
+
+            # in the first iteration, we don't have any carry-out, or any older
+            # value of c_loc[1] to add, so we just do a normal mul instead of mad.
+            if (c_index - 1) == 0:
+                # asm.append(r'"mul.hi.u32 c_loc[' + str(c_index) + r'], b_loc[' + str(b_index) + r'], a_loc[' + str(a_index) + r'];"')
+                asm.append('    asm("mul.hi.u32    %0, %1, %2    ;" : "=r"(c_loc[' + str(c_index) + ']) : "r"(b_loc[' + str(b_index) + ']), "r"(a_loc[' + str(a_index) + ']));\\')
+            else:
+                # multiply add, with carry-out this time.
+                # asm.append(r'"mad.hi.cc.u32 c_loc[' + str(c_index) + r'], b_loc[' + str(b_index) + r'], a_loc[' + str(a_index) + r'], c_loc[' + str(c_index) + r'];"')
+                asm.append('    asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c_loc[' + str(c_index) + ']) : "r"(b_loc[' + str(b_index) + ']), "r"(a_loc[' + str(a_index) + ']));\\')
+                # asm.append(r'"addc.u32 %carry, %carry, 0;"')
+                asm.append('    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry)    :                             );\\')
+
+        # .lo bit operations
+        for j in range(len(mul_index_tuples[i])):
+            b_index = mul_index_tuples[c_index][j][0]
+            a_index = mul_index_tuples[c_index][j][1]
+            # asm.append(r'"mad.lo.cc.u32 c_loc[' + str(c_index) + r'], b_loc[' + str(b_index) + r'], a_loc[' + str(a_index) + r'], c_loc[' + str(c_index) + r'];"')
+            asm.append('    asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c_loc[' + str(c_index) + ']) : "r"(b_loc[' + str(b_index) + ']), "r"(a_loc[' + str(a_index) + ']));\\')
+
+            # in the second last shift iteration of the multiplication, if we
+            # are at the last step, we no longer need to add the carry unless if
+            # the result is indeed on 2 * min_bignum_number_of_words.
+            if not ((i == len(mul_index_tuples) - 1) and (j == len(mul_index_tuples[i]) - 1)) or (max_bignum_number_of_words == 2 * min_bignum_number_of_words):
+                # asm.append(r'"addc.u32 %carry, %carry, 0;"')
+                asm.append('    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry)    :                             );\\')
+
+    # if it is possible for the multiplication of 2 bignums to give a result of
+    # size 2 * min_bignum_number_of_words, then calculate the final value of C
+    if max_bignum_number_of_words == 2 * min_bignum_number_of_words:
+        # asm.append(r'"mad.hi.u32 c_loc[' + str(max_bignum_number_of_words - 1) + r'], b_loc[' + str(min_bignum_number_of_words - 1) + r'], a_loc[' + str(min_bignum_number_of_words - 1) + r'], %carry;"')
+        asm.append('    asm("mad.hi.u32 %0, %1, %2, %3;" : "=r"(c_loc[' + str(max_bignum_number_of_words - 1) + ']) : "r"(b_loc[' + str(min_bignum_number_of_words - 1) + ']), "r"(a_loc[' + str(min_bignum_number_of_words - 1) + ']), "r"(carry));\\')
+
+    asm.append(r'}' + '\n')
+    return asm
+
 def mul_glo():
     asm = mul_loc()
     asm = [line.replace(r'mul_loc(c_loc, a_loc, b_loc)', r'mul_glo(c_glo, a_glo, b_glo, tid)') for line in asm]
@@ -287,11 +376,33 @@ def add_m_loc():
     # Do a+b-m.
     # Do mask=0-borrow.
     # And use this to add m but actually adding m[i]&mask
-    print(2)
-    pass
+    asm = []
+    asm.append('#define add_m_loc(c_loc, a_loc, b_loc, m_loc) {\\')
+
+    # addition (a + b)
+    asm.append('    asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\\')
+    for i in range(1, max_bignum_number_of_words - 1):
+        asm.append('    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(a_loc[' + str(i) + ']), "r"(b_loc[' + str(i) + ']));\\')
+    asm.append('    asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(max_bignum_number_of_words - 1) + ']) : "r"(a_loc[' + str(max_bignum_number_of_words - 1) + ']), "r"(b_loc[' + str(max_bignum_number_of_words - 1) + ']));\\')
+
+    # subtraction (a + b) - m
+    asm.append('    asm("sub.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(c_loc[0]), "r"(m_loc[0]));\\')
+    for i in range(1, max_bignum_number_of_words - 1):
+        asm.append('    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(c_loc[' + str(i) + ']), "r"(m_loc[' + str(i) + ']));\\')
+    asm.append('    asm("subc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(max_bignum_number_of_words - 1) + ']) : "r"(c_loc[' + str(max_bignum_number_of_words - 1) + ']), "r"(m_loc[' + str(max_bignum_number_of_words - 1) + ']));\\')
+
+    # mask = 0 - borrow
+    # subtraction (a + b) - m
+    asm.append('    asm("sub.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(c_loc[0]), "r"(m_loc[0]));\\')
+    for i in range(1, max_bignum_number_of_words - 1):
+        asm.append('    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(c_loc[' + str(i) + ']), "r"(m_loc[' + str(i) + ']));\\')
+    asm.append('    asm("subc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(max_bignum_number_of_words - 1) + ']) : "r"(c_loc[' + str(max_bignum_number_of_words - 1) + ']), "r"(m_loc[' + str(max_bignum_number_of_words - 1) + ']));\\')
+
+    asm.append(r'}' + '\n')
+    return asm
 
 def generate_operations():
-    macros_to_print = [add_doc, add_loc, add_glo, sub_doc, sub_loc, sub_glo, mul_doc, mul_loc, mul_glo]
+    macros_to_print = [add_doc, add_loc, add_glo, sub_doc, sub_loc, sub_glo, mul_doc, mul_loc_2, mul_glo, add_m_loc]
 
     all_lines = []
 
