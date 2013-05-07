@@ -1,9 +1,9 @@
 import math
 
 # change anything you want here
-precision = 61
-threads_per_block = 1
-blocks_per_grid = 1
+precision = 131
+threads_per_block = 32
+blocks_per_grid = 32
 benchmark_iterations = 11
 coalesced_m_file_name = r'../data/coalesced_m.txt'
 coalesced_a_file_name = r'../data/coalesced_a.txt'

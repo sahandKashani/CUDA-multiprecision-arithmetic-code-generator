@@ -34,6 +34,6 @@ print("Checking operation results:")
 a = read_numbers_from_file_coalesced(coalesced_a_file_name)
 b = read_numbers_from_file_coalesced(coalesced_b_file_name)
 
-# binary_operator_check(add_results_file_name, a, b, "add", "+")
-# binary_operator_check(sub_results_file_name, a, b, "sub", "-")
+binary_operator_check(add_results_file_name, a, b, "add", "+")
+binary_operator_check(sub_results_file_name, a, b, "sub", "-")
 binary_operator_check(mul_results_file_name, a, b, "mul", "*")
