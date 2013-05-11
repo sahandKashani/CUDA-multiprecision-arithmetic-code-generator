@@ -3,10 +3,9 @@
 
 #include <stdint.h>
 
-#define THREADS_PER_BLOCK 32
-#define BLOCKS_PER_GRID 32
-#define NUMBER_OF_BIGNUMS 1024
-#define BENCHMARK_ITERATIONS 11
+#define THREADS_PER_BLOCK 1
+#define BLOCKS_PER_GRID 1
+#define NUMBER_OF_BIGNUMS 1
 #define COALESCED_A_FILE_NAME "../data/coalesced_a.txt"
 #define COALESCED_B_FILE_NAME "../data/coalesced_b.txt"
 #define COALESCED_M_FILE_NAME "../data/coalesced_m.txt"

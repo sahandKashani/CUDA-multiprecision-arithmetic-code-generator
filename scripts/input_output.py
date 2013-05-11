@@ -1,12 +1,18 @@
-from constants import total_hex_length
 from constants import hex_digits_per_word
+from constants import min_hex_length
+from constants import max_hex_length
 
 from conversions import hex_str_to_int
 from conversions import int_to_hex_str
 
-def write_numbers_to_file_coalesced(numbers, file_name):
+def write_numbers_to_file_coalesced(numbers, is_long_number, file_name):
     # no '0x'
-    full_hex_numbers = [int_to_hex_str(n)[2:] for n in numbers]
+    full_hex_numbers = [int_to_hex_str(n, is_long_number)[2:] for n in numbers]
+
+    if is_long_number:
+        total_hex_length = max_hex_length
+    else:
+        total_hex_length = min_hex_length
 
     split_indexes = [i * hex_digits_per_word for i in range(total_hex_length // hex_digits_per_word)]
 

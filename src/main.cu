@@ -20,9 +20,9 @@ int main(void)
     assert(host_m != NULL);
 
     // read operands from files back to memory
-    read_coalesced_bignums_from_file(COALESCED_A_FILE_NAME, host_a);
-    read_coalesced_bignums_from_file(COALESCED_B_FILE_NAME, host_b);
-    read_coalesced_bignums_from_file(COALESCED_M_FILE_NAME, host_m);
+    read_coalesced_bignums_from_file(COALESCED_A_FILE_NAME, host_a, false);
+    read_coalesced_bignums_from_file(COALESCED_B_FILE_NAME, host_b, false);
+    read_coalesced_bignums_from_file(COALESCED_M_FILE_NAME, host_m, false);
 
     // benchmarks
     add_benchmark(host_c, host_a, host_b, ADD_RESULTS_FILE_NAME);

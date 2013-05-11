@@ -4,20 +4,16 @@
 // Example of the schoolbook addition algorithm we will use if bignums were
 // represented on 5 words:
 //
-//                                      A[4]---A[3]---A[2]---A[1]---A[0]
-//                                    + B[4]---B[3]---B[2]---B[1]---B[0]
-// -----------------------------------------------------------------------
-// |      |      |      |      |      | A[4] | A[3] | A[2] | A[1] | A[0] |
-// |      |      |      |      |      |  +   |  +   |  +   |  +   |  +   |
-// |      |      |      |      |      | B[4] | B[3] | B[2] | B[1] | B[0] |
-// |      |      |      |      |      |  +   |  +   |  +   |  +   |      |
-// |      |      |      |      |      |carry |carry |carry |carry |      |
-// -----------------------------------------------------------------------
-// |   0  |   0  |   0  |   0  | C[5] | C[4] | C[3] | C[2] | C[1] | C[0] |
-//
-// Note: it is possible that C[5] is also 0 if we are sure that the addition of
-// 2 bignums will never require more words than the current number the bignums
-// have.
+//   A[4]---A[3]---A[2]---A[1]---A[0]
+// + B[4]---B[3]---B[2]---B[1]---B[0]
+// ------------------------------------
+// | A[4] | A[3] | A[2] | A[1] | A[0] |
+// |  +   |  +   |  +   |  +   |  +   |
+// | B[4] | B[3] | B[2] | B[1] | B[0] |
+// |  +   |  +   |  +   |  +   |      |
+// |carry |carry |carry |carry |      |
+// ------------------------------------
+// | C[4] | C[3] | C[2] | C[1] | C[0] |
 #define add_loc(c_loc, a_loc, b_loc) {\
     asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[1]) : "r"(a_loc[1]), "r"(b_loc[1]));\
@@ -46,20 +42,16 @@
 // Example of the schoolbook subtraction algorithm we will use if bignums were
 // represented on 5 words:
 //
-//                                      A[4]---A[3]---A[2]---A[1]---A[0]
-//                                    + B[4]---B[3]---B[2]---B[1]---B[0]
-// -----------------------------------------------------------------------
-// |   0  |   0  |   0  |   0  |   0  | A[4] | A[3] | A[2] | A[1] | A[0] |
-// |   -  |   -  |   -  |   -  |   -  |  -   |  -   |  -   |  -   |  -   |
-// |borrow|borrow|borrow|borrow|borrow| B[4] | B[3] | B[2] | B[1] | B[0] |
-// |      |      |      |      |      |  -   |  -   |  -   |  -   |      |
-// |      |      |      |      |      |borrow|borrow|borrow|borrow|      |
-// -----------------------------------------------------------------------
-// |0/11..|0/11..|0/11..|0/11..| C[5] | C[4] | C[3] | C[2] | C[1] | C[0] |
-//
-// Note: it is possible that C[5] is also 0/11.. if we are sure that the
-// addition of 2 bignums will never require more words than the current number
-// the bignums have.
+//   A[4]---A[3]---A[2]---A[1]---A[0]
+// - B[4]---B[3]---B[2]---B[1]---B[0]
+// ------------------------------------
+// | A[4] | A[3] | A[2] | A[1] | A[0] |
+// |  -   |  -   |  -   |  -   |  -   |
+// | B[4] | B[3] | B[2] | B[1] | B[0] |
+// |  -   |  -   |  -   |  -   |      |
+// |borrow|borrow|borrow|borrow|      |
+// ------------------------------------
+// | C[4] | C[3] | C[2] | C[1] | C[0] |
 #define sub_loc(c_loc, a_loc, b_loc) {\
     asm("sub.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\
     asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[1]) : "r"(a_loc[1]), "r"(b_loc[1]));\
@@ -386,4 +378,50 @@
 }
 
 #define add_m_loc(c_loc, a_loc, b_loc, m_loc) {\
+    uint32_t mask[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};\
+    asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[1]) : "r"(a_loc[1]), "r"(b_loc[1]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[2]) : "r"(a_loc[2]), "r"(b_loc[2]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[3]) : "r"(a_loc[3]), "r"(b_loc[3]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[4]) : "r"(a_loc[4]), "r"(b_loc[4]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[5]) : "r"(a_loc[5]), "r"(b_loc[5]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[6]) : "r"(a_loc[6]), "r"(b_loc[6]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[7]) : "r"(a_loc[7]), "r"(b_loc[7]));\
+    asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[8]) : "r"(a_loc[8]), "r"(b_loc[8]));\
+    asm("sub.cc.u32  %0, %1, %2;" : "+r"(c_loc[0]) : "r"(m_loc[0]));\
+    asm("subc.cc.u32 %0, %1, %2;" : "+r"(c_loc[1]) : "r"(m_loc[1]));\
+    asm("subc.cc.u32 %0, %1, %2;" : "+r"(c_loc[2]) : "r"(m_loc[2]));\
+    asm("subc.cc.u32 %0, %1, %2;" : "+r"(c_loc[3]) : "r"(m_loc[3]));\
+    asm("subc.cc.u32 %0, %1, %2;" : "+r"(c_loc[4]) : "r"(m_loc[4]));\
+    asm("subc.cc.u32 %0, %1, %2;" : "+r"(c_loc[5]) : "r"(m_loc[5]));\
+    asm("subc.cc.u32 %0, %1, %2;" : "+r"(c_loc[6]) : "r"(m_loc[6]));\
+    asm("subc.cc.u32 %0, %1, %2;" : "+r"(c_loc[7]) : "r"(m_loc[7]));\
+    asm("subc.cc.u32 %0, %1, %2;" : "+r"(c_loc[8]) : "r"(m_loc[8]));\
+    asm("subc.cc.u32 %0,  0,  0;" : "=r"(mask[0]));\
+    asm("subc.cc.u32 %0,  0,  0;" : "=r"(mask[1]));\
+    asm("subc.cc.u32 %0,  0,  0;" : "=r"(mask[2]));\
+    asm("subc.cc.u32 %0,  0,  0;" : "=r"(mask[3]));\
+    asm("subc.cc.u32 %0,  0,  0;" : "=r"(mask[4]));\
+    asm("subc.cc.u32 %0,  0,  0;" : "=r"(mask[5]));\
+    asm("subc.cc.u32 %0,  0,  0;" : "=r"(mask[6]));\
+    asm("subc.cc.u32 %0,  0,  0;" : "=r"(mask[7]));\
+    asm("subc.u32    %0,  0,  0;" : "=r"(mask[8]));\
+    asm("and.b32     %0, %0, %1;" : "+r"(mask[0]) : "r"(m_loc[0]));\
+    asm("and.b32     %0, %0, %1;" : "+r"(mask[1]) : "r"(m_loc[1]));\
+    asm("and.b32     %0, %0, %1;" : "+r"(mask[2]) : "r"(m_loc[2]));\
+    asm("and.b32     %0, %0, %1;" : "+r"(mask[3]) : "r"(m_loc[3]));\
+    asm("and.b32     %0, %0, %1;" : "+r"(mask[4]) : "r"(m_loc[4]));\
+    asm("and.b32     %0, %0, %1;" : "+r"(mask[5]) : "r"(m_loc[5]));\
+    asm("and.b32     %0, %0, %1;" : "+r"(mask[6]) : "r"(m_loc[6]));\
+    asm("and.b32     %0, %0, %1;" : "+r"(mask[7]) : "r"(m_loc[7]));\
+    asm("and.b32     %0, %0, %1;" : "+r"(mask[8]) : "r"(m_loc[8]));\
+    asm("add.cc.u32  %0, %0, %1;" : "+r"(c_loc[0]) : "r"(mask[0]));\
+    asm("addc.cc.u32 %0, %0, %1;" : "+r"(c_loc[1]) : "r"(mask[1]));\
+    asm("addc.cc.u32 %0, %0, %1;" : "+r"(c_loc[2]) : "r"(mask[2]));\
+    asm("addc.cc.u32 %0, %0, %1;" : "+r"(c_loc[3]) : "r"(mask[3]));\
+    asm("addc.cc.u32 %0, %0, %1;" : "+r"(c_loc[4]) : "r"(mask[4]));\
+    asm("addc.cc.u32 %0, %0, %1;" : "+r"(c_loc[5]) : "r"(mask[5]));\
+    asm("addc.cc.u32 %0, %0, %1;" : "+r"(c_loc[6]) : "r"(mask[6]));\
+    asm("addc.cc.u32 %0, %0, %1;" : "+r"(c_loc[7]) : "r"(mask[7]));\
+    asm("addc.u32    %0, %0, %1;" : "+r"(c_loc[8]) : "r"(mask[8]));\
 }

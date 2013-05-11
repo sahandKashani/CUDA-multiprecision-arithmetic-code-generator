@@ -9,20 +9,16 @@ def add_doc():
 // Example of the schoolbook addition algorithm we will use if bignums were
 // represented on 5 words:
 //
-//                                      A[4]---A[3]---A[2]---A[1]---A[0]
-//                                    + B[4]---B[3]---B[2]---B[1]---B[0]
-// -----------------------------------------------------------------------
-// |      |      |      |      |      | A[4] | A[3] | A[2] | A[1] | A[0] |
-// |      |      |      |      |      |  +   |  +   |  +   |  +   |  +   |
-// |      |      |      |      |      | B[4] | B[3] | B[2] | B[1] | B[0] |
-// |      |      |      |      |      |  +   |  +   |  +   |  +   |      |
-// |      |      |      |      |      |carry |carry |carry |carry |      |
-// -----------------------------------------------------------------------
-// |   0  |   0  |   0  |   0  | C[5] | C[4] | C[3] | C[2] | C[1] | C[0] |
-//
-// Note: it is possible that C[5] is also 0 if we are sure that the addition of
-// 2 bignums will never require more words than the current number the bignums
-// have."""
+//   A[4]---A[3]---A[2]---A[1]---A[0]
+// + B[4]---B[3]---B[2]---B[1]---B[0]
+// ------------------------------------
+// | A[4] | A[3] | A[2] | A[1] | A[0] |
+// |  +   |  +   |  +   |  +   |  +   |
+// | B[4] | B[3] | B[2] | B[1] | B[0] |
+// |  +   |  +   |  +   |  +   |      |
+// |carry |carry |carry |carry |      |
+// ------------------------------------
+// | C[4] | C[3] | C[2] | C[1] | C[0] |"""
     doc_list = doc.split('\n')
     for i in range(len(doc_list)):
         doc_list[i] = doc_list[i].strip()
@@ -33,20 +29,16 @@ def sub_doc():
 // Example of the schoolbook subtraction algorithm we will use if bignums were
 // represented on 5 words:
 //
-//                                      A[4]---A[3]---A[2]---A[1]---A[0]
-//                                    + B[4]---B[3]---B[2]---B[1]---B[0]
-// -----------------------------------------------------------------------
-// |   0  |   0  |   0  |   0  |   0  | A[4] | A[3] | A[2] | A[1] | A[0] |
-// |   -  |   -  |   -  |   -  |   -  |  -   |  -   |  -   |  -   |  -   |
-// |borrow|borrow|borrow|borrow|borrow| B[4] | B[3] | B[2] | B[1] | B[0] |
-// |      |      |      |      |      |  -   |  -   |  -   |  -   |      |
-// |      |      |      |      |      |borrow|borrow|borrow|borrow|      |
-// -----------------------------------------------------------------------
-// |0/11..|0/11..|0/11..|0/11..| C[5] | C[4] | C[3] | C[2] | C[1] | C[0] |
-//
-// Note: it is possible that C[5] is also 0/11.. if we are sure that the
-// addition of 2 bignums will never require more words than the current number
-// the bignums have."""
+//   A[4]---A[3]---A[2]---A[1]---A[0]
+// - B[4]---B[3]---B[2]---B[1]---B[0]
+// ------------------------------------
+// | A[4] | A[3] | A[2] | A[1] | A[0] |
+// |  -   |  -   |  -   |  -   |  -   |
+// | B[4] | B[3] | B[2] | B[1] | B[0] |
+// |  -   |  -   |  -   |  -   |      |
+// |borrow|borrow|borrow|borrow|      |
+// ------------------------------------
+// | C[4] | C[3] | C[2] | C[1] | C[0] |"""
     doc_list = doc.split('\n')
     for i in range(len(doc_list)):
         doc_list[i] = doc_list[i].strip()
@@ -265,25 +257,35 @@ def add_m_loc():
     # And use this to add m but actually adding m[i]&mask
     asm = []
     asm.append('#define add_m_loc(c_loc, a_loc, b_loc, m_loc) {\\')
+    asm.append('    uint32_t mask[' + str(max_bignum_number_of_words) + '] = ' + str([0] * max_bignum_number_of_words).replace('[', '{').replace(']', '}') + ';\\')
 
-    # # addition (a + b)
-    # asm.append('    asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\\')
-    # for i in range(1, max_bignum_number_of_words - 1):
-    #     asm.append('    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(a_loc[' + str(i) + ']), "r"(b_loc[' + str(i) + ']));\\')
-    # asm.append('    asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(max_bignum_number_of_words - 1) + ']) : "r"(a_loc[' + str(max_bignum_number_of_words - 1) + ']), "r"(b_loc[' + str(max_bignum_number_of_words - 1) + ']));\\')
+    # c = (a + b)
+    asm.append('    asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\\')
+    for i in range(1, max_bignum_number_of_words - 1):
+        asm.append('    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(a_loc[' + str(i) + ']), "r"(b_loc[' + str(i) + ']));\\')
+    asm.append('    asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(max_bignum_number_of_words - 1) + ']) : "r"(a_loc[' + str(max_bignum_number_of_words - 1) + ']), "r"(b_loc[' + str(max_bignum_number_of_words - 1) + ']));\\')
 
-    # # subtraction (a + b) - m
-    # asm.append('    asm("sub.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(c_loc[0]), "r"(m_loc[0]));\\')
-    # for i in range(1, max_bignum_number_of_words - 1):
-    #     asm.append('    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(c_loc[' + str(i) + ']), "r"(m_loc[' + str(i) + ']));\\')
-    # asm.append('    asm("subc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(max_bignum_number_of_words - 1) + ']) : "r"(c_loc[' + str(max_bignum_number_of_words - 1) + ']), "r"(m_loc[' + str(max_bignum_number_of_words - 1) + ']));\\')
+    # c = c - m
+    # go until max_bignum_number_of_words (no '-1'), because we want the borrow
+    # out for the mask later.
+    asm.append('    asm("sub.cc.u32  %0, %1, %2;" : "+r"(c_loc[0]) : "r"(m_loc[0]));\\')
+    for i in range(1, max_bignum_number_of_words):
+        asm.append('    asm("subc.cc.u32 %0, %1, %2;" : "+r"(c_loc[' + str(i) + ']) : "r"(m_loc[' + str(i) + ']));\\')
 
-    # # mask = 0 - borrow
-    # # subtraction (a + b) - m
-    # asm.append('    asm("sub.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(c_loc[0]), "r"(m_loc[0]));\\')
-    # for i in range(1, max_bignum_number_of_words - 1):
-    #     asm.append('    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(c_loc[' + str(i) + ']), "r"(m_loc[' + str(i) + ']));\\')
-    # asm.append('    asm("subc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(max_bignum_number_of_words - 1) + ']) : "r"(c_loc[' + str(max_bignum_number_of_words - 1) + ']), "r"(m_loc[' + str(max_bignum_number_of_words - 1) + ']));\\')
+    # mask = 0 - borrow
+    for i in range(max_bignum_number_of_words - 1):
+        asm.append('    asm("subc.cc.u32 %0,  0,  0;" : "=r"(mask[' + str(i) + ']));\\')
+    asm.append('    asm("subc.u32    %0,  0,  0;" : "=r"(mask[' + str(max_bignum_number_of_words - 1) + ']));\\')
+
+    # mask = mask & m
+    for i in range(max_bignum_number_of_words):
+        asm.append('    asm("and.b32     %0, %0, %1;" : "+r"(mask[' + str(i) + ']) : "r"(m_loc[' + str(i) + ']));\\')
+
+    # c = c + mask
+    asm.append('    asm("add.cc.u32  %0, %0, %1;" : "+r"(c_loc[0]) : "r"(mask[0]));\\')
+    for i in range(1, max_bignum_number_of_words - 1):
+        asm.append('    asm("addc.cc.u32 %0, %0, %1;" : "+r"(c_loc[' + str(i) + ']) : "r"(mask[' + str(i) + ']));\\')
+    asm.append('    asm("addc.u32    %0, %0, %1;" : "+r"(c_loc[' + str(max_bignum_number_of_words - 1) + ']) : "r"(mask[' + str(max_bignum_number_of_words - 1) + ']));\\')
 
     asm.append(r'}' + '\n')
     return asm

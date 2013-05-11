@@ -2,7 +2,6 @@ from constants import precision
 from constants import blocks_per_grid
 from constants import threads_per_block
 from constants import number_of_bignums
-from constants import benchmark_iterations
 from constants import coalesced_m_file_name
 from constants import coalesced_a_file_name
 from constants import coalesced_b_file_name
@@ -34,9 +33,9 @@ for i in m:
     b.append(k_bit_rand_int_less_than(i, precision))
 print("done")
 
-write_numbers_to_file_coalesced(m, coalesced_m_file_name)
-write_numbers_to_file_coalesced(a, coalesced_a_file_name)
-write_numbers_to_file_coalesced(b, coalesced_b_file_name)
+write_numbers_to_file_coalesced(m, False, coalesced_m_file_name)
+write_numbers_to_file_coalesced(a, False, coalesced_a_file_name)
+write_numbers_to_file_coalesced(b, False, coalesced_b_file_name)
 
 # set constants in C code ######################################################
 with open('../src/bignum_types.h', 'r') as input_file:
@@ -51,7 +50,6 @@ with open('../src/constants.h', 'r') as input_file:
     contents = [re.sub(r"#define THREADS_PER_BLOCK \d+"       , r"#define THREADS_PER_BLOCK "      + str(threads_per_block)          , line) for line in contents]
     contents = [re.sub(r"#define BLOCKS_PER_GRID \d+"         , r"#define BLOCKS_PER_GRID "        + str(blocks_per_grid)            , line) for line in contents]
     contents = [re.sub(r"#define NUMBER_OF_BIGNUMS \d+"       , r"#define NUMBER_OF_BIGNUMS "      + str(number_of_bignums)          , line) for line in contents]
-    contents = [re.sub(r"#define BENCHMARK_ITERATIONS \d+"    , r"#define BENCHMARK_ITERATIONS "   + str(benchmark_iterations)       , line) for line in contents]
     contents = [re.sub(r'#define COALESCED_M_FILE_NAME "(.*)"', r'#define COALESCED_M_FILE_NAME "' + coalesced_m_file_name     + r'"', line) for line in contents]
     contents = [re.sub(r'#define COALESCED_A_FILE_NAME "(.*)"', r'#define COALESCED_A_FILE_NAME "' + coalesced_a_file_name     + r'"', line) for line in contents]
     contents = [re.sub(r'#define COALESCED_B_FILE_NAME "(.*)"', r'#define COALESCED_B_FILE_NAME "' + coalesced_b_file_name     + r'"', line) for line in contents]

@@ -11,7 +11,9 @@
 /////////////////////////////////// BIGNUM /////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-// A bignum is represented as the following data structure:
+// A bignum is represented as the following 2 data structures depending on its
+// size:
+// uint32_t[MIN_BIGNUM_NUMBER_OF_WORDS]
 // uint32_t[MAX_BIGNUM_NUMBER_OF_WORDS]
 
 // In the code of this project, there will be no "bignum" type. It will only be
@@ -26,7 +28,7 @@
 // come in bignum[MAX_BIGNUM_NUMBER_OF_WORDS - 1] and the least significant bits
 // come in bignum[0].
 
-// A bignum's radix is 2^BITS_PER_WORD (words are 32 bits on our architectures).
+// A bignum's radix is 2^BITS_PER_WORD (words are 32 bits on our architecture).
 
 // Assume you have an array of bignums "c", then the data would be conceptually
 // represented as:
@@ -39,10 +41,11 @@
 // c[N-1][0] c[N-1][1] ... c[N-1][H-1]
 
 // with N = NUMBER_OF_BIGNUMS
-//      H = MAX_BIGNUM_NUMBER_OF_WORDS
+//      H = MIN_BIGNUM_NUMBER_OF_WORDS or MAX_BIGNUM_NUMBER_OF_WORDS
 
 // A bignum is written "horizontally". The data on one "line" of a bignum
-// consists of the MAX_BIGNUM_NUMBER_OF_WORDS elements of the bignum.
+// consists of the MIN_BIGNUM_NUMBER_OF_WORDS or MAX_BIGNUM_NUMBER_OF_WORDS
+// elements of the bignum.
 
 // For memory alignment issues, an array of bignums will not be represented as a
 // 2D array like uint32_t[N][H], but rather as a flattened 1D array like
@@ -54,7 +57,7 @@
 // "i"th bignum from a 1D array of size N * H (N and H defined as below).
 
 // 0 < i < N = NUMBER_OF_BIGNUMS
-// 0 < j < H = MAX_BIGNUM_NUMBER_OF_WORDS
+// 0 < j < H = MIN_BIGNUM_NUMBER_OF_WORDS or MAX_BIGNUM_NUMBER_OF_WORDS
 #define IDX(i, j) (((i) * (MAX_BIGNUM_NUMBER_OF_WORDS)) + (j))
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -76,7 +79,7 @@
 // c[0][H-1] c[1][H-1] ... c[N-1][H-1]
 
 // with N = NUMBER_OF_BIGNUMS
-//      H = MAX_BIGNUM_NUMBER_OF_WORDS
+//      H = MIN_BIGNUM_NUMBER_OF_WORDS or MAX_BIGNUM_NUMBER_OF_WORDS
 
 // A bignum is written "vertically" instead of "horizontally" with this
 // representation. Each column represents one bignum. The data on one "line" of
@@ -90,7 +93,7 @@
 // the following macro returns the index of the "i"th element of the "j"th
 // bignum from a 1D array of size N * H (N and H defined as below).
 
-// 0 < i < H = MAX_BIGNUM_NUMBER_OF_WORDS
+// 0 < i < H = MIN_BIGNUM_NUMBER_OF_WORDS or MAX_BIGNUM_NUMBER_OF_WORDS
 // 0 < j < N = NUMBER_OF_BIGNUMS
 #define COAL_IDX(i, j) (((i) * (NUMBER_OF_BIGNUMS)) + (j))
 
