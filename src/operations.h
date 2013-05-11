@@ -19,11 +19,29 @@
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[1]) : "r"(a_loc[1]), "r"(b_loc[1]));\
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[2]) : "r"(a_loc[2]), "r"(b_loc[2]));\
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[3]) : "r"(a_loc[3]), "r"(b_loc[3]));\
-    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[4]) : "r"(a_loc[4]), "r"(b_loc[4]));\
-    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[5]) : "r"(a_loc[5]), "r"(b_loc[5]));\
-    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[6]) : "r"(a_loc[6]), "r"(b_loc[6]));\
-    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[7]) : "r"(a_loc[7]), "r"(b_loc[7]));\
-    asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[8]) : "r"(a_loc[8]), "r"(b_loc[8]));\
+    asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[4]) : "r"(a_loc[4]), "r"(b_loc[4]));\
+}
+
+#define addc_loc(c_loc, a_loc, b_loc) {\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[1]) : "r"(a_loc[1]), "r"(b_loc[1]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[2]) : "r"(a_loc[2]), "r"(b_loc[2]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[3]) : "r"(a_loc[3]), "r"(b_loc[3]));\
+    asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[4]) : "r"(a_loc[4]), "r"(b_loc[4]));\
+}
+
+#define add_cc_loc(c_loc, a_loc, b_loc) {\
+    asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[1]) : "r"(a_loc[1]), "r"(b_loc[1]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[2]) : "r"(a_loc[2]), "r"(b_loc[2]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[3]) : "r"(a_loc[3]), "r"(b_loc[3]));\
+}
+
+#define addc_cc_loc(c_loc, a_loc, b_loc) {\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[1]) : "r"(a_loc[1]), "r"(b_loc[1]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[2]) : "r"(a_loc[2]), "r"(b_loc[2]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[3]) : "r"(a_loc[3]), "r"(b_loc[3]));\
 }
 
 #define add_glo(c_glo, a_glo, b_glo, tid) {\
@@ -31,11 +49,7 @@
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_glo[COAL_IDX(1, tid)]) : "r"(a_glo[COAL_IDX(1, tid)]), "r"(b_glo[COAL_IDX(1, tid)]));\
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_glo[COAL_IDX(2, tid)]) : "r"(a_glo[COAL_IDX(2, tid)]), "r"(b_glo[COAL_IDX(2, tid)]));\
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_glo[COAL_IDX(3, tid)]) : "r"(a_glo[COAL_IDX(3, tid)]), "r"(b_glo[COAL_IDX(3, tid)]));\
-    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_glo[COAL_IDX(4, tid)]) : "r"(a_glo[COAL_IDX(4, tid)]), "r"(b_glo[COAL_IDX(4, tid)]));\
-    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_glo[COAL_IDX(5, tid)]) : "r"(a_glo[COAL_IDX(5, tid)]), "r"(b_glo[COAL_IDX(5, tid)]));\
-    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_glo[COAL_IDX(6, tid)]) : "r"(a_glo[COAL_IDX(6, tid)]), "r"(b_glo[COAL_IDX(6, tid)]));\
-    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_glo[COAL_IDX(7, tid)]) : "r"(a_glo[COAL_IDX(7, tid)]), "r"(b_glo[COAL_IDX(7, tid)]));\
-    asm("addc.u32    %0, %1, %2;" : "=r"(c_glo[COAL_IDX(8, tid)]) : "r"(a_glo[COAL_IDX(8, tid)]), "r"(b_glo[COAL_IDX(8, tid)]));\
+    asm("addc.u32    %0, %1, %2;" : "=r"(c_glo[COAL_IDX(4, tid)]) : "r"(a_glo[COAL_IDX(4, tid)]), "r"(b_glo[COAL_IDX(4, tid)]));\
 }
 
 
@@ -57,11 +71,29 @@
     asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[1]) : "r"(a_loc[1]), "r"(b_loc[1]));\
     asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[2]) : "r"(a_loc[2]), "r"(b_loc[2]));\
     asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[3]) : "r"(a_loc[3]), "r"(b_loc[3]));\
-    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[4]) : "r"(a_loc[4]), "r"(b_loc[4]));\
-    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[5]) : "r"(a_loc[5]), "r"(b_loc[5]));\
-    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[6]) : "r"(a_loc[6]), "r"(b_loc[6]));\
-    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[7]) : "r"(a_loc[7]), "r"(b_loc[7]));\
-    asm("subc.u32    %0, %1, %2;" : "=r"(c_loc[8]) : "r"(a_loc[8]), "r"(b_loc[8]));\
+    asm("subc.u32    %0, %1, %2;" : "=r"(c_loc[4]) : "r"(a_loc[4]), "r"(b_loc[4]));\
+}
+
+#define subc_loc(c_loc, a_loc, b_loc) {\
+    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\
+    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[1]) : "r"(a_loc[1]), "r"(b_loc[1]));\
+    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[2]) : "r"(a_loc[2]), "r"(b_loc[2]));\
+    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[3]) : "r"(a_loc[3]), "r"(b_loc[3]));\
+    asm("subc.u32    %0, %1, %2;" : "=r"(c_loc[4]) : "r"(a_loc[4]), "r"(b_loc[4]));\
+}
+
+#define sub_cc_loc(c_loc, a_loc, b_loc) {\
+    asm("sub.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\
+    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[1]) : "r"(a_loc[1]), "r"(b_loc[1]));\
+    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[2]) : "r"(a_loc[2]), "r"(b_loc[2]));\
+    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[3]) : "r"(a_loc[3]), "r"(b_loc[3]));\
+}
+
+#define subc_cc_loc(c_loc, a_loc, b_loc) {\
+    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\
+    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[1]) : "r"(a_loc[1]), "r"(b_loc[1]));\
+    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[2]) : "r"(a_loc[2]), "r"(b_loc[2]));\
+    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[3]) : "r"(a_loc[3]), "r"(b_loc[3]));\
 }
 
 #define sub_glo(c_glo, a_glo, b_glo, tid) {\
@@ -69,11 +101,7 @@
     asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_glo[COAL_IDX(1, tid)]) : "r"(a_glo[COAL_IDX(1, tid)]), "r"(b_glo[COAL_IDX(1, tid)]));\
     asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_glo[COAL_IDX(2, tid)]) : "r"(a_glo[COAL_IDX(2, tid)]), "r"(b_glo[COAL_IDX(2, tid)]));\
     asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_glo[COAL_IDX(3, tid)]) : "r"(a_glo[COAL_IDX(3, tid)]), "r"(b_glo[COAL_IDX(3, tid)]));\
-    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_glo[COAL_IDX(4, tid)]) : "r"(a_glo[COAL_IDX(4, tid)]), "r"(b_glo[COAL_IDX(4, tid)]));\
-    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_glo[COAL_IDX(5, tid)]) : "r"(a_glo[COAL_IDX(5, tid)]), "r"(b_glo[COAL_IDX(5, tid)]));\
-    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_glo[COAL_IDX(6, tid)]) : "r"(a_glo[COAL_IDX(6, tid)]), "r"(b_glo[COAL_IDX(6, tid)]));\
-    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_glo[COAL_IDX(7, tid)]) : "r"(a_glo[COAL_IDX(7, tid)]), "r"(b_glo[COAL_IDX(7, tid)]));\
-    asm("subc.u32    %0, %1, %2;" : "=r"(c_glo[COAL_IDX(8, tid)]) : "r"(a_glo[COAL_IDX(8, tid)]), "r"(b_glo[COAL_IDX(8, tid)]));\
+    asm("subc.u32    %0, %1, %2;" : "=r"(c_glo[COAL_IDX(4, tid)]) : "r"(a_glo[COAL_IDX(4, tid)]), "r"(b_glo[COAL_IDX(4, tid)]));\
 }
 
 
@@ -378,50 +406,14 @@
 }
 
 #define add_m_loc(c_loc, a_loc, b_loc, m_loc) {\
-    uint32_t mask[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};\
-    asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\
-    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[1]) : "r"(a_loc[1]), "r"(b_loc[1]));\
-    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[2]) : "r"(a_loc[2]), "r"(b_loc[2]));\
-    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[3]) : "r"(a_loc[3]), "r"(b_loc[3]));\
-    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[4]) : "r"(a_loc[4]), "r"(b_loc[4]));\
-    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[5]) : "r"(a_loc[5]), "r"(b_loc[5]));\
-    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[6]) : "r"(a_loc[6]), "r"(b_loc[6]));\
-    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[7]) : "r"(a_loc[7]), "r"(b_loc[7]));\
-    asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[8]) : "r"(a_loc[8]), "r"(b_loc[8]));\
-    asm("sub.cc.u32  %0, %1, %2;" : "+r"(c_loc[0]) : "r"(m_loc[0]));\
-    asm("subc.cc.u32 %0, %1, %2;" : "+r"(c_loc[1]) : "r"(m_loc[1]));\
-    asm("subc.cc.u32 %0, %1, %2;" : "+r"(c_loc[2]) : "r"(m_loc[2]));\
-    asm("subc.cc.u32 %0, %1, %2;" : "+r"(c_loc[3]) : "r"(m_loc[3]));\
-    asm("subc.cc.u32 %0, %1, %2;" : "+r"(c_loc[4]) : "r"(m_loc[4]));\
-    asm("subc.cc.u32 %0, %1, %2;" : "+r"(c_loc[5]) : "r"(m_loc[5]));\
-    asm("subc.cc.u32 %0, %1, %2;" : "+r"(c_loc[6]) : "r"(m_loc[6]));\
-    asm("subc.cc.u32 %0, %1, %2;" : "+r"(c_loc[7]) : "r"(m_loc[7]));\
-    asm("subc.cc.u32 %0, %1, %2;" : "+r"(c_loc[8]) : "r"(m_loc[8]));\
-    asm("subc.cc.u32 %0,  0,  0;" : "=r"(mask[0]));\
-    asm("subc.cc.u32 %0,  0,  0;" : "=r"(mask[1]));\
-    asm("subc.cc.u32 %0,  0,  0;" : "=r"(mask[2]));\
-    asm("subc.cc.u32 %0,  0,  0;" : "=r"(mask[3]));\
-    asm("subc.cc.u32 %0,  0,  0;" : "=r"(mask[4]));\
-    asm("subc.cc.u32 %0,  0,  0;" : "=r"(mask[5]));\
-    asm("subc.cc.u32 %0,  0,  0;" : "=r"(mask[6]));\
-    asm("subc.cc.u32 %0,  0,  0;" : "=r"(mask[7]));\
-    asm("subc.u32    %0,  0,  0;" : "=r"(mask[8]));\
+    uint32_t mask[5] = {0, 0, 0, 0, 0};\
+    add_loc(c_loc, a_loc, b_loc);\
+    sub_cc_loc(c_loc, c_loc, m_loc);\
+    subc_loc(mask, mask, mask);\
     asm("and.b32     %0, %0, %1;" : "+r"(mask[0]) : "r"(m_loc[0]));\
     asm("and.b32     %0, %0, %1;" : "+r"(mask[1]) : "r"(m_loc[1]));\
     asm("and.b32     %0, %0, %1;" : "+r"(mask[2]) : "r"(m_loc[2]));\
     asm("and.b32     %0, %0, %1;" : "+r"(mask[3]) : "r"(m_loc[3]));\
     asm("and.b32     %0, %0, %1;" : "+r"(mask[4]) : "r"(m_loc[4]));\
-    asm("and.b32     %0, %0, %1;" : "+r"(mask[5]) : "r"(m_loc[5]));\
-    asm("and.b32     %0, %0, %1;" : "+r"(mask[6]) : "r"(m_loc[6]));\
-    asm("and.b32     %0, %0, %1;" : "+r"(mask[7]) : "r"(m_loc[7]));\
-    asm("and.b32     %0, %0, %1;" : "+r"(mask[8]) : "r"(m_loc[8]));\
-    asm("add.cc.u32  %0, %0, %1;" : "+r"(c_loc[0]) : "r"(mask[0]));\
-    asm("addc.cc.u32 %0, %0, %1;" : "+r"(c_loc[1]) : "r"(mask[1]));\
-    asm("addc.cc.u32 %0, %0, %1;" : "+r"(c_loc[2]) : "r"(mask[2]));\
-    asm("addc.cc.u32 %0, %0, %1;" : "+r"(c_loc[3]) : "r"(mask[3]));\
-    asm("addc.cc.u32 %0, %0, %1;" : "+r"(c_loc[4]) : "r"(mask[4]));\
-    asm("addc.cc.u32 %0, %0, %1;" : "+r"(c_loc[5]) : "r"(mask[5]));\
-    asm("addc.cc.u32 %0, %0, %1;" : "+r"(c_loc[6]) : "r"(mask[6]));\
-    asm("addc.cc.u32 %0, %0, %1;" : "+r"(c_loc[7]) : "r"(mask[7]));\
-    asm("addc.u32    %0, %0, %1;" : "+r"(c_loc[8]) : "r"(mask[8]));\
+    add_loc(c_loc, c_loc, mask);\
 }

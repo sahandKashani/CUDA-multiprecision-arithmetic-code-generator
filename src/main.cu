@@ -9,10 +9,10 @@
 int main(void)
 {
     // host operands (host_a, host_b) and results (host_c)
-    uint32_t* host_a = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
-    uint32_t* host_b = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
+    uint32_t* host_a = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
+    uint32_t* host_b = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
     uint32_t* host_c = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
-    uint32_t* host_m = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
+    uint32_t* host_m = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
 
     assert(host_a != NULL);
     assert(host_b != NULL);

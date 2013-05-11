@@ -127,11 +127,35 @@ def add_loc():
     asm = []
     asm.append('#define add_loc(c_loc, a_loc, b_loc) {\\')
     asm.append('    asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\\')
-    for i in range(1, max_bignum_number_of_words - 1):
-    # for i in range(1, min_bignum_number_of_words - 1):
+    for i in range(1, min_bignum_number_of_words - 1):
         asm.append('    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(a_loc[' + str(i) + ']), "r"(b_loc[' + str(i) + ']));\\')
-    asm.append('    asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(max_bignum_number_of_words - 1) + ']) : "r"(a_loc[' + str(max_bignum_number_of_words - 1) + ']), "r"(b_loc[' + str(max_bignum_number_of_words - 1) + ']));\\')
-    # asm.append('    asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(min_bignum_number_of_words - 1) + ']) : "r"(a_loc[' + str(min_bignum_number_of_words - 1) + ']), "r"(b_loc[' + str(min_bignum_number_of_words - 1) + ']));\\')
+    asm.append('    asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(min_bignum_number_of_words - 1) + ']) : "r"(a_loc[' + str(min_bignum_number_of_words - 1) + ']), "r"(b_loc[' + str(min_bignum_number_of_words - 1) + ']));\\')
+    asm.append(r'}' + '\n')
+    return asm
+
+def addc_loc():
+    asm = []
+    asm.append('#define addc_loc(c_loc, a_loc, b_loc) {\\')
+    for i in range(0, min_bignum_number_of_words - 1):
+        asm.append('    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(a_loc[' + str(i) + ']), "r"(b_loc[' + str(i) + ']));\\')
+    asm.append('    asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(min_bignum_number_of_words - 1) + ']) : "r"(a_loc[' + str(min_bignum_number_of_words - 1) + ']), "r"(b_loc[' + str(min_bignum_number_of_words - 1) + ']));\\')
+    asm.append(r'}' + '\n')
+    return asm
+
+def add_cc_loc():
+    asm = []
+    asm.append('#define add_cc_loc(c_loc, a_loc, b_loc) {\\')
+    asm.append('    asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\\')
+    for i in range(1, min_bignum_number_of_words - 1):
+        asm.append('    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(a_loc[' + str(i) + ']), "r"(b_loc[' + str(i) + ']));\\')
+    asm.append(r'}' + '\n')
+    return asm
+
+def addc_cc_loc():
+    asm = []
+    asm.append('#define addc_cc_loc(c_loc, a_loc, b_loc) {\\')
+    for i in range(0, min_bignum_number_of_words - 1):
+        asm.append('    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(a_loc[' + str(i) + ']), "r"(b_loc[' + str(i) + ']));\\')
     asm.append(r'}' + '\n')
     return asm
 
@@ -143,6 +167,21 @@ def add_glo():
 
 def sub_loc():
     asm = add_loc()
+    asm = [line.replace('add', 'sub') for line in asm]
+    return asm
+
+def subc_loc():
+    asm = addc_loc()
+    asm = [line.replace('add', 'sub') for line in asm]
+    return asm
+
+def sub_cc_loc():
+    asm = add_cc_loc()
+    asm = [line.replace('add', 'sub') for line in asm]
+    return asm
+
+def subc_cc_loc():
+    asm = addc_cc_loc()
     asm = [line.replace('add', 'sub') for line in asm]
     return asm
 
@@ -193,19 +232,6 @@ def mul_loc():
             if (c_index - 1) == 0:
                 asm.append('    asm("mul.hi.u32    %0, %1, %2    ;" : "=r"(c_loc[' + str(c_index) + ']) : "r"(b_loc[' + str(b_index) + ']), "r"(a_loc[' + str(a_index) + ']));\\')
             else:
-                # # new block formation
-                # asm.append('    asm("{\\n\\t"\\')
-                # asm.append('        "   mad.hi.cc.u32 %0, %2, %3, %0;\\n\\t"\\')
-                # asm.append('        "   addc.u32      %1, %1,  0    ;\\n\\t"\\')
-                # asm.append('        "}"\\')
-                # asm.append('        :\\')
-                # asm.append('        "+r"(c_loc[' + str(c_index) + ']),\\')
-                # asm.append('        "+r"(carry)\\')
-                # asm.append('        :\\')
-                # asm.append('        "r"(b_loc[' + str(b_index) + ']),\\')
-                # asm.append('        "r"(a_loc[' + str(b_index) + '])\\')
-                # asm.append('    );\\')
-
                 # multiply add, with carry-out this time.
                 asm.append('    asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c_loc[' + str(c_index) + ']) : "r"(b_loc[' + str(b_index) + ']), "r"(a_loc[' + str(a_index) + ']));\\')
                 asm.append('    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\\')
@@ -214,20 +240,6 @@ def mul_loc():
         for j in range(len(mul_index_tuples[i])):
             b_index = mul_index_tuples[c_index][j][0]
             a_index = mul_index_tuples[c_index][j][1]
-
-            # # new block formation
-            # asm.append('    asm("{\\n\\t"\\')
-            # asm.append('        "    mad.lo.cc.u32 %0, %2, %3, %0;\\n\\t"\\')
-            # if not ((i == len(mul_index_tuples) - 1) and (j == len(mul_index_tuples[i]) - 1)) or (max_bignum_number_of_words == 2 * min_bignum_number_of_words):
-            #     asm.append('        "    addc.u32      %1, %1,  0    ;\\n\\t"\\')
-            # asm.append('        "}"\\')
-            # asm.append('        :\\')
-            # asm.append('        "+r"(c_loc[' + str(c_index) + ']),\\')
-            # asm.append('        "+r"(carry)\\')
-            # asm.append('        :\\')
-            # asm.append('        "r"(b_loc[' + str(b_index) + ']),\\')
-            # asm.append('        "r"(a_loc[' + str(b_index) + '])\\')
-            # asm.append('    );\\')
 
             asm.append('    asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c_loc[' + str(c_index) + ']) : "r"(b_loc[' + str(b_index) + ']), "r"(a_loc[' + str(a_index) + ']));\\')
 
@@ -252,46 +264,31 @@ def mul_glo():
     return asm
 
 def add_m_loc():
-    # Do a+b-m.
-    # Do mask=0-borrow.
-    # And use this to add m but actually adding m[i]&mask
     asm = []
     asm.append('#define add_m_loc(c_loc, a_loc, b_loc, m_loc) {\\')
-    asm.append('    uint32_t mask[' + str(max_bignum_number_of_words) + '] = ' + str([0] * max_bignum_number_of_words).replace('[', '{').replace(']', '}') + ';\\')
+    asm.append('    uint32_t mask[' + str(min_bignum_number_of_words) + '] = ' + str([0] * min_bignum_number_of_words).replace('[', '{').replace(']', '}') + ';\\')
 
     # c = (a + b)
-    asm.append('    asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\\')
-    for i in range(1, max_bignum_number_of_words - 1):
-        asm.append('    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(a_loc[' + str(i) + ']), "r"(b_loc[' + str(i) + ']));\\')
-    asm.append('    asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(max_bignum_number_of_words - 1) + ']) : "r"(a_loc[' + str(max_bignum_number_of_words - 1) + ']), "r"(b_loc[' + str(max_bignum_number_of_words - 1) + ']));\\')
+    asm.append('    add_loc(c_loc, a_loc, b_loc);\\')
 
-    # c = c - m
-    # go until max_bignum_number_of_words (no '-1'), because we want the borrow
-    # out for the mask later.
-    asm.append('    asm("sub.cc.u32  %0, %1, %2;" : "+r"(c_loc[0]) : "r"(m_loc[0]));\\')
-    for i in range(1, max_bignum_number_of_words):
-        asm.append('    asm("subc.cc.u32 %0, %1, %2;" : "+r"(c_loc[' + str(i) + ']) : "r"(m_loc[' + str(i) + ']));\\')
+    # c = c - m (with borrow out, because we need it to create the mask)
+    asm.append('    sub_cc_loc(c_loc, c_loc, m_loc);\\')
 
-    # mask = 0 - borrow
-    for i in range(max_bignum_number_of_words - 1):
-        asm.append('    asm("subc.cc.u32 %0,  0,  0;" : "=r"(mask[' + str(i) + ']));\\')
-    asm.append('    asm("subc.u32    %0,  0,  0;" : "=r"(mask[' + str(max_bignum_number_of_words - 1) + ']));\\')
+    # mask = 0 - borrow (we can do it with "mask = mask - mask - borrow")
+    asm.append('    subc_loc(mask, mask, mask);\\')
 
     # mask = mask & m
-    for i in range(max_bignum_number_of_words):
+    for i in range(min_bignum_number_of_words):
         asm.append('    asm("and.b32     %0, %0, %1;" : "+r"(mask[' + str(i) + ']) : "r"(m_loc[' + str(i) + ']));\\')
 
     # c = c + mask
-    asm.append('    asm("add.cc.u32  %0, %0, %1;" : "+r"(c_loc[0]) : "r"(mask[0]));\\')
-    for i in range(1, max_bignum_number_of_words - 1):
-        asm.append('    asm("addc.cc.u32 %0, %0, %1;" : "+r"(c_loc[' + str(i) + ']) : "r"(mask[' + str(i) + ']));\\')
-    asm.append('    asm("addc.u32    %0, %0, %1;" : "+r"(c_loc[' + str(max_bignum_number_of_words - 1) + ']) : "r"(mask[' + str(max_bignum_number_of_words - 1) + ']));\\')
+    asm.append('    add_loc(c_loc, c_loc, mask);\\')
 
     asm.append(r'}' + '\n')
     return asm
 
 def generate_operations():
-    macros_to_print = [add_doc, add_loc, add_glo, sub_doc, sub_loc, sub_glo, mul_doc, mul_loc, mul_glo, add_m_loc]
+    macros_to_print = [add_doc, add_loc, addc_loc, add_cc_loc, addc_cc_loc, add_glo, sub_doc, sub_loc, subc_loc, sub_cc_loc, subc_cc_loc, sub_glo, mul_doc, mul_loc, mul_glo, add_m_loc]
 
     all_lines = []
 
