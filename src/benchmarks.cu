@@ -260,7 +260,7 @@ void binary_operator_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* hos
     // allocate gpu memory
     cudaError dev_a_malloc_success = cudaMalloc((void**) &dev_a, NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
     cudaError dev_b_malloc_success = cudaMalloc((void**) &dev_b, NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
-    cudaError dev_c_malloc_success = cudaMalloc((void**) &dev_c, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
+    cudaError dev_c_malloc_success = cudaMalloc((void**) &dev_c, NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
     assert(dev_a_malloc_success == cudaSuccess);
     assert(dev_b_malloc_success == cudaSuccess);
     assert(dev_c_malloc_success == cudaSuccess);
@@ -268,14 +268,14 @@ void binary_operator_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* hos
     // make sure gpu memory is clean before our calculations (you never know ...)
     cudaError dev_a_cleanup_memset_success = cudaMemset(dev_a, 0, NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
     cudaError dev_b_cleanup_memset_success = cudaMemset(dev_b, 0, NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
-    cudaError dev_c_cleanup_memset_success = cudaMemset(dev_c, 0, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
+    cudaError dev_c_cleanup_memset_success = cudaMemset(dev_c, 0, NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
     assert(dev_a_cleanup_memset_success == cudaSuccess);
     assert(dev_b_cleanup_memset_success == cudaSuccess);
     assert(dev_c_cleanup_memset_success == cudaSuccess);
 
     // copy operands to device memory
-    cudaError dev_a_memcpy_succes = cudaMemcpy(dev_a, host_a, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t), cudaMemcpyHostToDevice);
-    cudaError dev_b_memcpy_succes = cudaMemcpy(dev_b, host_b, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t), cudaMemcpyHostToDevice);
+    cudaError dev_a_memcpy_succes = cudaMemcpy(dev_a, host_a, NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t), cudaMemcpyHostToDevice);
+    cudaError dev_b_memcpy_succes = cudaMemcpy(dev_b, host_b, NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t), cudaMemcpyHostToDevice);
     assert(dev_a_memcpy_succes == cudaSuccess);
     assert(dev_b_memcpy_succes == cudaSuccess);
 
@@ -289,13 +289,13 @@ void binary_operator_benchmark(uint32_t* host_c, uint32_t* host_a, uint32_t* hos
     fflush(stdout);
 
     // copy results back to host
-    cudaError dev_c_memcpy_success = cudaMemcpy(host_c, dev_c, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t), cudaMemcpyDeviceToHost);
+    cudaError dev_c_memcpy_success = cudaMemcpy(host_c, dev_c, NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t), cudaMemcpyDeviceToHost);
     assert(dev_c_memcpy_success == cudaSuccess);
 
     // clean up gpu memory after our calculations
-    dev_a_cleanup_memset_success = cudaMemset(dev_a, 0, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
-    dev_b_cleanup_memset_success = cudaMemset(dev_b, 0, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
-    dev_c_cleanup_memset_success = cudaMemset(dev_c, 0, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
+    dev_a_cleanup_memset_success = cudaMemset(dev_a, 0, NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
+    dev_b_cleanup_memset_success = cudaMemset(dev_b, 0, NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
+    dev_c_cleanup_memset_success = cudaMemset(dev_c, 0, NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
     assert(dev_a_cleanup_memset_success == cudaSuccess);
     assert(dev_b_cleanup_memset_success == cudaSuccess);
     assert(dev_c_cleanup_memset_success == cudaSuccess);

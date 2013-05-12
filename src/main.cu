@@ -8,7 +8,6 @@
 
 int main(void)
 {
-    // host operands (host_a, host_b) and results (host_c)
     uint32_t* host_a = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
     uint32_t* host_b = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
     uint32_t* host_c = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
@@ -26,7 +25,7 @@ int main(void)
 
     // benchmarks
     add_benchmark(host_c, host_a, host_b, ADD_RESULTS_FILE_NAME);
-    // sub_benchmark(host_c, host_a, host_b, SUB_RESULTS_FILE_NAME);
+    sub_benchmark(host_c, host_a, host_b, SUB_RESULTS_FILE_NAME);
     // mul_benchmark(host_c, host_a, host_b, MUL_RESULTS_FILE_NAME);
 
     free(host_a);
