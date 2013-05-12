@@ -43,7 +43,7 @@ void write_coalesced_bignums_to_file(const char* file_name, uint32_t* bignums, b
     FILE* file = fopen(file_name, "w");
     assert(file != NULL);
 
-    printf("Writing coalesced bignums to file \"%s\" ... ", file_name);
+    printf("Writing coalesced bignums to   file \"%s\" ... ", file_name);
     fflush(stdout);
 
     uint32_t number_of_words = is_long_number ? MAX_BIGNUM_NUMBER_OF_WORDS : MIN_BIGNUM_NUMBER_OF_WORDS;

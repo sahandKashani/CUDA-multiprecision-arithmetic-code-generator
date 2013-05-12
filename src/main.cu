@@ -1,37 +1,12 @@
-#include "bignum_types.h"
-#include "input_output.h"
 #include "benchmarks.h"
 #include "constants.h"
 #include <stdlib.h>
-#include <stdint.h>
-#include <assert.h>
 
 int main(void)
 {
-    uint32_t* host_a = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
-    uint32_t* host_b = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
-    uint32_t* host_c = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
-    // uint32_t* host_m = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
-
-    assert(host_a != NULL);
-    assert(host_b != NULL);
-    assert(host_c != NULL);
-    // assert(host_m != NULL);
-
-    // read operands from files back to memory
-    read_coalesced_bignums_from_file(COALESCED_A_FILE_NAME, host_a, false);
-    read_coalesced_bignums_from_file(COALESCED_B_FILE_NAME, host_b, false);
-    // read_coalesced_bignums_from_file(COALESCED_M_FILE_NAME, host_m, false);
-
-    // benchmarks
-    add_benchmark(host_c, host_a, host_b, ADD_RESULTS_FILE_NAME);
-    sub_benchmark(host_c, host_a, host_b, SUB_RESULTS_FILE_NAME);
-    // mul_benchmark(host_c, host_a, host_b, MUL_RESULTS_FILE_NAME);
-
-    free(host_a);
-    free(host_b);
-    free(host_c);
-    // free(host_m);
+    add_benchmark();
+    sub_benchmark();
+    mul_benchmark();
 
     // for leak detection when using cuda-memcheck
     cudaDeviceReset();

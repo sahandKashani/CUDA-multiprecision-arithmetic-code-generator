@@ -2,8 +2,8 @@ import math
 
 # change anything you want here
 precision = 131
-threads_per_block = 32
-blocks_per_grid = 32
+threads_per_block = 1024
+blocks_per_grid = 1024
 coalesced_m_file_name = r'../data/coalesced_m.txt'
 coalesced_a_file_name = r'../data/coalesced_a.txt'
 coalesced_b_file_name = r'../data/coalesced_b.txt'
@@ -23,3 +23,9 @@ min_hex_length = min_bignum_number_of_words * hex_digits_per_word
 max_hex_length = max_bignum_number_of_words * hex_digits_per_word
 number_of_bignums = threads_per_block * blocks_per_grid
 file_name_operations_h = r'../src/operations.h'
+
+# precision must NOT be an even number, otherwise we might not have the
+# guarantee that the result of the addition of 2 numbers that hold on
+# min_bignum_number_of_words will also yield a number that will hold on a result
+# with min_bignum_number_of_words words.
+assert precision % 2 != 0
