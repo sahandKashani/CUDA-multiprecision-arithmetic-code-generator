@@ -35,6 +35,7 @@
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[1]) : "r"(a_loc[1]), "r"(b_loc[1]));\
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[2]) : "r"(a_loc[2]), "r"(b_loc[2]));\
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[3]) : "r"(a_loc[3]), "r"(b_loc[3]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[4]) : "r"(a_loc[4]), "r"(b_loc[4]));\
 }
 
 #define addc_cc_loc(c_loc, a_loc, b_loc) {\
@@ -42,6 +43,7 @@
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[1]) : "r"(a_loc[1]), "r"(b_loc[1]));\
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[2]) : "r"(a_loc[2]), "r"(b_loc[2]));\
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[3]) : "r"(a_loc[3]), "r"(b_loc[3]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[4]) : "r"(a_loc[4]), "r"(b_loc[4]));\
 }
 
 #define add_glo(c_glo, a_glo, b_glo, tid) {\
@@ -87,6 +89,7 @@
     asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[1]) : "r"(a_loc[1]), "r"(b_loc[1]));\
     asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[2]) : "r"(a_loc[2]), "r"(b_loc[2]));\
     asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[3]) : "r"(a_loc[3]), "r"(b_loc[3]));\
+    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[4]) : "r"(a_loc[4]), "r"(b_loc[4]));\
 }
 
 #define subc_cc_loc(c_loc, a_loc, b_loc) {\
@@ -94,6 +97,7 @@
     asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[1]) : "r"(a_loc[1]), "r"(b_loc[1]));\
     asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[2]) : "r"(a_loc[2]), "r"(b_loc[2]));\
     asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[3]) : "r"(a_loc[3]), "r"(b_loc[3]));\
+    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[4]) : "r"(a_loc[4]), "r"(b_loc[4]));\
 }
 
 #define sub_glo(c_glo, a_glo, b_glo, tid) {\
@@ -409,6 +413,18 @@
     uint32_t mask[5] = {0, 0, 0, 0, 0};\
     add_loc(c_loc, a_loc, b_loc);\
     sub_cc_loc(c_loc, c_loc, m_loc);\
+    subc_loc(mask, mask, mask);\
+    asm("and.b32     %0, %0, %1;" : "+r"(mask[0]) : "r"(m_loc[0]));\
+    asm("and.b32     %0, %0, %1;" : "+r"(mask[1]) : "r"(m_loc[1]));\
+    asm("and.b32     %0, %0, %1;" : "+r"(mask[2]) : "r"(m_loc[2]));\
+    asm("and.b32     %0, %0, %1;" : "+r"(mask[3]) : "r"(m_loc[3]));\
+    asm("and.b32     %0, %0, %1;" : "+r"(mask[4]) : "r"(m_loc[4]));\
+    add_loc(c_loc, c_loc, mask);\
+}
+
+#define sub_m_loc(c_loc, a_loc, b_loc, m_loc) {\
+    uint32_t mask[5] = {0, 0, 0, 0, 0};\
+    sub_cc_loc(c_loc, a_loc, b_loc);\
     subc_loc(mask, mask, mask);\
     asm("and.b32     %0, %0, %1;" : "+r"(mask[0]) : "r"(m_loc[0]));\
     asm("and.b32     %0, %0, %1;" : "+r"(mask[1]) : "r"(m_loc[1]));\

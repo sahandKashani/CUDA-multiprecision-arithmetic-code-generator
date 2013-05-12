@@ -146,7 +146,7 @@ def add_cc_loc():
     asm = []
     asm.append('#define add_cc_loc(c_loc, a_loc, b_loc) {\\')
     asm.append('    asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\\')
-    for i in range(1, min_bignum_number_of_words - 1):
+    for i in range(1, min_bignum_number_of_words):
         asm.append('    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(a_loc[' + str(i) + ']), "r"(b_loc[' + str(i) + ']));\\')
     asm.append(r'}' + '\n')
     return asm
@@ -154,7 +154,7 @@ def add_cc_loc():
 def addc_cc_loc():
     asm = []
     asm.append('#define addc_cc_loc(c_loc, a_loc, b_loc) {\\')
-    for i in range(0, min_bignum_number_of_words - 1):
+    for i in range(0, min_bignum_number_of_words):
         asm.append('    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(a_loc[' + str(i) + ']), "r"(b_loc[' + str(i) + ']));\\')
     asm.append(r'}' + '\n')
     return asm
@@ -287,8 +287,29 @@ def add_m_loc():
     asm.append(r'}' + '\n')
     return asm
 
+def sub_m_loc():
+    asm = []
+    asm.append('#define sub_m_loc(c_loc, a_loc, b_loc, m_loc) {\\')
+    asm.append('    uint32_t mask[' + str(min_bignum_number_of_words) + '] = ' + str([0] * min_bignum_number_of_words).replace('[', '{').replace(']', '}') + ';\\')
+
+    # c = (a - b) (with borrow out, because we need it to create the mask)
+    asm.append('    sub_cc_loc(c_loc, a_loc, b_loc);\\')
+
+    # mask = 0 - borrow (we can do it with "mask = mask - mask - borrow")
+    asm.append('    subc_loc(mask, mask, mask);\\')
+
+    # mask = mask & m
+    for i in range(min_bignum_number_of_words):
+        asm.append('    asm("and.b32     %0, %0, %1;" : "+r"(mask[' + str(i) + ']) : "r"(m_loc[' + str(i) + ']));\\')
+
+    # c = c + mask
+    asm.append('    add_loc(c_loc, c_loc, mask);\\')
+
+    asm.append(r'}' + '\n')
+    return asm
+
 def generate_operations():
-    macros_to_print = [add_doc, add_loc, addc_loc, add_cc_loc, addc_cc_loc, add_glo, sub_doc, sub_loc, subc_loc, sub_cc_loc, subc_cc_loc, sub_glo, mul_doc, mul_loc, mul_glo, add_m_loc]
+    macros_to_print = [add_doc, add_loc, addc_loc, add_cc_loc, addc_cc_loc, add_glo, sub_doc, sub_loc, subc_loc, sub_cc_loc, subc_cc_loc, sub_glo, mul_doc, mul_loc, mul_glo, add_m_loc, sub_m_loc]
 
     all_lines = []
 

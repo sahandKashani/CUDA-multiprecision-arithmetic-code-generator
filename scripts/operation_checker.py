@@ -7,6 +7,7 @@ from constants import add_results_file_name
 from constants import sub_results_file_name
 from constants import mul_results_file_name
 from constants import add_m_results_file_name
+from constants import sub_m_results_file_name
 
 from conversions import int_to_hex_str
 
@@ -36,7 +37,7 @@ def modular_binary_operator_check(result_file_name, op1, op2, op3, op_name, py_o
 
     error = False
     for (i, a, b, m, c) in zip(range(len(res)), op1, op2, op3, res):
-        expected = eval('a' + py_op_symbol + 'b' + '% m')
+        expected = eval('(a' + py_op_symbol + 'b) % m')
         if c != expected:
             error = True
             print("error")
@@ -58,7 +59,8 @@ a = read_numbers_from_file_coalesced(coalesced_a_file_name)
 b = read_numbers_from_file_coalesced(coalesced_b_file_name)
 m = read_numbers_from_file_coalesced(coalesced_m_file_name)
 
-# binary_operator_check(add_results_file_name, a, b, "add", "+", False)
-# binary_operator_check(sub_results_file_name, a, b, "sub", "-", False)
-# binary_operator_check(mul_results_file_name, a, b, "mul", "*", True)
+binary_operator_check(add_results_file_name, a, b, "add", "+", False)
+binary_operator_check(sub_results_file_name, a, b, "sub", "-", False)
+binary_operator_check(mul_results_file_name, a, b, "mul", "*", True)
 modular_binary_operator_check(add_m_results_file_name, a, b, m, "add_m", "+")
+modular_binary_operator_check(sub_m_results_file_name, a, b, m, "sub_m", "-")

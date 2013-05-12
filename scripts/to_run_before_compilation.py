@@ -11,6 +11,7 @@ from constants import add_results_file_name
 from constants import sub_results_file_name
 from constants import mul_results_file_name
 from constants import add_m_results_file_name
+from constants import sub_m_results_file_name
 
 from random_number_generator import k_bit_rand_int
 from random_number_generator import k_bit_rand_int_less_than
@@ -58,6 +59,7 @@ with open('../src/constants.h', 'r') as input_file:
     contents = [re.sub(r'#define SUB_RESULTS_FILE_NAME "(.*)"'  , r'#define SUB_RESULTS_FILE_NAME "'   + sub_results_file_name   + r'"', line) for line in contents]
     contents = [re.sub(r'#define MUL_RESULTS_FILE_NAME "(.*)"'  , r'#define MUL_RESULTS_FILE_NAME "'   + mul_results_file_name   + r'"', line) for line in contents]
     contents = [re.sub(r'#define ADD_M_RESULTS_FILE_NAME "(.*)"', r'#define ADD_M_RESULTS_FILE_NAME "' + add_m_results_file_name + r'"', line) for line in contents]
+    contents = [re.sub(r'#define SUB_M_RESULTS_FILE_NAME "(.*)"', r'#define SUB_M_RESULTS_FILE_NAME "' + sub_m_results_file_name + r'"', line) for line in contents]
 with open('../src/constants.h', 'w') as output_file:
     output_file.write("".join(contents))
 
