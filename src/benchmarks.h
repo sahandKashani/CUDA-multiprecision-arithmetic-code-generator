@@ -6,5 +6,6 @@
 void add_benchmark();
 void sub_benchmark();
 void mul_benchmark();
+void add_m_benchmark();
 
 #endif

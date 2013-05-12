@@ -2,14 +2,15 @@ import math
 
 # change anything you want here
 precision = 131
-threads_per_block = 1024
-blocks_per_grid = 1024
-coalesced_m_file_name = r'../data/coalesced_m.txt'
-coalesced_a_file_name = r'../data/coalesced_a.txt'
-coalesced_b_file_name = r'../data/coalesced_b.txt'
-add_results_file_name = r'../data/add_results.txt'
-sub_results_file_name = r'../data/sub_results.txt'
-mul_results_file_name = r'../data/mul_results.txt'
+threads_per_block = 8
+blocks_per_grid = 8
+coalesced_m_file_name   = r'../data/coalesced_m.txt'
+coalesced_a_file_name   = r'../data/coalesced_a.txt'
+coalesced_b_file_name   = r'../data/coalesced_b.txt'
+add_results_file_name   = r'../data/add_results.txt'
+sub_results_file_name   = r'../data/sub_results.txt'
+mul_results_file_name   = r'../data/mul_results.txt'
+add_m_results_file_name = r'../data/add_m_results.txt'
 
 # don't touch anything here
 seed = 12345
