@@ -58,7 +58,7 @@
 
 // 0 < i < N = NUMBER_OF_BIGNUMS
 // 0 < j < H = MIN_BIGNUM_NUMBER_OF_WORDS or MAX_BIGNUM_NUMBER_OF_WORDS
-#define IDX(i, j) (((i) * (MAX_BIGNUM_NUMBER_OF_WORDS)) + (j))
+#define IDX(i, j, is_long_number) (((i) * ((is_long_number) ? (MAX_BIGNUM_NUMBER_OF_WORDS) : (MIN_BIGNUM_NUMBER_OF_WORDS))) + (j))
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////// COALESCED_BIGNUM ////////////////////////////////

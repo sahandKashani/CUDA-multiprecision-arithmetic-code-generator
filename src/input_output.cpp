@@ -19,16 +19,7 @@ void read_coalesced_bignums_from_file(const char* file_name, uint32_t* bignums, 
     printf("Reading coalesced bignums from file \"%s\" ... ", file_name);
     fflush(stdout);
 
-    uint32_t number_of_words = 0;
-    if (is_long_number)
-    {
-        number_of_words = MAX_BIGNUM_NUMBER_OF_WORDS;
-    }
-    else
-    {
-        number_of_words = MIN_BIGNUM_NUMBER_OF_WORDS;
-    }
-
+    uint32_t number_of_words = is_long_number ? MAX_BIGNUM_NUMBER_OF_WORDS : MIN_BIGNUM_NUMBER_OF_WORDS;
     for (uint32_t i = 0; i < number_of_words; i++)
     {
         for (uint32_t j = 0; j < NUMBER_OF_BIGNUMS; j++)
@@ -55,16 +46,7 @@ void write_coalesced_bignums_to_file(const char* file_name, uint32_t* bignums, b
     printf("Writing coalesced bignums to file \"%s\" ... ", file_name);
     fflush(stdout);
 
-    uint32_t number_of_words = 0;
-    if (is_long_number)
-    {
-        number_of_words = MAX_BIGNUM_NUMBER_OF_WORDS;
-    }
-    else
-    {
-        number_of_words = MIN_BIGNUM_NUMBER_OF_WORDS;
-    }
-
+    uint32_t number_of_words = is_long_number ? MAX_BIGNUM_NUMBER_OF_WORDS : MIN_BIGNUM_NUMBER_OF_WORDS;
     for (uint32_t i = 0; i < number_of_words; i++)
     {
         for (uint32_t j = 0; j < NUMBER_OF_BIGNUMS; j++)
