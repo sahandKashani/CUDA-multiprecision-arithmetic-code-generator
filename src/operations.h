@@ -14,7 +14,8 @@
 // |carry |carry |carry |carry |      |
 // ------------------------------------
 // | C[4] | C[3] | C[2] | C[1] | C[0] |
-#define add_loc(c_loc, a_loc, b_loc) {\
+#define add_loc(c_loc, a_loc, b_loc)\
+{\
     asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[1]) : "r"(a_loc[1]), "r"(b_loc[1]));\
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[2]) : "r"(a_loc[2]), "r"(b_loc[2]));\
@@ -22,7 +23,8 @@
     asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[4]) : "r"(a_loc[4]), "r"(b_loc[4]));\
 }
 
-#define addc_loc(c_loc, a_loc, b_loc) {\
+#define addc_loc(c_loc, a_loc, b_loc)\
+{\
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[1]) : "r"(a_loc[1]), "r"(b_loc[1]));\
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[2]) : "r"(a_loc[2]), "r"(b_loc[2]));\
@@ -30,7 +32,8 @@
     asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[4]) : "r"(a_loc[4]), "r"(b_loc[4]));\
 }
 
-#define add_cc_loc(c_loc, a_loc, b_loc) {\
+#define add_cc_loc(c_loc, a_loc, b_loc)\
+{\
     asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[1]) : "r"(a_loc[1]), "r"(b_loc[1]));\
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[2]) : "r"(a_loc[2]), "r"(b_loc[2]));\
@@ -38,7 +41,8 @@
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[4]) : "r"(a_loc[4]), "r"(b_loc[4]));\
 }
 
-#define addc_cc_loc(c_loc, a_loc, b_loc) {\
+#define addc_cc_loc(c_loc, a_loc, b_loc)\
+{\
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[1]) : "r"(a_loc[1]), "r"(b_loc[1]));\
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[2]) : "r"(a_loc[2]), "r"(b_loc[2]));\
@@ -46,7 +50,8 @@
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[4]) : "r"(a_loc[4]), "r"(b_loc[4]));\
 }
 
-#define add_glo(c_glo, a_glo, b_glo, tid) {\
+#define add_glo(c_glo, a_glo, b_glo, tid)\
+{\
     asm("add.cc.u32  %0, %1, %2;" : "=r"(c_glo[COAL_IDX(0, tid)]) : "r"(a_glo[COAL_IDX(0, tid)]), "r"(b_glo[COAL_IDX(0, tid)]));\
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_glo[COAL_IDX(1, tid)]) : "r"(a_glo[COAL_IDX(1, tid)]), "r"(b_glo[COAL_IDX(1, tid)]));\
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_glo[COAL_IDX(2, tid)]) : "r"(a_glo[COAL_IDX(2, tid)]), "r"(b_glo[COAL_IDX(2, tid)]));\
@@ -68,7 +73,8 @@
 // |borrow|borrow|borrow|borrow|      |
 // ------------------------------------
 // | C[4] | C[3] | C[2] | C[1] | C[0] |
-#define sub_loc(c_loc, a_loc, b_loc) {\
+#define sub_loc(c_loc, a_loc, b_loc)\
+{\
     asm("sub.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\
     asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[1]) : "r"(a_loc[1]), "r"(b_loc[1]));\
     asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[2]) : "r"(a_loc[2]), "r"(b_loc[2]));\
@@ -76,7 +82,8 @@
     asm("subc.u32    %0, %1, %2;" : "=r"(c_loc[4]) : "r"(a_loc[4]), "r"(b_loc[4]));\
 }
 
-#define subc_loc(c_loc, a_loc, b_loc) {\
+#define subc_loc(c_loc, a_loc, b_loc)\
+{\
     asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\
     asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[1]) : "r"(a_loc[1]), "r"(b_loc[1]));\
     asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[2]) : "r"(a_loc[2]), "r"(b_loc[2]));\
@@ -84,7 +91,8 @@
     asm("subc.u32    %0, %1, %2;" : "=r"(c_loc[4]) : "r"(a_loc[4]), "r"(b_loc[4]));\
 }
 
-#define sub_cc_loc(c_loc, a_loc, b_loc) {\
+#define sub_cc_loc(c_loc, a_loc, b_loc)\
+{\
     asm("sub.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\
     asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[1]) : "r"(a_loc[1]), "r"(b_loc[1]));\
     asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[2]) : "r"(a_loc[2]), "r"(b_loc[2]));\
@@ -92,7 +100,8 @@
     asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[4]) : "r"(a_loc[4]), "r"(b_loc[4]));\
 }
 
-#define subc_cc_loc(c_loc, a_loc, b_loc) {\
+#define subc_cc_loc(c_loc, a_loc, b_loc)\
+{\
     asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\
     asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[1]) : "r"(a_loc[1]), "r"(b_loc[1]));\
     asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[2]) : "r"(a_loc[2]), "r"(b_loc[2]));\
@@ -100,7 +109,8 @@
     asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[4]) : "r"(a_loc[4]), "r"(b_loc[4]));\
 }
 
-#define sub_glo(c_glo, a_glo, b_glo, tid) {\
+#define sub_glo(c_glo, a_glo, b_glo, tid)\
+{\
     asm("sub.cc.u32  %0, %1, %2;" : "=r"(c_glo[COAL_IDX(0, tid)]) : "r"(a_glo[COAL_IDX(0, tid)]), "r"(b_glo[COAL_IDX(0, tid)]));\
     asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_glo[COAL_IDX(1, tid)]) : "r"(a_glo[COAL_IDX(1, tid)]), "r"(b_glo[COAL_IDX(1, tid)]));\
     asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_glo[COAL_IDX(2, tid)]) : "r"(a_glo[COAL_IDX(2, tid)]), "r"(b_glo[COAL_IDX(2, tid)]));\
@@ -181,7 +191,8 @@
 // Note: it is possible that C[9] will not be calculated if we are sure that the
 // product of the 2 bignums will never require 2 * min_bignum_number_of_words
 // words.
-#define mul_loc(c_loc, a_loc, b_loc) {\
+#define mul_loc(c_loc, a_loc, b_loc)\
+{\
     uint32_t carry = 0;\
     asm("mul.lo.u32    %0, %1, %2    ;" : "=r"(c_loc[0]) : "r"(b_loc[0]), "r"(a_loc[0]));\
     asm("add.u32       %0,  0,  0    ;" : "=r"(carry));\
@@ -295,7 +306,8 @@
     asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c_loc[8]) : "r"(b_loc[4]), "r"(a_loc[4]));\
 }
 
-#define mul_glo(c_glo, a_glo, b_glo, tid) {\
+#define mul_glo(c_glo, a_glo, b_glo, tid)\
+{\
     uint32_t carry = 0;\
     asm("mul.lo.u32    %0, %1, %2    ;" : "=r"(c_glo[COAL_IDX(0, tid)]) : "r"(b_glo[COAL_IDX(0, tid)]), "r"(a_glo[COAL_IDX(0, tid)]));\
     asm("add.u32       %0,  0,  0    ;" : "=r"(carry));\
@@ -409,7 +421,8 @@
     asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c_glo[COAL_IDX(8, tid)]) : "r"(b_glo[COAL_IDX(4, tid)]), "r"(a_glo[COAL_IDX(4, tid)]));\
 }
 
-#define add_m_loc(c_loc, a_loc, b_loc, m_loc) {\
+#define add_m_loc(c_loc, a_loc, b_loc, m_loc)\
+{\
     uint32_t mask[5] = {0, 0, 0, 0, 0};\
     add_loc(c_loc, a_loc, b_loc);\
     sub_cc_loc(c_loc, c_loc, m_loc);\
@@ -422,7 +435,8 @@
     add_loc(c_loc, c_loc, mask);\
 }
 
-#define sub_m_loc(c_loc, a_loc, b_loc, m_loc) {\
+#define sub_m_loc(c_loc, a_loc, b_loc, m_loc)\
+{\
     uint32_t mask[5] = {0, 0, 0, 0, 0};\
     sub_cc_loc(c_loc, a_loc, b_loc);\
     subc_loc(mask, mask, mask);\
