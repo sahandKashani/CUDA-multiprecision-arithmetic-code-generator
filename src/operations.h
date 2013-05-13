@@ -193,6 +193,7 @@
 // words.
 #define mul_loc(c_loc, a_loc, b_loc)\
 {\
+{\
     uint32_t carry = 0;\
     asm("mul.lo.u32    %0, %1, %2    ;" : "=r"(c_loc[0]) : "r"(b_loc[0]), "r"(a_loc[0]));\
     asm("add.u32       %0,  0,  0    ;" : "=r"(carry));\
@@ -304,9 +305,22 @@
     asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c_loc[8]) : "r"(b_loc[4]), "r"(a_loc[3]));\
     asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
     asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c_loc[8]) : "r"(b_loc[4]), "r"(a_loc[4]));\
+}\
+}
+
+#define mul_karatsuba_loc(c_loc, a_loc, b_loc)\
+{\
+    uint32_t z0[5] = {0, 0, 0, 0, 0};\
+    uint32_t z1[5] = {0, 0, 0, 0, 0};\
+    uint32_t z2[5] = {0, 0, 0, 0, 0};\
+    uint32_t a0[3] = {0, 0, 0};\
+    uint32_t a1[2] = {0, 0};\
+    uint32_t b0[3] = {0, 0, 0};\
+    uint32_t b1[2] = {0, 0};\
 }
 
 #define mul_glo(c_glo, a_glo, b_glo, tid)\
+{\
 {\
     uint32_t carry = 0;\
     asm("mul.lo.u32    %0, %1, %2    ;" : "=r"(c_glo[COAL_IDX(0, tid)]) : "r"(b_glo[COAL_IDX(0, tid)]), "r"(a_glo[COAL_IDX(0, tid)]));\
@@ -419,6 +433,7 @@
     asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c_glo[COAL_IDX(8, tid)]) : "r"(b_glo[COAL_IDX(4, tid)]), "r"(a_glo[COAL_IDX(3, tid)]));\
     asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
     asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c_glo[COAL_IDX(8, tid)]) : "r"(b_glo[COAL_IDX(4, tid)]), "r"(a_glo[COAL_IDX(4, tid)]));\
+}\
 }
 
 #define add_m_loc(c_loc, a_loc, b_loc, m_loc)\

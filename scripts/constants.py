@@ -2,14 +2,15 @@ import math
 
 # change anything you want here
 precision = 131
-threads_per_block = 32
-blocks_per_grid = 32
-coalesced_m_file_name   = r'../data/coalesced_m.txt'
-coalesced_a_file_name   = r'../data/coalesced_a.txt'
-coalesced_b_file_name   = r'../data/coalesced_b.txt'
-add_results_file_name   = r'../data/add_results.txt'
-sub_results_file_name   = r'../data/sub_results.txt'
-mul_results_file_name   = r'../data/mul_results.txt'
+threads_per_block = 4
+blocks_per_grid = 4
+coalesced_m_file_name = r'../data/coalesced_m.txt'
+coalesced_a_file_name = r'../data/coalesced_a.txt'
+coalesced_b_file_name = r'../data/coalesced_b.txt'
+add_results_file_name = r'../data/add_results.txt'
+sub_results_file_name = r'../data/sub_results.txt'
+mul_results_file_name = r'../data/mul_results.txt'
+mul_karatsuba_results_file_name = r'../data/mul_karatsuba_results.txt'
 add_m_results_file_name = r'../data/add_m_results.txt'
 sub_m_results_file_name = r'../data/sub_m_results.txt'
 
