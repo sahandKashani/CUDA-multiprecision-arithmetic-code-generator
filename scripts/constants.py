@@ -1,7 +1,7 @@
 import math
 
 # change anything you want here
-precision = 127
+precision = 131
 threads_per_block = 2
 blocks_per_grid = 2
 coalesced_m_file_name = r'../data/coalesced_m.txt'
