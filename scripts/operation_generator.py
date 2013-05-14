@@ -201,29 +201,78 @@ def add_glo():
     asm = [re.sub(r'_loc\[(\d+)\]', r'_glo[COAL_IDX(\1, tid)]', line) for line in asm]
     return asm
 
+def sub_loc_generic(op_number_of_words):
+    asm = []
+    asm.append('    {\\')
+    asm.append('        asm("sub.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\\')
+    for i in range(1, op_number_of_words - 1):
+        asm.append('        asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(a_loc[' + str(i) + ']), "r"(b_loc[' + str(i) + ']));\\')
+    asm.append('        asm("subc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(op_number_of_words - 1) + ']) : "r"(a_loc[' + str(op_number_of_words - 1) + ']), "r"(b_loc[' + str(op_number_of_words - 1) + ']));\\')
+    asm.append('    }\\')
+    return asm
+
+def subc_loc_generic(op_number_of_words):
+    asm = []
+    asm.append('    {\\')
+    for i in range(0, op_number_of_words - 1):
+        asm.append('        asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(a_loc[' + str(i) + ']), "r"(b_loc[' + str(i) + ']));\\')
+    asm.append('        asm("subc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(op_number_of_words - 1) + ']) : "r"(a_loc[' + str(op_number_of_words - 1) + ']), "r"(b_loc[' + str(op_number_of_words - 1) + ']));\\')
+    asm.append('    }\\')
+    return asm
+
+def sub_cc_loc_generic(op_number_of_words):
+    asm = []
+    asm.append('    {\\')
+    asm.append('        asm("sub.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\\')
+    for i in range(1, op_number_of_words):
+        asm.append('        asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(a_loc[' + str(i) + ']), "r"(b_loc[' + str(i) + ']));\\')
+    asm.append('    }\\')
+    return asm
+
+def subc_cc_loc_generic(op_number_of_words):
+    asm = []
+    asm.append('    {\\')
+    for i in range(0, op_number_of_words):
+        asm.append('        asm("subc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(a_loc[' + str(i) + ']), "r"(b_loc[' + str(i) + ']));\\')
+    asm.append('    }\\')
+    return asm
+
 def sub_loc():
-    asm = add_loc()
-    asm = [line.replace('add', 'sub') for line in asm]
+    asm = []
+    asm.append('#define sub_loc(c_loc, a_loc, b_loc)\\')
+    asm.append('{\\')
+    asm += sub_loc_generic(min_bignum_number_of_words)
+    asm.append('}' + '\n')
     return asm
 
 def subc_loc():
-    asm = addc_loc()
-    asm = [line.replace('add', 'sub') for line in asm]
+    asm = []
+    asm.append('#define subc_loc(c_loc, a_loc, b_loc)\\')
+    asm.append('{\\')
+    asm += subc_loc_generic(min_bignum_number_of_words)
+    asm.append('}' + '\n')
     return asm
 
 def sub_cc_loc():
-    asm = add_cc_loc()
-    asm = [line.replace('add', 'sub') for line in asm]
+    asm = []
+    asm.append('#define sub_cc_loc(c_loc, a_loc, b_loc)\\')
+    asm.append('{\\')
+    asm += sub_cc_loc_generic(min_bignum_number_of_words)
+    asm.append('}' + '\n')
     return asm
 
 def subc_cc_loc():
-    asm = addc_cc_loc()
-    asm = [line.replace('add', 'sub') for line in asm]
+    asm = []
+    asm.append('#define subc_cc_loc(c_loc, a_loc, b_loc)\\')
+    asm.append('{\\')
+    asm += subc_cc_loc_generic(min_bignum_number_of_words)
+    asm.append('}' + '\n')
     return asm
 
 def sub_glo():
-    asm = add_glo()
-    asm = [line.replace('add', 'sub') for line in asm]
+    asm = sub_loc()
+    asm = [line.replace(r'sub_loc(c_loc, a_loc, b_loc)', r'sub_glo(c_glo, a_glo, b_glo, tid)') for line in asm]
+    asm = [re.sub(r'_loc\[(\d+)\]', r'_glo[COAL_IDX(\1, tid)]', line) for line in asm]
     return asm
 
 # ATTENTION: mul_loc_generic does NOT create a macro. It just pastes the
@@ -337,25 +386,38 @@ def mul_karatsuba_loc():
     asm.append('    uint32_t c0[' + str(lo_max_word_count) + '] = ' + str([0] * lo_max_word_count).replace('[', '{').replace(']', '}') + ';\\')
     asm.append('    uint32_t c1[' + str(c1_max_word_count) + '] = ' + str([0] * c1_max_word_count).replace('[', '{').replace(']', '}') + ';\\')
     asm.append('    uint32_t c2[' + str(hi_max_word_count) + '] = ' + str([0] * hi_max_word_count).replace('[', '{').replace(']', '}') + ';\\')
+
+    # Have to pad the HIGH order bits with 0 (remember arrays are little endian)
+    # so that we can add a0 and a1 together since they don't always have the
+    # same size. The padded size is the size of their addition's result.
+    asm.append('    uint32_t a0[' + str(c1_min_word_count) + '] = ' + str(['a_loc!$' + str(i) + '$!' for i in range(lo_min_word_count)] + [0] * (c1_min_word_count - lo_min_word_count)).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
+    asm.append('    uint32_t b0[' + str(c1_min_word_count) + '] = ' + str(['b_loc!$' + str(i) + '$!' for i in range(lo_min_word_count)] + [0] * (c1_min_word_count - lo_min_word_count)).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
+
+    asm.append('    uint32_t a1[' + str(c1_min_word_count) + '] = ' + str(['a_loc!$' + str(i) + '$!' for i in range(lo_min_word_count, min_bignum_number_of_words)] + [0] * (c1_min_word_count - hi_min_word_count)).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
+    asm.append('    uint32_t b1[' + str(c1_min_word_count) + '] = ' + str(['b_loc!$' + str(i) + '$!' for i in range(lo_min_word_count, min_bignum_number_of_words)] + [0] * (c1_min_word_count - hi_min_word_count)).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
+
     asm.append('    uint32_t a0_plus_a1[' + str(c1_min_word_count) + '] = ' + str([0] * c1_min_word_count).replace('[', '{').replace(']', '}') + ';\\')
+    asm.append('    uint32_t b0_plus_b1[' + str(c1_min_word_count) + '] = ' + str([0] * c1_min_word_count).replace('[', '{').replace(']', '}') + ';\\')
 
-    # low part multiplication (always the "bigger" multiplication of the 2 parts)
-    asm += [line.replace('c_loc', 'c0') for line in mul_loc_generic(lo_max_word_count, lo_min_word_count)]
+    # Low part multiplication (always the "bigger" multiplication of the 2
+    # parts).
+    asm += [line.replace('c_loc', 'c0').replace('a_loc', 'a0').replace('b_loc', 'b0') for line in mul_loc_generic(lo_max_word_count, lo_min_word_count)]
 
-    # hi part multiplication (possibly the "smaller" multiplication of the 2 parts)
-    def c2_index_incrementer(match):
-        return '_loc[' + str(int(match.group(1)) + lo_min_word_count) + ']'
-
-    for line in mul_loc_generic(hi_max_word_count, hi_min_word_count):
-        asm.append(re.sub(r'_loc\[(\d+)\]', c2_index_incrementer, line.replace('c_loc', 'c2')))
+    # Hi part multiplication (possibly the "smaller" multiplication of the 2
+    # parts).
+    asm += [line.replace('c_loc', 'c2').replace('a_loc', 'a1').replace('b_loc', 'b1') for line in mul_loc_generic(hi_max_word_count, hi_min_word_count)]
 
     # c1 calculation
-    asm.append('    asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\\')
-    for i in range(1, min_bignum_number_of_words - 1):
-        asm.append('    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(a_loc[' + str(i) + ']), "r"(b_loc[' + str(i) + ']));\\')
-    asm.append('    asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(min_bignum_number_of_words - 1) + ']) : "r"(a_loc[' + str(min_bignum_number_of_words - 1) + ']), "r"(b_loc[' + str(min_bignum_number_of_words - 1) + ']));\\')
-    # multiplication part
-    # asm += [line.replace('c_loc', 'c1') for line in mul_loc_generic(c1_max_word_count, c1_min_word_count)]
+    # (a0 + a1) and (b0 + b1)
+    asm += [line.replace('c_loc', 'a0_plus_a1').replace('a_loc', 'a0').replace('b_loc', 'a1') for line in add_loc_generic(c1_min_word_count)]
+    asm += [line.replace('c_loc', 'b0_plus_b1').replace('a_loc', 'b0').replace('b_loc', 'b1') for line in add_loc_generic(c1_min_word_count)]
+
+    # (a0 + a1) * (b0 + b1)
+    asm += [line.replace('c_loc', 'c1').replace('a_loc', 'a0_plus_a1').replace('b_loc', 'b0_plus_b1') for line in mul_loc_generic(c1_max_word_count, c1_min_word_count)]
+
+    # c1 = (a0 + a1) * (b0 + b1) - c0 - c2 = c1 - c0 - c2
+    asm += [line.replace('c_loc', 'c1').replace('a_loc', 'c1').replace('b_loc', 'c0') for line in sub_loc_generic(c1_min_word_count)]
+    asm += [line.replace('c_loc', 'c1').replace('a_loc', 'c1').replace('b_loc', 'c2') for line in sub_loc_generic(c1_min_word_count)]
 
     asm.append('}' + '\n')
     return asm
