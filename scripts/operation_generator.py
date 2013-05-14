@@ -279,18 +279,18 @@ def mul_karatsuba_loc():
     asm.append('#define mul_karatsuba_loc(c_loc, a_loc, b_loc)\\')
     asm.append('{\\')
 
-    asm.append('    uint32_t c0[' + str(min_bignum_number_of_words) + '] = ' + str([0] * min_bignum_number_of_words).replace('[', '{').replace(']', '}') + ';\\')
-    asm.append('    uint32_t c1[' + str(min_bignum_number_of_words) + '] = ' + str([0] * min_bignum_number_of_words).replace('[', '{').replace(']', '}') + ';\\')
-    asm.append('    uint32_t c2[' + str(min_bignum_number_of_words) + '] = ' + str([0] * min_bignum_number_of_words).replace('[', '{').replace(']', '}') + ';\\')
+    # asm.append('    uint32_t c0[' + str(min_bignum_number_of_words) + '] = ' + str([0] * min_bignum_number_of_words).replace('[', '{').replace(']', '}') + ';\\')
+    # asm.append('    uint32_t c1[' + str(min_bignum_number_of_words) + '] = ' + str([0] * min_bignum_number_of_words).replace('[', '{').replace(']', '}') + ';\\')
+    # asm.append('    uint32_t c2[' + str(min_bignum_number_of_words) + '] = ' + str([0] * min_bignum_number_of_words).replace('[', '{').replace(']', '}') + ';\\')
 
-    min_split_bignum_number_of_words = math.ceil(min_bignum_number_of_words / 2)
-    asm.append('    uint32_t a0[' + str(min_split_bignum_number_of_words) + '] = ' + str(['a_loc!$' + str(i) + '$!' for i in range(min_split_bignum_number_of_words)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
-    asm.append('    uint32_t b0[' + str(min_split_bignum_number_of_words) + '] = ' + str(['b_loc!$' + str(i) + '$!' for i in range(min_split_bignum_number_of_words)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
-    asm.append('    uint32_t a1[' + str(min_bignum_number_of_words - min_split_bignum_number_of_words) + '] = ' + str(['a_loc!$' + str(i) + '$!' for i in range(min_split_bignum_number_of_words, min_bignum_number_of_words)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
-    asm.append('    uint32_t b1[' + str(min_bignum_number_of_words - min_split_bignum_number_of_words) + '] = ' + str(['b_loc!$' + str(i) + '$!' for i in range(min_split_bignum_number_of_words, min_bignum_number_of_words)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
+    # min_split_bignum_number_of_words = math.ceil(min_bignum_number_of_words / 2)
+    # asm.append('    uint32_t a0[' + str(min_split_bignum_number_of_words) + '] = ' + str(['a_loc!$' + str(i) + '$!' for i in range(min_split_bignum_number_of_words)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
+    # asm.append('    uint32_t b0[' + str(min_split_bignum_number_of_words) + '] = ' + str(['b_loc!$' + str(i) + '$!' for i in range(min_split_bignum_number_of_words)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
+    # asm.append('    uint32_t a1[' + str(min_bignum_number_of_words - min_split_bignum_number_of_words) + '] = ' + str(['a_loc!$' + str(i) + '$!' for i in range(min_split_bignum_number_of_words, min_bignum_number_of_words)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
+    # asm.append('    uint32_t b1[' + str(min_bignum_number_of_words - min_split_bignum_number_of_words) + '] = ' + str(['b_loc!$' + str(i) + '$!' for i in range(min_split_bignum_number_of_words, min_bignum_number_of_words)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
 
-    asm += [line.replace('c_loc', 'c0').replace('a_loc', 'a0').replace('b_loc', 'b0') for line in mul_loc_generic(2 * min_split_bignum_number_of_words, min_split_bignum_number_of_words)]
-    # asm += [line.replace('c_loc', 'c2').replace('a_loc', 'a0').replace('b_loc', 'b0') for line in mul_loc_generic(min_bignum_number_of_words, min_split_bignum_number_of_words)]
+    # asm += [line.replace('c_loc', 'c0').replace('a_loc', 'a0').replace('b_loc', 'b0') for line in mul_loc_generic(2 * min_split_bignum_number_of_words, min_split_bignum_number_of_words)]
+    # # asm += [line.replace('c_loc', 'c2').replace('a_loc', 'a0').replace('b_loc', 'b0') for line in mul_loc_generic(min_bignum_number_of_words, min_split_bignum_number_of_words)]
 
     asm.append('}' + '\n')
     return asm

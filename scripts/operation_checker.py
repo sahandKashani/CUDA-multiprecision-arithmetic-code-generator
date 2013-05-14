@@ -19,14 +19,20 @@ def binary_operator_check(result_file_name, op1, op2, op_name, py_op_symbol, res
     error = False
     for (i, a, b, c) in zip(range(len(res)), op1, op2, res):
         expected = eval('a' + py_op_symbol + 'b')
-        if c != expected:
+
+        a_hex_str        = int_to_hex_str(a, False)
+        b_hex_str        = int_to_hex_str(b, False)
+        c_hex_str        = int_to_hex_str(c, result_is_long_number)
+        expected_hex_str = int_to_hex_str(expected, result_is_long_number)
+
+        if c_hex_str != expected_hex_str:
             error = True
             print("error")
             print("\n" + op_name + " error from thread " + str(i) + ":")
-            print("a        = " + int_to_hex_str(a, False))
-            print("b        = " + int_to_hex_str(b, False))
-            print("c        = " + int_to_hex_str(c, result_is_long_number))
-            print("expected = " + int_to_hex_str(expected, result_is_long_number))
+            print("a        = " + a_hex_str)
+            print("b        = " + b_hex_str)
+            print("c        = " + c_hex_str)
+            print("expected = " + expected_hex_str)
             break
 
     if not error:
@@ -39,15 +45,22 @@ def modular_binary_operator_check(result_file_name, op1, op2, op3, op_name, py_o
     error = False
     for (i, a, b, m, c) in zip(range(len(res)), op1, op2, op3, res):
         expected = eval('(a' + py_op_symbol + 'b) % m')
-        if c != expected:
+
+        a_hex_str        = int_to_hex_str(a, False)
+        b_hex_str        = int_to_hex_str(b, False)
+        m_hex_str        = int_to_hex_str(m, False)
+        c_hex_str        = int_to_hex_str(c, False)
+        expected_hex_str = int_to_hex_str(expected, False)
+
+        if c_hex_str != expected_hex_str:
             error = True
             print("error")
             print("\n" + op_name + " error from thread " + str(i) + ":")
-            print("a        = " + int_to_hex_str(a, False))
-            print("b        = " + int_to_hex_str(b, False))
-            print("m        = " + int_to_hex_str(m, False))
-            print("c        = " + int_to_hex_str(c, False))
-            print("expected = " + int_to_hex_str(expected, False))
+            print("a        = " + a_hex_str)
+            print("b        = " + b_hex_str)
+            print("m        = " + m_hex_str)
+            print("c        = " + c_hex_str)
+            print("expected = " + expected_hex_str)
             break
 
     if not error:
