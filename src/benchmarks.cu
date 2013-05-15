@@ -343,7 +343,7 @@ __global__ void mul_karatsuba_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint3
     }
 
     // 10 iterations
-    mul_karatsuba_loc(c, a, b);
+    // mul_karatsuba_loc(c, a, b);
     // mul_karatsuba_loc(c, a, b);
     // mul_karatsuba_loc(c, a, b);
     // mul_karatsuba_loc(c, a, b);

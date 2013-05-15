@@ -279,27 +279,38 @@ def sub_glo():
     return asm
 
 # ATTENTION: mul_loc_generic does NOT create a macro. It just pastes the
-# assembly code that does the wanted multiplication.
-def mul_loc_generic(res_number_of_words, op_number_of_words):
-    assert op_number_of_words >= 2
+# assembly code that does the wanted multiplication for the specified operand
+# precisions
+def mul_loc_generic(op1_precision, op2_precision):
+    res_precision = op1_precision + op2_precision
+    op1_number_of_words = number_of_words_needed_for_precision(op1_precision)
+    op2_number_of_words = number_of_words_needed_for_precision(op2_precision)
+    res_number_of_words = number_of_words_needed_for_precision(res_precision)
 
     asm = []
     asm.append('    {\\')
 
-    # sum until op_number_of_words, because we know that a number is actually
-    # represented on those number of words, but the result is on
-    # res_number_of_words.
+    # sum until op1_number_of_words and op2_number_of_words, because we know
+    # that a number is actually represented on those number of words, but the
+    # result is on res_number_of_words.
 
     # generate tuples of indexes in arrays A and B that are to be multiplied
-    # together +1 for inclusive range
+    # together. "i" represents "b_loc" and "j" represents "a_loc"
     mul_index_tuples = []
-    for index_sum in range(2 * op_number_of_words - 1):
+
+    # min shifting value is 0 and max is (res_number_of_words - 1)
+    for shift_index in range(res_number_of_words):
         shift_index_tuples = []
-        for i in range(op_number_of_words + 1):
-            for j in range(op_number_of_words + 1):
-                if (i + j == index_sum) and (i < op_number_of_words) and (j < op_number_of_words):
+        for j in range(op1_number_of_words):
+            for i in range(op2_number_of_words):
+                if i + j == shift_index:
                     shift_index_tuples.append((i, j))
-        mul_index_tuples.append(shift_index_tuples)
+        if shift_index_tuples != []:
+            mul_index_tuples.append(shift_index_tuples)
+
+    # sort each tuple by its "b_loc" index, from smallest to biggest
+    for i in range(len(mul_index_tuples)):
+        mul_index_tuples[i] = list(sorted(mul_index_tuples[i], key = lambda tup: tup[0]))
 
     asm.append('        uint32_t carry = 0;\\')
     asm.append('        asm("mul.lo.u32    %0, %1, %2    ;" : "=r"(c_loc[0]) : "r"(b_loc[0]), "r"(a_loc[0]));\\')
@@ -307,11 +318,11 @@ def mul_loc_generic(res_number_of_words, op_number_of_words):
     for i in range(1, len(mul_index_tuples)):
         c_index = i
 
-        # there is no carry to add to c_loc[1] in the very first iteration
+        # There is no carry to add to c_loc[1] in the very first iteration. We
+        # don't need to set carry to 0 either if we are in this case.
         if i != 1:
             asm.append('        asm("add.u32       %0, %1,  0    ;" : "=r"(c_loc[' + str(c_index) + ']) : "r"(carry));\\')
-
-        asm.append('        asm("add.u32       %0,  0,  0    ;" : "=r"(carry));\\')
+            asm.append('        asm("add.u32       %0,  0,  0    ;" : "=r"(carry));\\')
 
         # .hi bit operations
         for k in range(len(mul_index_tuples[i - 1])):
@@ -338,13 +349,14 @@ def mul_loc_generic(res_number_of_words, op_number_of_words):
             # in the second last shift iteration of the multiplication, if we
             # are at the last step, we no longer need to add the carry unless if
             # the result is indeed on 2 * op_number_of_words.
-            if not ((i == len(mul_index_tuples) - 1) and (j == len(mul_index_tuples[i]) - 1)) or (res_number_of_words == 2 * op_number_of_words):
+            if not ((i == len(mul_index_tuples) - 1) and (j == len(mul_index_tuples[i]) - 1)) or (res_number_of_words == (op1_number_of_words + op2_number_of_words)):
                 asm.append('        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\\')
 
     # if it is possible for the multiplication of 2 bignums to give a result of
-    # size 2 * op_number_of_words, then calculate the final value of C
-    if res_number_of_words == 2 * op_number_of_words:
-        asm.append('        asm("mad.hi.u32    %0, %1, %2, %3;" : "=r"(c_loc[' + str(res_number_of_words - 1) + ']) : "r"(b_loc[' + str(op_number_of_words - 1) + ']), "r"(a_loc[' + str(op_number_of_words - 1) + ']), "r"(carry));\\')
+    # size (op1_number_of_words + op2_number_of_words), then calculate the final
+    # index of C
+    if res_number_of_words == (op1_number_of_words + op2_number_of_words):
+        asm.append('        asm("mad.hi.u32    %0, %1, %2, %3;" : "=r"(c_loc[' + str(res_number_of_words - 1) + ']) : "r"(b_loc[' + str(op2_number_of_words - 1) + ']), "r"(a_loc[' + str(op1_number_of_words - 1) + ']), "r"(carry));\\')
 
     asm.append('    }\\')
     return asm
@@ -353,7 +365,7 @@ def mul_loc():
     asm = []
     asm.append('#define mul_loc(c_loc, a_loc, b_loc)\\')
     asm.append('{\\')
-    asm += mul_loc_generic(max_bignum_number_of_words, min_bignum_number_of_words)
+    asm += mul_loc_generic(precision, precision)
     asm.append('}' + '\n')
     return asm
 
