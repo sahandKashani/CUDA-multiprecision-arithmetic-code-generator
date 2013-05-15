@@ -330,20 +330,20 @@ __global__ void mul_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b
 
 __global__ void mul_karatsuba_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b)
 {
-    // uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
+    uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
 
-    // uint32_t a[MIN_BIGNUM_NUMBER_OF_WORDS];
-    // uint32_t b[MIN_BIGNUM_NUMBER_OF_WORDS];
-    // uint32_t c[MAX_BIGNUM_NUMBER_OF_WORDS];
+    uint32_t a[MIN_BIGNUM_NUMBER_OF_WORDS];
+    uint32_t b[MIN_BIGNUM_NUMBER_OF_WORDS];
+    uint32_t c[MAX_BIGNUM_NUMBER_OF_WORDS];
 
-    // for (uint32_t i = 0; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
-    // {
-    //     a[i] = dev_a[COAL_IDX(i, tid)];
-    //     b[i] = dev_b[COAL_IDX(i, tid)];
-    // }
+    for (uint32_t i = 0; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
+    {
+        a[i] = dev_a[COAL_IDX(i, tid)];
+        b[i] = dev_b[COAL_IDX(i, tid)];
+    }
 
     // 10 iterations
-    // mul_karatsuba_loc(c, a, b);
+    mul_karatsuba_loc(c, a, b);
     // mul_karatsuba_loc(c, a, b);
     // mul_karatsuba_loc(c, a, b);
     // mul_karatsuba_loc(c, a, b);
@@ -354,10 +354,10 @@ __global__ void mul_karatsuba_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint3
     // mul_karatsuba_loc(c, a, b);
     // mul_karatsuba_loc(c, a, b);
 
-    // for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
-    // {
-    //     dev_c[COAL_IDX(i, tid)] = c[i];
-    // }
+    for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
+    {
+        dev_c[COAL_IDX(i, tid)] = c[i];
+    }
 }
 
 __global__ void add_m_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b, uint32_t* dev_m)
