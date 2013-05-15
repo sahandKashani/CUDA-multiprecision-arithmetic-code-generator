@@ -8,6 +8,9 @@ from constants import min_bignum_number_of_words
 import math
 import re
 
+def number_of_words_needed_for_precision(precision):
+    return math.ceil(precision / bits_per_word)
+
 def add_doc():
     doc = """
 // Example of the schoolbook addition algorithm we will use if bignums were
