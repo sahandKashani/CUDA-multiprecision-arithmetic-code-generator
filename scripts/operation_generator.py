@@ -11,6 +11,21 @@ import re
 def number_of_words_needed_for_precision(precision):
     return math.ceil(precision / bits_per_word)
 
+def add_res_precision(op1_precision, op2_precision):
+    res_precision = max(op1_precision, op2_precision) + 1
+    return res_precision
+
+def mul_res_precision(op1_precision, op2_precision):
+    res_precision = op1_precision + op2_precision
+
+    # res_precision = op1_precision + op2_precision does not hold if one of the
+    # operands has precision 1. In that case, you need to reduce the precision
+    # of the result by 1 bit.
+    if (op1_precision == 1) or (op2_precision == 1):
+        res_precision -= 1
+
+    return res_precision
+
 def add_doc():
     doc = """
 // Example of the schoolbook addition algorithm we will use if bignums were
@@ -130,7 +145,23 @@ def mul_doc():
         doc_list[i] = doc_list[i].strip()
     return doc_list
 
-def add_loc_generic(op_number_of_words):
+# def add_loc_generic(op_number_of_words):
+#     asm = []
+#     asm.append('    {\\')
+#     asm.append('        asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\\')
+#     for i in range(1, op_number_of_words - 1):
+#         asm.append('        asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(a_loc[' + str(i) + ']), "r"(b_loc[' + str(i) + ']));\\')
+#     asm.append('        asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(op_number_of_words - 1) + ']) : "r"(a_loc[' + str(op_number_of_words - 1) + ']), "r"(b_loc[' + str(op_number_of_words - 1) + ']));\\')
+#     asm.append('    }\\')
+#     return asm
+
+def add_loc_generic(op1_precision, op2_precision):
+    res_precision = op1_precision + op2_precision
+    if (op1_precision == 1) or (op2_precision == 1):
+        res_precision -= 1
+    op1_number_of_words = number_of_words_needed_for_precision(op1_precision)
+    op2_number_of_words = number_of_words_needed_for_precision(op2_precision)
+    res_number_of_words = number_of_words_needed_for_precision(res_precision)
     asm = []
     asm.append('    {\\')
     asm.append('        asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\\')
@@ -281,15 +312,8 @@ def sub_glo():
 # ATTENTION: mul_loc_generic does NOT create a macro. It just pastes the
 # assembly code that does the wanted multiplication for the specified operand
 # precisions
-def mul_loc_generic(op1_precision, op2_precision):
-    res_precision = op1_precision + op2_precision
-
-    # res_precision = op1_precision + op2_precision does not hold if one of the
-    # operands has precision 1. In that case, you need to reduce the precision
-    # of the result by 1 bit.
-    if (op1_precision == 1) or (op2_precision == 1):
-        res_precision -= 1
-
+def mul_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name):
+    res_precision = mul_res_precision(op1_precision, op2_precision)
     op1_number_of_words = number_of_words_needed_for_precision(op1_precision)
     op2_number_of_words = number_of_words_needed_for_precision(op2_precision)
     res_number_of_words = number_of_words_needed_for_precision(res_precision)
@@ -358,7 +382,8 @@ def mul_loc_generic(op1_precision, op2_precision):
 
             # in the second last shift iteration of the multiplication, if we
             # are at the last step, we no longer need to add the carry unless if
-            # the result is indeed on 2 * op_number_of_words.
+            # the result is indeed on (op1_number_of_words +
+            # op2_number_of_words) words.
             if not ((i == len(mul_index_tuples) - 1) and (j == len(mul_index_tuples[i]) - 1)) or (res_number_of_words == (op1_number_of_words + op2_number_of_words)):
                 asm.append('        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\\')
 
@@ -369,13 +394,19 @@ def mul_loc_generic(op1_precision, op2_precision):
         asm.append('        asm("mad.hi.u32    %0, %1, %2, %3;" : "=r"(c_loc[' + str(res_number_of_words - 1) + ']) : "r"(b_loc[' + str(op2_number_of_words - 1) + ']), "r"(a_loc[' + str(op1_number_of_words - 1) + ']), "r"(carry));\\')
 
     asm.append('    }\\')
+
+    # replace all occurrences of a_loc, b_loc and c_loc by their appropriate
+    # names, as provided by the user.
+    for i in range(len(asm)):
+        asm[i] = asm[i].replace('a_loc', op1_name).replace('b_loc', op2_name).replace('c_loc', res_name)
+
     return asm
 
 def mul_loc():
     asm = []
     asm.append('#define mul_loc(c_loc, a_loc, b_loc)\\')
     asm.append('{\\')
-    asm += mul_loc_generic(precision, precision)
+    asm += mul_loc_generic(precision, precision, 'a_loc', 'b_loc', 'c_loc')
     asm.append('}' + '\n')
     return asm
 
@@ -501,7 +532,16 @@ def sub_m_loc():
     return asm
 
 def generate_operations():
-    macros_to_print = [add_doc, add_loc, addc_loc, add_cc_loc, addc_cc_loc, add_glo, sub_doc, sub_loc, subc_loc, sub_cc_loc, subc_cc_loc, sub_glo, mul_doc, mul_loc, mul_karatsuba_loc ,mul_glo, add_m_loc, sub_m_loc]
+    macros_to_print = [add_doc,
+                       add_loc, addc_loc, add_cc_loc, addc_cc_loc, add_glo,
+
+                       sub_doc,
+                       sub_loc, subc_loc, sub_cc_loc, subc_cc_loc, sub_glo,
+
+                       mul_doc,
+                       mul_loc, mul_glo,
+
+                       add_m_loc, sub_m_loc]
 
     all_lines = []
 
