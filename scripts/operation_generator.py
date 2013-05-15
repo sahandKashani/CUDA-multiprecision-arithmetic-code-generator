@@ -283,6 +283,13 @@ def sub_glo():
 # precisions
 def mul_loc_generic(op1_precision, op2_precision):
     res_precision = op1_precision + op2_precision
+
+    # res_precision = op1_precision + op2_precision does not hold if one of the
+    # operands has precision 1. In that case, you need to reduce the precision
+    # of the result by 1 bit.
+    if (op1_precision == 1) or (op2_precision == 1):
+        res_precision -= 1
+
     op1_number_of_words = number_of_words_needed_for_precision(op1_precision)
     op2_number_of_words = number_of_words_needed_for_precision(op2_precision)
     res_number_of_words = number_of_words_needed_for_precision(res_precision)
@@ -312,7 +319,10 @@ def mul_loc_generic(op1_precision, op2_precision):
     for i in range(len(mul_index_tuples)):
         mul_index_tuples[i] = list(sorted(mul_index_tuples[i], key = lambda tup: tup[0]))
 
-    asm.append('        uint32_t carry = 0;\\')
+    # we don't need a carry variable if the result holds on 1 word
+    if res_number_of_words != 1:
+        asm.append('        uint32_t carry = 0;\\')
+
     asm.append('        asm("mul.lo.u32    %0, %1, %2    ;" : "=r"(c_loc[0]) : "r"(b_loc[0]), "r"(a_loc[0]));\\')
 
     for i in range(1, len(mul_index_tuples)):
