@@ -277,6 +277,18 @@ def add_glo():
     asm = [re.sub(r'_loc\[(\d+)\]', r'_glo[COAL_IDX(\1, tid)]', line) for line in asm]
     return asm
 
+def sub_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name):
+    return [line.replace("add", "sub") for line in add_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name)]
+
+def subc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name):
+    return [line.replace("add", "sub") for line in addc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name)]
+
+def sub_cc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name):
+    return [line.replace("add", "sub") for line in add_cc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name)]
+
+def subc_cc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name):
+    return [line.replace("add", "sub") for line in addc_cc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name)]
+
 def sub_loc():
     asm = []
     asm.append('#define sub_loc(c_loc, a_loc, b_loc)\\')
@@ -421,30 +433,32 @@ def mul_karatsuba_loc():
     # The low part of the cut will always have full precision, and will
     # therefore NEED 2 times the precision for the multiplication result storage
     lo_precision = bits_per_word * math.ceil(min_bignum_number_of_words / 2)
-    lo_min_word_count = number_of_words_needed_for_precision(lo_precision)
-    lo_max_word_count = number_of_words_needed_for_precision(mul_res_precision(lo_precision, lo_precision))
+    lo_word_count = number_of_words_needed_for_precision(lo_precision)
+    c0_precision = mul_res_precision(lo_precision, lo_precision)
+    c0_word_count = number_of_words_needed_for_precision(c0_precision)
 
     # The hi part could have optimizations to save storage, since it might most
     # likely be shorter than the low part. We can do smaller multiplications by
     # taking this into account.
     hi_precision = precision - lo_precision
-    hi_min_word_count = number_of_words_needed_for_precision(hi_precision)
-    hi_max_word_count = number_of_words_needed_for_precision(mul_res_precision(hi_precision, hi_precision))
+    hi_word_count = number_of_words_needed_for_precision(hi_precision)
+    c2_precision = mul_res_precision(hi_precision, hi_precision)
+    c2_word_count = number_of_words_needed_for_precision(c2_precision)
 
     lo_plus_hi_precision = add_res_precision(lo_precision, hi_precision)
     lo_plus_hi_word_count = number_of_words_needed_for_precision(lo_plus_hi_precision)
     c1_precision = mul_res_precision(lo_plus_hi_precision, lo_plus_hi_precision)
     c1_word_count = number_of_words_needed_for_precision(c1_precision)
 
-    asm.append('    uint32_t c0[' + str(lo_max_word_count) + '] = ' + str([0] * lo_max_word_count).replace('[', '{').replace(']', '}') + ';\\')
-    asm.append('    uint32_t c1[' + str(c1_word_count)     + '] = ' + str([0] * c1_word_count    ).replace('[', '{').replace(']', '}') + ';\\')
-    asm.append('    uint32_t c2[' + str(hi_max_word_count) + '] = ' + str([0] * hi_max_word_count).replace('[', '{').replace(']', '}') + ';\\')
+    asm.append('    uint32_t c0[' + str(c0_word_count) + '] = ' + str([0] * c0_word_count).replace('[', '{').replace(']', '}') + ';\\')
+    asm.append('    uint32_t c1[' + str(c1_word_count) + '] = ' + str([0] * c1_word_count).replace('[', '{').replace(']', '}') + ';\\')
+    asm.append('    uint32_t c2[' + str(c2_word_count) + '] = ' + str([0] * c2_word_count).replace('[', '{').replace(']', '}') + ';\\')
 
-    asm.append('    uint32_t a0[' + str(lo_min_word_count) + '] = ' + str(['a_loc!$' + str(i) + '$!' for i in range(lo_min_word_count)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
-    asm.append('    uint32_t b0[' + str(lo_min_word_count) + '] = ' + str(['b_loc!$' + str(i) + '$!' for i in range(lo_min_word_count)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
+    asm.append('    uint32_t a0[' + str(lo_word_count) + '] = ' + str(['a_loc!$' + str(i) + '$!' for i in range(lo_word_count)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
+    asm.append('    uint32_t b0[' + str(lo_word_count) + '] = ' + str(['b_loc!$' + str(i) + '$!' for i in range(lo_word_count)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
 
-    asm.append('    uint32_t a1[' + str(hi_min_word_count) + '] = ' + str(['a_loc!$' + str(i) + '$!' for i in range(lo_min_word_count, min_bignum_number_of_words)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
-    asm.append('    uint32_t b1[' + str(hi_min_word_count) + '] = ' + str(['b_loc!$' + str(i) + '$!' for i in range(lo_min_word_count, min_bignum_number_of_words)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
+    asm.append('    uint32_t a1[' + str(hi_word_count) + '] = ' + str(['a_loc!$' + str(i) + '$!' for i in range(lo_word_count, min_bignum_number_of_words)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
+    asm.append('    uint32_t b1[' + str(hi_word_count) + '] = ' + str(['b_loc!$' + str(i) + '$!' for i in range(lo_word_count, min_bignum_number_of_words)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
 
     asm.append('    uint32_t a0_plus_a1[' + str(lo_plus_hi_word_count) + '] = ' + str([0] * lo_plus_hi_word_count).replace('[', '{').replace(']', '}') + ';\\')
     asm.append('    uint32_t b0_plus_b1[' + str(lo_plus_hi_word_count) + '] = ' + str([0] * lo_plus_hi_word_count).replace('[', '{').replace(']', '}') + ';\\')
@@ -459,17 +473,15 @@ def mul_karatsuba_loc():
 
     # c1 calculation
     # (a0 + a1) and (b0 + b1)
-    print(lo_precision)
-    print(hi_precision)
-    asm += add_loc_generic(hi_precision, lo_precision, 'a0', 'a1', 'a0_plus_a1')
-    asm += add_loc_generic(hi_precision, lo_precision, 'b0', 'b1', 'b0_plus_b1')
+    asm += add_loc_generic(lo_precision, hi_precision, 'a0', 'a1', 'a0_plus_a1')
+    asm += add_loc_generic(lo_precision, hi_precision, 'b0', 'b1', 'b0_plus_b1')
 
     # (a0 + a1) * (b0 + b1)
-    # asm += [line.replace('c_loc', 'c1').replace('a_loc', 'a0_plus_a1').replace('b_loc', 'b0_plus_b1') for line in mul_loc_generic(c1_max_word_count, c1_min_word_count)]
+    asm += mul_loc_generic(lo_plus_hi_precision, lo_plus_hi_precision, 'a0_plus_a1', 'b0_plus_b1', 'c1')
 
     # c1 = (a0 + a1) * (b0 + b1) - c0 - c2 = c1 - c0 - c2
-    # asm += [line.replace('c_loc', 'c1').replace('a_loc', 'c1').replace('b_loc', 'c0') for line in sub_loc_generic(c1_min_word_count)]
-    # asm += [line.replace('c_loc', 'c1').replace('a_loc', 'c1').replace('b_loc', 'c2') for line in sub_loc_generic(c1_min_word_count)]
+    asm += sub_loc_generic(c1_precision, c0_precision, 'c1', 'c0', 'c1')
+    asm += sub_loc_generic(c1_precision, c2_precision, 'c1', 'c2', 'c1')
 
     asm.append('}' + '\n')
     return asm
@@ -535,7 +547,7 @@ def generate_operations():
                        sub_loc, subc_loc, sub_cc_loc, subc_cc_loc, sub_glo,
 
                        mul_doc,
-                       mul_loc, mul_glo,
+                       mul_loc, mul_karatsuba_loc, mul_glo,
 
                        add_m_loc, sub_m_loc]
 
