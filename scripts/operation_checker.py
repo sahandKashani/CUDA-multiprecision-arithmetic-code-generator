@@ -33,6 +33,7 @@ def binary_operator_check(result_file_name, op1, op2, op_name, py_op_symbol, res
             print("b        = " + b_hex_str)
             print("c        = " + c_hex_str)
             print("expected = " + expected_hex_str)
+            print()
             break
 
     if not error:
@@ -61,6 +62,7 @@ def modular_binary_operator_check(result_file_name, op1, op2, op3, op_name, py_o
             print("m        = " + m_hex_str)
             print("c        = " + c_hex_str)
             print("expected = " + expected_hex_str)
+            print()
             break
 
     if not error:
