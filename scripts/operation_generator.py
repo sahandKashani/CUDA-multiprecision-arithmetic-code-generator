@@ -483,6 +483,58 @@ def mul_karatsuba_loc():
     asm += sub_loc_generic(c1_precision, c0_precision, 'c1', 'c0', 'c1')
     asm += sub_loc_generic(c1_precision, c2_precision, 'c1', 'c2', 'c1')
 
+    # final stage:
+    # step = c0_word_count * bits_per_word
+    # c_loc = c2 * 2^(2*step) + c1 * 2^(step) + c0
+
+    # |      |      |      |      |      |      |      |      | B[0] * A[0] |
+    # |      |      |      |      |      |      |      | B[0] * A[1] |      |
+    # |      |      |      |      |      |      |      | B[1] * A[0] |      |
+    # |      |      |      |      |      |      | B[0] * A[2] |      |      |
+    # |      |      |      |      |      |      | B[1] * A[1] |      |      |
+    # |      |      |      |      |      |      | B[2] * A[0] |      |      |
+    # |      |      |      |      |      | B[0] * A[3] |      |      |      |
+    # |      |      |      |      |      | B[1] * A[2] |      |      |      |
+    # |      |      |      |      |      | B[2] * A[1] |      |      |      |
+    # |      |      |      |      |      | B[3] * A[0] |      |      |      |
+    # |      |      |      |      | B[0] * A[4] |      |      |      |      |
+    # |      |      |      |      | B[1] * A[3] |      |      |      |      |
+    # |      |      |      |      | B[2] * A[2] |      |      |      |      |
+    # |      |      |      |      | B[3] * A[1] |      |      |      |      |
+    # |      |      |      |      | B[4] * A[0] |      |      |      |      |
+    # |      |      |      | B[1] * A[4] |      |      |      |      |      |
+    # |      |      |      | B[2] * A[3] |      |      |      |      |      |
+    # |      |      |      | B[3] * A[2] |      |      |      |      |      |
+    # |      |      |      | B[4] * A[1] |      |      |      |      |      |
+    # |      |      | B[2] * A[4] |      |      |      |      |      |      |
+    # |      |      | B[3] * A[3] |      |      |      |      |      |      |
+    # |      |      | B[4] * A[2] |      |      |      |      |      |      |
+    # |      | B[3] * A[4] |      |      |      |      |      |      |      |
+    # |      | B[4] * A[3] |      |      |      |      |      |      |      |
+    # + B[4] * A[4] |      |      |      |      |      |      |      |      |
+    # -----------------------------------------------------------------------
+    # | C[9] | C[8] | C[7] | C[6] | C[5] | C[4] | C[3] | C[2] | C[1] | C[0] |
+
+    # we always know that the first lo_word_count words of the result are going
+    # to be unchanged by the addition, so we assign them directly from the
+    # values of c0[0 .. lo_word_count]
+    for i in range(lo_word_count):
+        asm.append('    asm("add.u32     %0, %1,  0;" : "=r"(c_loc[' + str(i) + ']) : "r"(c0[' + str(i) + ']));\\')
+
+    # now, we have to do the addition between c0[lo_word_count .. c0_word_count]
+    # and c1[lo_word_count .. c0_word_count]
+    first_overlap_number_of_words = c0_word_count - lo_word_count
+    for i in range(first_overlap_number_of_words):
+        if i == 0:
+            asm.append('    asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[' + str(i + lo_word_count) + ']) : "r"(c0[' + str(i + lo_word_count) + ']), "r"(c1[' + str(i) + ']));\\')
+        elif i < first_overlap_number_of_words:
+            asm.append('    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i + lo_word_count) + ']) : "r"(c0[' + str(i + lo_word_count) + ']), "r"(c1[' + str(i) + ']));\\')
+
+    # finally, we have to do the addition between
+    # c1[first_overlap_number_of_words .. c1_word_count] and c2[0 ..
+    # c2_word_count] by taking the carry in into account, because of the last
+    # addition that may have overflowed.
+
     asm.append('}' + '\n')
     return asm
 
