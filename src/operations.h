@@ -438,6 +438,9 @@
     asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[3]) : "r"(c0[3]), "r"(c1[0]));\
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[4]) : "r"(c0[4]), "r"(c1[1]));\
     asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[5]) : "r"(c0[5]), "r"(c1[2]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[6]) : "r"(c1[3]), "r"(c2[0]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[7]) : "r"(c1[4]), "r"(c2[1]));\
+    asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[8]) : "r"(c1[5]), "r"(c2[2]));\
 }
 
 #define mul_glo(c_glo, a_glo, b_glo, tid)\

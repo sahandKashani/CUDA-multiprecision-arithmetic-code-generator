@@ -521,10 +521,10 @@ def mul_karatsuba_loc():
     # c2_word_count] by taking the carry_in into account, because of the last
     # addition that may have overflowed.
 
-    # result_precision = mul_res_precision(precision, precision)
-    # result_word_count = number_of_words_needed_for_precision(result_precision)
+    result_precision = mul_res_precision(precision, precision)
+    result_word_count = number_of_words_needed_for_precision(result_precision)
 
-    # loop_max_index = result_word_count - c0_word_count
+    loop_max_index = result_word_count - c0_word_count
 
     # c1_segment_3_length = c1_word_count - first_overlap_number_of_words
     # if c1_segment_3_length <= c2_word_count:
@@ -534,12 +534,11 @@ def mul_karatsuba_loc():
     #     smaller_number_of_words = c2_word_count
     #     smaller_name = 'c2'
 
-    # if
-    # for i in range(loop_max_index):
-    #     if i < loop_max_index - 1:
-    #         asm.append('    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i + c0_word_count) + ']) : "r"(c1[' + str(i + lo_word_count) + ']), "r"(c2[' + str(i) + ']));\\')
-    #     elif i == loop_max_index - 1:
-    #         asm.append('    asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(i + c0_word_count) + ']) : "r"(c1[' + str(i + lo_word_count) + ']), "r"(c2[' + str(i) + ']));\\')
+    for i in range(loop_max_index):
+        if i < loop_max_index - 1:
+            asm.append('    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i + c0_word_count) + ']) : "r"(c1[' + str(i + lo_word_count) + ']), "r"(c2[' + str(i) + ']));\\')
+        elif i == loop_max_index - 1:
+            asm.append('    asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(i + c0_word_count) + ']) : "r"(c1[' + str(i + lo_word_count) + ']), "r"(c2[' + str(i) + ']));\\')
 
     asm.append('}' + '\n')
     return asm
