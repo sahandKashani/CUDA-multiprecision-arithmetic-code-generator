@@ -450,31 +450,21 @@ def mul_karatsuba_loc():
     asm.append('    uint32_t c1[' + str(c1_word_count) + '] = ' + str([0] * c1_word_count).replace('[', '{').replace(']', '}') + ';\\')
     asm.append('    uint32_t c2[' + str(c2_word_count) + '] = ' + str([0] * c2_word_count).replace('[', '{').replace(']', '}') + ';\\')
 
-    asm.append('    uint32_t a0[' + str(lo_word_count) + '] = ' + str(['a_loc!$' + str(i) + '$!' for i in range(lo_word_count)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
-    asm.append('    uint32_t b0[' + str(lo_word_count) + '] = ' + str(['b_loc!$' + str(i) + '$!' for i in range(lo_word_count)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
-
-    asm.append('    uint32_t a1[' + str(hi_word_count) + '] = ' + str(['a_loc!$' + str(i) + '$!' for i in range(lo_word_count, min_bignum_number_of_words)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
-    asm.append('    uint32_t b1[' + str(hi_word_count) + '] = ' + str(['b_loc!$' + str(i) + '$!' for i in range(lo_word_count, min_bignum_number_of_words)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
-
     asm.append('    uint32_t a0_plus_a1[' + str(lo_plus_hi_word_count) + '] = ' + str([0] * lo_plus_hi_word_count).replace('[', '{').replace(']', '}') + ';\\')
     asm.append('    uint32_t b0_plus_b1[' + str(lo_plus_hi_word_count) + '] = ' + str([0] * lo_plus_hi_word_count).replace('[', '{').replace(']', '}') + ';\\')
 
     # Low part multiplication (always the "bigger" multiplication of the 2
     # parts).
-    # asm += mul_loc_generic(lo_precision, lo_precision, 'a0', 'b0', 'c0')
     asm += mul_loc_generic(lo_precision, lo_precision, 'a_loc', 'b_loc', 'c0', 0, 0, 0)
 
     # Hi part multiplication (possibly the "smaller" multiplication of the 2
     # parts).
-    # asm += mul_loc_generic(hi_precision, hi_precision, 'a1', 'b1', 'c2')
     asm += mul_loc_generic(hi_precision, hi_precision, 'a_loc', 'b_loc', 'c2', lo_word_count, lo_word_count, 0)
 
     # c1 calculation
     # (a0 + a1) and (b0 + b1) has to be done with _exact_ function
-    asm += add_loc_exact_generic(lo_precision, hi_precision, 'a0', 'a1', 'a0_plus_a1')
-    asm += add_loc_exact_generic(lo_precision, hi_precision, 'b0', 'b1', 'b0_plus_b1')
-    # asm += add_loc_exact_generic(lo_precision, hi_precision, 'a_loc', 'a_loc', 'a0_plus_a1', 0, lo_word_count, 0)
-    # asm += add_loc_exact_generic(lo_precision, hi_precision, 'b_loc', 'b_loc', 'b0_plus_b1', 0, lo_word_count, 0)
+    asm += add_loc_exact_generic(lo_precision, hi_precision, 'a_loc', 'a_loc', 'a0_plus_a1', 0, lo_word_count, 0)
+    asm += add_loc_exact_generic(lo_precision, hi_precision, 'b_loc', 'b_loc', 'b0_plus_b1', 0, lo_word_count, 0)
 
     # (a0 + a1) * (b0 + b1)
     asm += mul_loc_generic(lo_plus_hi_precision, lo_plus_hi_precision, 'a0_plus_a1', 'b0_plus_b1', 'c1')

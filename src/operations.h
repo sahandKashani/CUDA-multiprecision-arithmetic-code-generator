@@ -266,10 +266,6 @@
     uint32_t c0[6] = {0, 0, 0, 0, 0, 0};\
     uint32_t c1[7] = {0, 0, 0, 0, 0, 0, 0};\
     uint32_t c2[3] = {0, 0, 0};\
-    uint32_t a0[3] = {a_loc[0], a_loc[1], a_loc[2]};\
-    uint32_t b0[3] = {b_loc[0], b_loc[1], b_loc[2]};\
-    uint32_t a1[2] = {a_loc[3], a_loc[4]};\
-    uint32_t b1[2] = {b_loc[3], b_loc[4]};\
     uint32_t a0_plus_a1[4] = {0, 0, 0, 0};\
     uint32_t b0_plus_b1[4] = {0, 0, 0, 0};\
     {\
@@ -331,15 +327,15 @@
         asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c2[2]) : "r"(b_loc[4]), "r"(a_loc[4]));\
     }\
     {\
-        asm("add.cc.u32  %0, %1, %2;" : "=r"(a0_plus_a1[0]) : "r"(a0[0]), "r"(a1[0]));\
-        asm("addc.cc.u32 %0, %1, %2;" : "=r"(a0_plus_a1[1]) : "r"(a0[1]), "r"(a1[1]));\
-        asm("addc.cc.u32 %0, %1,  0;" : "=r"(a0_plus_a1[2]) : "r"(a0[2]));\
+        asm("add.cc.u32  %0, %1, %2;" : "=r"(a0_plus_a1[0]) : "r"(a_loc[0]), "r"(a_loc[3]));\
+        asm("addc.cc.u32 %0, %1, %2;" : "=r"(a0_plus_a1[1]) : "r"(a_loc[1]), "r"(a_loc[4]));\
+        asm("addc.cc.u32 %0, %1,  0;" : "=r"(a0_plus_a1[2]) : "r"(a_loc[2]));\
         asm("addc.u32    %0,  0,  0;" : "=r"(a0_plus_a1[3]) : );\
     }\
     {\
-        asm("add.cc.u32  %0, %1, %2;" : "=r"(b0_plus_b1[0]) : "r"(b0[0]), "r"(b1[0]));\
-        asm("addc.cc.u32 %0, %1, %2;" : "=r"(b0_plus_b1[1]) : "r"(b0[1]), "r"(b1[1]));\
-        asm("addc.cc.u32 %0, %1,  0;" : "=r"(b0_plus_b1[2]) : "r"(b0[2]));\
+        asm("add.cc.u32  %0, %1, %2;" : "=r"(b0_plus_b1[0]) : "r"(b_loc[0]), "r"(b_loc[3]));\
+        asm("addc.cc.u32 %0, %1, %2;" : "=r"(b0_plus_b1[1]) : "r"(b_loc[1]), "r"(b_loc[4]));\
+        asm("addc.cc.u32 %0, %1,  0;" : "=r"(b0_plus_b1[2]) : "r"(b_loc[2]));\
         asm("addc.u32    %0,  0,  0;" : "=r"(b0_plus_b1[3]) : );\
     }\
     {\
