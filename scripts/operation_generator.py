@@ -182,10 +182,10 @@ def add_loc_exact_generic(op1_precision, op2_precision, op1_name, op2_name, res_
     asm.append('    {\\')
 
     if res_number_of_words == 1:
-        asm.append('        asm("add.u32     %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\\')
+        asm.append('        asm("add.u32     %0, %1, %2;" : "=r"(c_loc[' + str(res_shift) + ']) : "r"(a_loc[' + str(op1_shift) + ']), "r"(b_loc[' + str(op2_shift) + ']));\\')
 
     elif res_number_of_words > 1:
-        asm.append('        asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\\')
+        asm.append('        asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[' + str(res_shift) + ']) : "r"(a_loc[' + str(op1_shift) + ']), "r"(b_loc[' + str(op2_shift) + ']));\\')
 
         if smaller_number_of_words == bigger_number_of_words == res_number_of_words:
             for i in range(1, res_number_of_words):
@@ -245,10 +245,10 @@ def add_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, 
     asm.append('    {\\')
 
     if bigger_number_of_words == 1:
-        asm.append('        asm("add.u32     %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\\')
+        asm.append('        asm("add.u32     %0, %1, %2;" : "=r"(c_loc[' + str(res_shift) + ']) : "r"(a_loc[' + str(op1_shift) + ']), "r"(b_loc[' + str(op2_shift) + ']));\\')
 
     elif bigger_number_of_words > 1:
-        asm.append('        asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\\')
+        asm.append('        asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[' + str(res_shift) + ']) : "r"(a_loc[' + str(op1_shift) + ']), "r"(b_loc[' + str(op2_shift) + ']));\\')
 
         if smaller_number_of_words == bigger_number_of_words:
             for i in range(1, bigger_number_of_words):
@@ -360,7 +360,7 @@ def mul_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, 
     if res_number_of_words != 1:
         asm.append('        uint32_t carry = 0;\\')
 
-    asm.append('        asm("mul.lo.u32    %0, %1, %2    ;" : "=r"(c_loc[0]) : "r"(b_loc[0]), "r"(a_loc[0]));\\')
+    asm.append('        asm("mul.lo.u32    %0, %1, %2    ;" : "=r"(c_loc[' + str(res_shift) + ']) : "r"(b_loc[' + str(op2_shift) + ']), "r"(a_loc[' + str(op1_shift) + ']));\\')
 
     for i in range(1, len(mul_index_tuples)):
         c_index = i
@@ -461,16 +461,20 @@ def mul_karatsuba_loc():
 
     # Low part multiplication (always the "bigger" multiplication of the 2
     # parts).
-    asm += mul_loc_generic(lo_precision, lo_precision, 'a0', 'b0', 'c0')
+    # asm += mul_loc_generic(lo_precision, lo_precision, 'a0', 'b0', 'c0')
+    asm += mul_loc_generic(lo_precision, lo_precision, 'a_loc', 'b_loc', 'c0', 0, 0, 0)
 
     # Hi part multiplication (possibly the "smaller" multiplication of the 2
     # parts).
-    asm += mul_loc_generic(hi_precision, hi_precision, 'a1', 'b1', 'c2')
+    # asm += mul_loc_generic(hi_precision, hi_precision, 'a1', 'b1', 'c2')
+    asm += mul_loc_generic(hi_precision, hi_precision, 'a_loc', 'b_loc', 'c2', lo_word_count, lo_word_count, 0)
 
     # c1 calculation
     # (a0 + a1) and (b0 + b1) has to be done with _exact_ function
     asm += add_loc_exact_generic(lo_precision, hi_precision, 'a0', 'a1', 'a0_plus_a1')
     asm += add_loc_exact_generic(lo_precision, hi_precision, 'b0', 'b1', 'b0_plus_b1')
+    # asm += add_loc_exact_generic(lo_precision, hi_precision, 'a_loc', 'a_loc', 'a0_plus_a1', 0, lo_word_count, 0)
+    # asm += add_loc_exact_generic(lo_precision, hi_precision, 'b_loc', 'b_loc', 'b0_plus_b1', 0, lo_word_count, 0)
 
     # (a0 + a1) * (b0 + b1)
     asm += mul_loc_generic(lo_plus_hi_precision, lo_plus_hi_precision, 'a0_plus_a1', 'b0_plus_b1', 'c1')
