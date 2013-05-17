@@ -325,7 +325,7 @@ def subc_cc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_na
 ############################# GENERIC MULTIPLICATION ###########################
 ################################################################################
 
-def mul_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name):
+def mul_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift = 0, op2_shift = 0, res_shift = 0):
     res_precision = mul_res_precision(op1_precision, op2_precision)
     op1_number_of_words = number_of_words_needed_for_precision(op1_precision)
     op2_number_of_words = number_of_words_needed_for_precision(op2_precision)
@@ -368,7 +368,7 @@ def mul_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name):
         # There is no carry to add to c_loc[1] in the very first iteration. We
         # don't need to set carry to 0 either if we are in this case.
         if i != 1:
-            asm.append('        asm("add.u32       %0, %1,  0    ;" : "=r"(c_loc[' + str(c_index) + ']) : "r"(carry));\\')
+            asm.append('        asm("add.u32       %0, %1,  0    ;" : "=r"(c_loc[' + str(c_index + res_shift) + ']) : "r"(carry));\\')
             asm.append('        asm("add.u32       %0,  0,  0    ;" : "=r"(carry));\\')
 
         # .hi bit operations
@@ -380,10 +380,10 @@ def mul_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name):
             # value of c_loc[1] to add, so we just do a normal mul instead of
             # mad.
             if (c_index - 1) == 0:
-                asm.append('        asm("mul.hi.u32    %0, %1, %2    ;" : "=r"(c_loc[' + str(c_index) + ']) : "r"(b_loc[' + str(b_index) + ']), "r"(a_loc[' + str(a_index) + ']));\\')
+                asm.append('        asm("mul.hi.u32    %0, %1, %2    ;" : "=r"(c_loc[' + str(c_index + res_shift) + ']) : "r"(b_loc[' + str(b_index + op2_shift) + ']), "r"(a_loc[' + str(a_index + op1_shift) + ']));\\')
             else:
                 # multiply add, with carry-out this time.
-                asm.append('        asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c_loc[' + str(c_index) + ']) : "r"(b_loc[' + str(b_index) + ']), "r"(a_loc[' + str(a_index) + ']));\\')
+                asm.append('        asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c_loc[' + str(c_index + res_shift) + ']) : "r"(b_loc[' + str(b_index + op2_shift) + ']), "r"(a_loc[' + str(a_index + op1_shift) + ']));\\')
                 asm.append('        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\\')
 
         # .lo bit operations
@@ -391,7 +391,7 @@ def mul_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name):
             b_index = mul_index_tuples[c_index][j][0]
             a_index = mul_index_tuples[c_index][j][1]
 
-            asm.append('        asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c_loc[' + str(c_index) + ']) : "r"(b_loc[' + str(b_index) + ']), "r"(a_loc[' + str(a_index) + ']));\\')
+            asm.append('        asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c_loc[' + str(c_index + res_shift) + ']) : "r"(b_loc[' + str(b_index + op2_shift) + ']), "r"(a_loc[' + str(a_index + op1_shift) + ']));\\')
 
             # in the second last shift iteration of the multiplication, if we
             # are at the last step, we no longer need to add the carry unless if
@@ -404,7 +404,7 @@ def mul_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name):
     # size (op1_number_of_words + op2_number_of_words), then calculate the final
     # index of C
     if res_number_of_words == (op1_number_of_words + op2_number_of_words):
-        asm.append('        asm("mad.hi.u32    %0, %1, %2, %3;" : "=r"(c_loc[' + str(res_number_of_words - 1) + ']) : "r"(b_loc[' + str(op2_number_of_words - 1) + ']), "r"(a_loc[' + str(op1_number_of_words - 1) + ']), "r"(carry));\\')
+        asm.append('        asm("mad.hi.u32    %0, %1, %2, %3;" : "=r"(c_loc[' + str(res_number_of_words - 1 + res_shift) + ']) : "r"(b_loc[' + str(op2_number_of_words - 1 + op2_shift) + ']), "r"(a_loc[' + str(op1_number_of_words - 1 + op1_shift) + ']), "r"(carry));\\')
 
     asm.append('    }\\')
 
