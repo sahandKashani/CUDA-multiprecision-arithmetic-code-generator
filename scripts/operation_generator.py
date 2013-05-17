@@ -468,11 +468,14 @@ def mul_karatsuba_loc():
 
     # (a0 + a1) * (b0 + b1)
     asm += mul_loc_generic(lo_plus_hi_precision, lo_plus_hi_precision, 'a0_plus_a1', 'b0_plus_b1', 'c1')
+    # asm += mul_loc_generic(lo_plus_hi_precision, lo_plus_hi_precision, 'a0_plus_a1', 'b0_plus_b1', 'c_loc', 0, 0, lo_word_count)
 
     # c1 = (a0 + a1) * (b0 + b1) - c0 - c2 = c1 - c0 - c2
     # Needs to be done with _exact_ function
     asm += sub_loc_exact_generic(c1_precision, c0_precision, 'c1', 'c0', 'c1')
     asm += sub_loc_exact_generic(c1_precision, c2_precision, 'c1', 'c2', 'c1')
+    # asm += sub_loc_exact_generic(c1_precision, c0_precision, 'c_loc', 'c0', 'c_loc', lo_word_count, 0, lo_word_count)
+    # asm += sub_loc_exact_generic(c1_precision, c2_precision, 'c_loc', 'c2', 'c_loc', lo_word_count, 0, lo_word_count)
 
     # final stage:
     # step = c0_word_count * bits_per_word
@@ -503,15 +506,12 @@ def mul_karatsuba_loc():
     # we know that c1 has at least 1 word more than c0, so we don't need to deal
     # with special cases where one is shorter than another. The overlapped part
     # between c0 and c1 will always be an addc.cc instruction mix.
-    first_overlap_number_of_words = c0_word_count - lo_word_count
-    for i in range(first_overlap_number_of_words):
-        if i == 0:
-            asm.append('    asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[' + str(i + lo_word_count) + ']) : "r"(c0[' + str(i + lo_word_count) + ']), "r"(c1[' + str(i) + ']));\\')
-        elif i < first_overlap_number_of_words:
-            asm.append('    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i + lo_word_count) + ']) : "r"(c0[' + str(i + lo_word_count) + ']), "r"(c1[' + str(i) + ']));\\')
+    overlap_1_number_of_words = c0_word_count - lo_word_count
+    overlap_1_precision = bits_per_word * overlap_1_number_of_words
+    asm += add_cc_loc_generic(overlap_1_precision, overlap_1_precision, 'c0', 'c1', 'c_loc', lo_word_count, 0, lo_word_count)
 
     # finally, we have to do the addition between
-    # c1[first_overlap_number_of_words .. c1_word_count] and c2[0 ..
+    # c1[overlap_1_number_of_words .. c1_word_count] and c2[0 ..
     # c2_word_count] by taking the carry_in into account, because of the last
     # addition that may have overflowed.
 
@@ -520,7 +520,7 @@ def mul_karatsuba_loc():
 
     loop_max_index = result_word_count - c0_word_count
 
-    # c1_segment_3_length = c1_word_count - first_overlap_number_of_words
+    # c1_segment_3_length = c1_word_count - overlap_1_number_of_words
     # if c1_segment_3_length <= c2_word_count:
     #     smaller_number_of_words = c1_segment_3_length
     #     smaller_name = 'c1'
