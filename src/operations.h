@@ -11,7 +11,7 @@
 // |  +   |  +   |  +   |  +   |  +   |
 // | B[4] | B[3] | B[2] | B[1] | B[0] |
 // |  +   |  +   |  +   |  +   |      |
-// |carry |carry |carry |carry |      |
+// | c_in | c_in | c_in | c_in |      |
 // ------------------------------------
 // | C[4] | C[3] | C[2] | C[1] | C[0] |
 #define add_loc(c_loc, a_loc, b_loc)\
@@ -47,7 +47,7 @@
 // |  -   |  -   |  -   |  -   |  -   |
 // | B[4] | B[3] | B[2] | B[1] | B[0] |
 // |  -   |  -   |  -   |  -   |      |
-// |borrow|borrow|borrow|borrow|      |
+// | b_in | b_in | b_in | b_in |      |
 // ------------------------------------
 // | C[4] | C[3] | C[2] | C[1] | C[0] |
 #define sub_loc(c_loc, a_loc, b_loc)\
