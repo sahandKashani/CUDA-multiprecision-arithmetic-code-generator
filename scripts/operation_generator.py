@@ -227,7 +227,7 @@ def add_loc_exact_generic(op1_precision, op2_precision, op1_name, op2_name, res_
 
     return asm
 
-def add_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name):
+def add_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift = 0, op2_shift = 0, res_shift = 0):
     op1_number_of_words = number_of_words_needed_for_precision(op1_precision)
     op2_number_of_words = number_of_words_needed_for_precision(op2_precision)
 
@@ -236,8 +236,10 @@ def add_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name):
 
     if bigger_number_of_words == op1_number_of_words:
         bigger_name = 'a_loc'
+        bigger_shift = op1_shift
     else:
         bigger_name = 'b_loc'
+        bigger_shift = op2_shift
 
     asm = []
     asm.append('    {\\')
@@ -251,18 +253,18 @@ def add_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name):
         if smaller_number_of_words == bigger_number_of_words:
             for i in range(1, bigger_number_of_words):
                 if i < bigger_number_of_words - 1:
-                    asm.append('        asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(a_loc[' + str(i) + ']), "r"(b_loc[' + str(i) + ']));\\')
+                    asm.append('        asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(a_loc[' + str(i + op1_shift) + ']), "r"(b_loc[' + str(i + op2_shift) + ']));\\')
                 elif i == bigger_number_of_words - 1:
-                    asm.append('        asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(a_loc[' + str(i) + ']), "r"(b_loc[' + str(i) + ']));\\')
+                    asm.append('        asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(a_loc[' + str(i + op1_shift) + ']), "r"(b_loc[' + str(i + op2_shift) + ']));\\')
 
         elif smaller_number_of_words < bigger_number_of_words:
             for i in range(1, bigger_number_of_words):
                 if i < smaller_number_of_words:
-                    asm.append('        asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(a_loc[' + str(i) + ']), "r"(b_loc[' + str(i) + ']));\\')
+                    asm.append('        asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(a_loc[' + str(i + op1_shift) + ']), "r"(b_loc[' + str(i + op2_shift) + ']));\\')
                 elif i < bigger_number_of_words - 1:
-                    asm.append('        asm("addc.cc.u32 %0, %1,  0;" : "=r"(c_loc[' + str(i) + ']) : "r"(' + bigger_name + '[' + str(i) + ']));\\')
+                    asm.append('        asm("addc.cc.u32 %0, %1,  0;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(' + bigger_name + '[' + str(i + bigger_shift) + ']));\\')
                 elif i == bigger_number_of_words - 1:
-                    asm.append('        asm("addc.u32    %0, %1,  0;" : "=r"(c_loc[' + str(i) + ']) : "r"(' + bigger_name + '[' + str(i) + ']));\\')
+                    asm.append('        asm("addc.u32    %0, %1,  0;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(' + bigger_name + '[' + str(i + bigger_shift) + ']));\\')
 
     asm.append('    }\\')
 
@@ -273,16 +275,16 @@ def add_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name):
 
     return asm
 
-def addc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name):
-    asm = add_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name)
+def addc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift = 0, op2_shift = 0, res_shift = 0):
+    asm = add_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift)
     if number_of_words_needed_for_precision(add_res_precision(op1_precision, op2_precision)) == 1:
         asm[1] = asm[1].replace("add.u32     ", "addc.u32    ")
     else:
         asm[1] = asm[1].replace("add.cc.u32  ", "addc.cc.u32 ")
     return asm
 
-def add_cc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name):
-    asm = add_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name)
+def add_cc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift = 0, op2_shift = 0, res_shift = 0):
+    asm = add_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift)
     if number_of_words_needed_for_precision(add_res_precision(op1_precision, op2_precision)) == 1:
         asm[1] = asm[1].replace("add.u32     ", "add.cc.u32  ")
     else:
@@ -290,8 +292,8 @@ def add_cc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_nam
         asm[last_index] = asm[last_index].replace("addc.u32    ", "addc.cc.u32 ")
     return asm
 
-def addc_cc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name):
-    asm = add_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name)
+def addc_cc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift = 0, op2_shift = 0, res_shift = 0):
+    asm = add_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift)
     if number_of_words_needed_for_precision(add_res_precision(op1_precision, op2_precision)) == 1:
         asm[1] = asm[1].replace("add.u32     ", "addc.cc.u32 ")
     else:
@@ -304,20 +306,20 @@ def addc_cc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_na
 ############################### GENERIC SUBTRACTION ############################
 ################################################################################
 
-def sub_loc_exact_generic(op1_precision, op2_precision, op1_name, op2_name, res_name):
-    return [line.replace("add", "sub") for line in add_loc_exact_generic(op1_precision, op2_precision, op1_name, op2_name, res_name)]
+def sub_loc_exact_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift = 0, op2_shift = 0, res_shift = 0):
+    return [line.replace("add", "sub") for line in add_loc_exact_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift)]
 
-def sub_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name):
-    return [line.replace("add", "sub") for line in add_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name)]
+def sub_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift = 0, op2_shift = 0, res_shift = 0):
+    return [line.replace("add", "sub") for line in add_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift)]
 
-def subc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name):
-    return [line.replace("add", "sub") for line in addc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name)]
+def subc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift = 0, op2_shift = 0, res_shift = 0):
+    return [line.replace("add", "sub") for line in addc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift)]
 
-def sub_cc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name):
-    return [line.replace("add", "sub") for line in add_cc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name)]
+def sub_cc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift = 0, op2_shift = 0, res_shift = 0):
+    return [line.replace("add", "sub") for line in add_cc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift)]
 
-def subc_cc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name):
-    return [line.replace("add", "sub") for line in addc_cc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name)]
+def subc_cc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift = 0, op2_shift = 0, res_shift = 0):
+    return [line.replace("add", "sub") for line in addc_cc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift)]
 
 ################################################################################
 ############################# GENERIC MULTIPLICATION ###########################
