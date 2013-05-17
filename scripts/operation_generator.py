@@ -162,7 +162,7 @@ def mul_doc():
 ################################ GENERIC ADDITION ##############################
 ################################################################################
 
-def add_loc_exact_generic(op1_precision, op2_precision, op1_name, op2_name, res_name):
+def add_loc_exact_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift = 0, op2_shift = 0, res_shift = 0):
     res_precision = add_res_precision(op1_precision, op2_precision)
     op1_number_of_words = number_of_words_needed_for_precision(op1_precision)
     op2_number_of_words = number_of_words_needed_for_precision(op2_precision)
@@ -188,33 +188,33 @@ def add_loc_exact_generic(op1_precision, op2_precision, op1_name, op2_name, res_
         if smaller_number_of_words == bigger_number_of_words == res_number_of_words:
             for i in range(1, res_number_of_words):
                 if i < res_number_of_words - 1:
-                    asm.append('        asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(a_loc[' + str(i) + ']), "r"(b_loc[' + str(i) + ']));\\')
+                    asm.append('        asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(a_loc[' + str(i + op1_shift) + ']), "r"(b_loc[' + str(i + op2_shift) + ']));\\')
                 elif i == res_number_of_words - 1:
-                    asm.append('        asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(a_loc[' + str(i) + ']), "r"(b_loc[' + str(i) + ']));\\')
+                    asm.append('        asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(a_loc[' + str(i + op1_shift) + ']), "r"(b_loc[' + str(i + op2_shift) + ']));\\')
 
         elif smaller_number_of_words < bigger_number_of_words == res_number_of_words:
             for i in range(1, res_number_of_words):
                 if i < smaller_number_of_words:
-                    asm.append('        asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(a_loc[' + str(i) + ']), "r"(b_loc[' + str(i) + ']));\\')
+                    asm.append('        asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(a_loc[' + str(i + op1_shift) + ']), "r"(b_loc[' + str(i + op2_shift) + ']));\\')
                 elif i < res_number_of_words - 1:
-                    asm.append('        asm("addc.cc.u32 %0, %1,  0;" : "=r"(c_loc[' + str(i) + ']) : "r"(' + bigger_name + '[' + str(i) + ']));\\')
+                    asm.append('        asm("addc.cc.u32 %0, %1,  0;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(' + bigger_name + '[' + str(i) + ']));\\')
                 elif i == res_number_of_words - 1:
-                    asm.append('        asm("addc.u32    %0, %1,  0;" : "=r"(c_loc[' + str(i) + ']) : "r"(' + bigger_name + '[' + str(i) + ']));\\')
+                    asm.append('        asm("addc.u32    %0, %1,  0;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(' + bigger_name + '[' + str(i) + ']));\\')
 
         # special case in like 32-bit + 32-bit = 33-bit
         elif smaller_number_of_words <= bigger_number_of_words < res_number_of_words:
             for i in range(1, res_number_of_words):
                 if i < smaller_number_of_words:
-                    asm.append('        asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i) + ']) : "r"(a_loc[' + str(i) + ']), "r"(b_loc[' + str(i) + ']));\\')
+                    asm.append('        asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(a_loc[' + str(i + op1_shift) + ']), "r"(b_loc[' + str(i + op2_shift) + ']));\\')
                 elif i < bigger_number_of_words:
-                    asm.append('        asm("addc.cc.u32 %0, %1,  0;" : "=r"(c_loc[' + str(i) + ']) : "r"(' + bigger_name + '[' + str(i) + ']));\\')
+                    asm.append('        asm("addc.cc.u32 %0, %1,  0;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(' + bigger_name + '[' + str(i) + ']));\\')
 
                 # res_number_of_words can be at most 1 bigger than
                 # bigger_number_of_words, so we can just check if we have
                 # reached (res_number_of_words - 1) instead of having to check
                 # for (i < res_number_of_words)
                 elif i == res_number_of_words - 1:
-                    asm.append('        asm("addc.u32    %0,  0,  0;" : "=r"(c_loc[' + str(i) + ']) : );\\')
+                    asm.append('        asm("addc.u32    %0,  0,  0;" : "=r"(c_loc[' + str(i + res_shift) + ']) : );\\')
 
     asm.append('    }\\')
 
