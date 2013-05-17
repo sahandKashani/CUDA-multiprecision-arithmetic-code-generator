@@ -431,6 +431,12 @@ def mul_karatsuba_loc():
     c2_precision = mul_res_precision(hi_precision, hi_precision)
     c2_word_count = number_of_words_needed_for_precision(c2_precision)
 
+    # For c1, the situation is different from the other parts. We are going to
+    # need to add 2 numbers which do not have the same precision, and we need
+    # the complete result, so we are going to be using add_loc_exact_generic()
+    # to do the calculation, instead of using add_loc_generic(), because we want
+    # the full result, not just the result that holds on the number of words of
+    # the bigger of the 2 words.
     lo_plus_hi_precision = add_res_precision(lo_precision, hi_precision)
     lo_plus_hi_word_count = number_of_words_needed_for_precision(lo_plus_hi_precision)
     c1_precision = mul_res_precision(lo_plus_hi_precision, lo_plus_hi_precision)
@@ -458,48 +464,34 @@ def mul_karatsuba_loc():
     asm += mul_loc_generic(hi_precision, hi_precision, 'a1', 'b1', 'c2')
 
     # c1 calculation
-    # (a0 + a1) and (b0 + b1)
-    asm += add_loc_generic(lo_precision, hi_precision, 'a0', 'a1', 'a0_plus_a1')
-    asm += add_loc_generic(lo_precision, hi_precision, 'b0', 'b1', 'b0_plus_b1')
+    # (a0 + a1) and (b0 + b1) has to be done with _exact_ function
+    asm += add_loc_exact_generic(lo_precision, hi_precision, 'a0', 'a1', 'a0_plus_a1')
+    asm += add_loc_exact_generic(lo_precision, hi_precision, 'b0', 'b1', 'b0_plus_b1')
 
     # (a0 + a1) * (b0 + b1)
     asm += mul_loc_generic(lo_plus_hi_precision, lo_plus_hi_precision, 'a0_plus_a1', 'b0_plus_b1', 'c1')
 
     # c1 = (a0 + a1) * (b0 + b1) - c0 - c2 = c1 - c0 - c2
-    asm += sub_loc_generic(c1_precision, c0_precision, 'c1', 'c0', 'c1')
-    asm += sub_loc_generic(c1_precision, c2_precision, 'c1', 'c2', 'c1')
+    # Needs to be done with _exact_ function
+    asm += sub_loc_exact_generic(c1_precision, c0_precision, 'c1', 'c0', 'c1')
+    asm += sub_loc_exact_generic(c1_precision, c2_precision, 'c1', 'c2', 'c1')
 
     # final stage:
     # step = c0_word_count * bits_per_word
     # c_loc = c2 * 2^(2*step) + c1 * 2^(step) + c0
 
-    # |      |      |      |      |      |      |      |      | B[0] * A[0] |
-    # |      |      |      |      |      |      |      | B[0] * A[1] |      |
-    # |      |      |      |      |      |      |      | B[1] * A[0] |      |
-    # |      |      |      |      |      |      | B[0] * A[2] |      |      |
-    # |      |      |      |      |      |      | B[1] * A[1] |      |      |
-    # |      |      |      |      |      |      | B[2] * A[0] |      |      |
-    # |      |      |      |      |      | B[0] * A[3] |      |      |      |
-    # |      |      |      |      |      | B[1] * A[2] |      |      |      |
-    # |      |      |      |      |      | B[2] * A[1] |      |      |      |
-    # |      |      |      |      |      | B[3] * A[0] |      |      |      |
-    # |      |      |      |      | B[0] * A[4] |      |      |      |      |
-    # |      |      |      |      | B[1] * A[3] |      |      |      |      |
-    # |      |      |      |      | B[2] * A[2] |      |      |      |      |
-    # |      |      |      |      | B[3] * A[1] |      |      |      |      |
-    # |      |      |      |      | B[4] * A[0] |      |      |      |      |
-    # |      |      |      | B[1] * A[4] |      |      |      |      |      |
-    # |      |      |      | B[2] * A[3] |      |      |      |      |      |
-    # |      |      |      | B[3] * A[2] |      |      |      |      |      |
-    # |      |      |      | B[4] * A[1] |      |      |      |      |      |
-    # |      |      | B[2] * A[4] |      |      |      |      |      |      |
-    # |      |      | B[3] * A[3] |      |      |      |      |      |      |
-    # |      |      | B[4] * A[2] |      |      |      |      |      |      |
-    # |      | B[3] * A[4] |      |      |      |      |      |      |      |
-    # |      | B[4] * A[3] |      |      |      |      |      |      |      |
-    # + B[4] * A[4] |      |      |      |      |      |      |      |      |
-    # -----------------------------------------------------------------------
-    # | C[9] | C[8] | C[7] | C[6] | C[5] | C[4] | C[3] | C[2] | C[1] | C[0] |
+    # Example of overlap addition if precision = 131-bits
+    #
+    #                                   | c0[5] | c0[4] | c0[3] | c0[2] | c0[1] | c0[0] |   => c0
+    #
+    # + | c1[6] | c1[5] | c1[4] | c1[3] | c1[2] | c1[1] | c1[0] |                           => c1
+    #
+    # +         | c2[2] | c2[1] | c2[0] |                                                   => c2
+    # -----------------------------------------------------------------------------------
+    #   | re[9] | re[8] | re[7] | re[6] | re[5] | re[4] | re[3] | re[2] | re[1] | re[0] |   => result
+    #
+    # Note: It is possible that re[9] will not be calculated if we are sure that
+    # the result of the multiplication will never need that storage location.
 
     # we always know that the first lo_word_count words of the result are going
     # to be unchanged by the addition, so we assign them directly from the
