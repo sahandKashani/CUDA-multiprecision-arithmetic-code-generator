@@ -277,7 +277,7 @@ def add_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, 
 
 def addc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift = 0, op2_shift = 0, res_shift = 0):
     asm = add_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift)
-    if number_of_words_needed_for_precision(add_res_precision(op1_precision, op2_precision)) == 1:
+    if number_of_words_needed_for_precision(max(op1_precision, op2_precision)) == 1:
         asm[1] = asm[1].replace("add.u32     ", "addc.u32    ")
     else:
         asm[1] = asm[1].replace("add.cc.u32  ", "addc.cc.u32 ")
@@ -285,7 +285,7 @@ def addc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name,
 
 def add_cc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift = 0, op2_shift = 0, res_shift = 0):
     asm = add_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift)
-    if number_of_words_needed_for_precision(add_res_precision(op1_precision, op2_precision)) == 1:
+    if number_of_words_needed_for_precision(max(op1_precision, op2_precision)) == 1:
         asm[1] = asm[1].replace("add.u32     ", "add.cc.u32  ")
     else:
         last_index = len(asm) - 2
@@ -294,7 +294,7 @@ def add_cc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_nam
 
 def addc_cc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift = 0, op2_shift = 0, res_shift = 0):
     asm = add_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift)
-    if number_of_words_needed_for_precision(add_res_precision(op1_precision, op2_precision)) == 1:
+    if number_of_words_needed_for_precision(max(op1_precision, op2_precision)) == 1:
         asm[1] = asm[1].replace("add.u32     ", "addc.cc.u32 ")
     else:
         last_index = len(asm) - 2
@@ -515,24 +515,18 @@ def mul_karatsuba_loc():
     # c2_word_count] by taking the carry_in into account, because of the last
     # addition that may have overflowed.
 
+    # result_precision = mul_res_precision(precision, precision)
+    # result_word_count = number_of_words_needed_for_precision(result_precision)
+    # loop_max_index = result_word_count - c0_word_count
+    # for i in range(loop_max_index):
+    #     if i < loop_max_index - 1:
+    #         asm.append('    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i + c0_word_count) + ']) : "r"(c1[' + str(i + lo_word_count) + ']), "r"(c2[' + str(i) + ']));\\')
+    #     elif i == loop_max_index - 1:
+    #         asm.append('    asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(i + c0_word_count) + ']) : "r"(c1[' + str(i + lo_word_count) + ']), "r"(c2[' + str(i) + ']));\\')
+
     result_precision = mul_res_precision(precision, precision)
-    result_word_count = number_of_words_needed_for_precision(result_precision)
-
-    loop_max_index = result_word_count - c0_word_count
-
-    # c1_segment_3_length = c1_word_count - overlap_1_number_of_words
-    # if c1_segment_3_length <= c2_word_count:
-    #     smaller_number_of_words = c1_segment_3_length
-    #     smaller_name = 'c1'
-    # elif c1_segment_3_length > c2_word_count:
-    #     smaller_number_of_words = c2_word_count
-    #     smaller_name = 'c2'
-
-    for i in range(loop_max_index):
-        if i < loop_max_index - 1:
-            asm.append('    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i + c0_word_count) + ']) : "r"(c1[' + str(i + lo_word_count) + ']), "r"(c2[' + str(i) + ']));\\')
-        elif i == loop_max_index - 1:
-            asm.append('    asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(i + c0_word_count) + ']) : "r"(c1[' + str(i + lo_word_count) + ']), "r"(c2[' + str(i) + ']));\\')
+    overlap_2_precision = result_precision - c0_precision
+    asm += addc_loc_generic(overlap_2_precision, overlap_2_precision, 'c1', 'c2', 'c_loc', lo_word_count, 0, c0_word_count)
 
     asm.append('}' + '\n')
     return asm
