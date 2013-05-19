@@ -484,15 +484,14 @@ def mul_karatsuba_loc():
     # Example of overlap addition if precision = 131-bits
     #
     #                                   | c0[5] | c0[4] | c0[3] | c0[2] | c0[1] | c0[0] |   => c0
-    #
     # + | c1[6] | c1[5] | c1[4] | c1[3] | c1[2] | c1[1] | c1[0] |                           => c1
-    #
     # +         | c2[2] | c2[1] | c2[0] |                                                   => c2
     # -----------------------------------------------------------------------------------
     #   | re[9] | re[8] | re[7] | re[6] | re[5] | re[4] | re[3] | re[2] | re[1] | re[0] |   => result
     #
     # Note: It is possible that re[9] will not be calculated if we are sure that
     # the result of the multiplication will never need that storage location.
+    # For 131-bits, re[9] will not be calculated.
 
     # we always know that the first lo_word_count words of the result are going
     # to be unchanged by the addition, so we assign them directly from the
@@ -501,22 +500,35 @@ def mul_karatsuba_loc():
         asm.append('    asm("add.u32     %0, %1,  0;" : "=r"(c_loc[' + str(i) + ']) : "r"(c0[' + str(i) + ']));\\')
 
     # now, we have to do the addition between c0[lo_word_count .. c0_word_count]
-    # and c1[lo_word_count .. c0_word_count]
+    # and c1[0 .. lo_word_count]
 
     # we know that c1 has at least 1 word more than c0, so we don't need to deal
     # with special cases where one is shorter than another. The overlapped part
-    # between c0 and c1 will always be an addc.cc instruction mix.
-    overlap_1_number_of_words = c0_word_count - lo_word_count
-    overlap_1_precision = bits_per_word * overlap_1_number_of_words
+    # between c0 and c1 will always be an addc.cc operation on lo_word_count
+    # words.
+    overlap_1_precision = bits_per_word * lo_word_count
     asm += add_cc_loc_generic(overlap_1_precision, overlap_1_precision, 'c0', 'c1', 'c_loc', lo_word_count, 0, lo_word_count)
 
-    # finally, we have to do the addition between
-    # c1[overlap_1_number_of_words .. c1_word_count] and c2[0 ..
-    # c2_word_count] by taking the carry_in into account, because of the last
-    # addition that may have overflowed.
+    # finally, we have to do the addition between c1[lo_word_count ..
+    # c1_word_count] and c2[0 .. c2_word_count] by taking the carry_in into
+    # account, because of the first overlap addition that may have overflowed.
     result_precision = mul_res_precision(precision, precision)
     overlap_2_precision = result_precision - c0_precision
-    asm += addc_loc_generic(overlap_2_precision, overlap_2_precision, 'c1', 'c2', 'c_loc', lo_word_count, 0, c0_word_count)
+
+    # we may not need to add the full c1 precision or c2 precision, because we
+    # may know that c_loc would not need certain parts of c1 or c2. The upper
+    # bound on c1's and c2's words are provided by result_precision, which is
+    # the total number of words that the complete multiplication algorithm is to
+    # yield. We can thus restrain c1's and c2's words to that upper bound.
+    c1_overlap_precision = c1_precision - lo_word_count * bits_per_word
+    if c1_overlap_precision >= overlap_2_precision:
+        c1_overlap_precision = overlap_2_precision
+
+    c2_overlap_precision = c2_precision
+    if c2_overlap_precision >= overlap_2_precision:
+        c2_overlap_precision = overlap_2_precision
+
+    asm += addc_loc_generic(c1_overlap_precision, c2_overlap_precision, 'c1', 'c2', 'c_loc', lo_word_count, 0, c0_word_count)
 
     asm.append('}' + '\n')
     return asm
