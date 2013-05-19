@@ -514,16 +514,6 @@ def mul_karatsuba_loc():
     # c1[overlap_1_number_of_words .. c1_word_count] and c2[0 ..
     # c2_word_count] by taking the carry_in into account, because of the last
     # addition that may have overflowed.
-
-    # result_precision = mul_res_precision(precision, precision)
-    # result_word_count = number_of_words_needed_for_precision(result_precision)
-    # loop_max_index = result_word_count - c0_word_count
-    # for i in range(loop_max_index):
-    #     if i < loop_max_index - 1:
-    #         asm.append('    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i + c0_word_count) + ']) : "r"(c1[' + str(i + lo_word_count) + ']), "r"(c2[' + str(i) + ']));\\')
-    #     elif i == loop_max_index - 1:
-    #         asm.append('    asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(i + c0_word_count) + ']) : "r"(c1[' + str(i + lo_word_count) + ']), "r"(c2[' + str(i) + ']));\\')
-
     result_precision = mul_res_precision(precision, precision)
     overlap_2_precision = result_precision - c0_precision
     asm += addc_loc_generic(overlap_2_precision, overlap_2_precision, 'c1', 'c2', 'c_loc', lo_word_count, 0, c0_word_count)

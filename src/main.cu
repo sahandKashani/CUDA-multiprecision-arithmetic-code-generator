@@ -4,12 +4,12 @@
 
 int main(void)
 {
-    // add_benchmark();
-    // sub_benchmark();
-    // mul_benchmark();
+    add_benchmark();
+    sub_benchmark();
+    mul_benchmark();
     mul_karatsuba_benchmark();
-    // add_m_benchmark();
-    // sub_m_benchmark();
+    add_m_benchmark();
+    sub_m_benchmark();
 
     // for leak detection when using cuda-memcheck
     cudaDeviceReset();
