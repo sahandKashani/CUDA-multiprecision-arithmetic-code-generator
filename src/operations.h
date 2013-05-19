@@ -263,6 +263,7 @@
 
 #define mul_karatsuba_loc(c_loc, a_loc, b_loc)\
 {\
+{\
     uint32_t c0[6] = {0, 0, 0, 0, 0, 0};\
     uint32_t c1[7] = {0, 0, 0, 0, 0, 0, 0};\
     uint32_t c2[3] = {0, 0, 0};\
@@ -441,6 +442,7 @@
         asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[7]) : "r"(c1[4]), "r"(c2[1]));\
         asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[8]) : "r"(c1[5]), "r"(c2[2]));\
     }\
+}\
 }
 
 #define mul_glo(c_glo, a_glo, b_glo, tid)\
