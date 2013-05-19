@@ -643,30 +643,29 @@ def sub_m_loc():
 ################################# CODE GENERATOR ###############################
 ################################################################################
 
-def generate_operations():
-    macros_to_print = [add_doc,
-                       add_loc,
-                       add_glo,
+macros_to_print = [add_doc,
+                   add_loc,
+                   add_glo,
 
-                       sub_doc,
-                       sub_loc,
-                       sub_glo,
+                   sub_doc,
+                   sub_loc,
+                   sub_glo,
 
-                       mul_doc,
-                       mul_loc,
-                       mul_karatsuba_loc,
-                       mul_glo,
+                   mul_doc,
+                   mul_loc,
+                   mul_karatsuba_loc,
+                   mul_glo,
 
-                       add_m_loc,
-                       sub_m_loc]
+                   add_m_loc,
+                   sub_m_loc]
 
-    all_lines = []
+all_lines = []
 
-    # needed for COAL_IDX
-    all_lines.append(r'#include "bignum_types.h"' + '\n')
+# needed for COAL_IDX
+all_lines.append(r'#include "bignum_types.h"' + '\n')
 
-    for func in macros_to_print:
-        all_lines.extend(func())
+for func in macros_to_print:
+    all_lines.extend(func())
 
-    with open(file_name_operations_h, 'w') as operations_h:
-        operations_h.write('\n'.join(all_lines))
+with open(file_name_operations_h, 'w') as operations_h:
+    operations_h.write('\n'.join(all_lines))
