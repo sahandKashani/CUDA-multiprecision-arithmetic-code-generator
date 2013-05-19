@@ -1,4 +1,5 @@
-from constants import seed
+from input_output import *
+from constants import *
 import random
 
 # initialize the random number generator

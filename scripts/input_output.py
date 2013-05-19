@@ -1,9 +1,5 @@
-from constants import hex_digits_per_word
-from constants import min_hex_length
-from constants import max_hex_length
-
-from conversions import hex_str_to_int
-from conversions import int_to_hex_str
+from conversions import *
+from constants import *
 
 def write_numbers_to_file_coalesced(numbers, is_long_number, file_name):
     # no '0x'

@@ -1,16 +1,6 @@
-from input_output import read_numbers_from_file_coalesced
-
-from constants import coalesced_a_file_name
-from constants import coalesced_b_file_name
-from constants import coalesced_m_file_name
-from constants import add_results_file_name
-from constants import sub_results_file_name
-from constants import mul_results_file_name
-from constants import add_m_results_file_name
-from constants import sub_m_results_file_name
-from constants import mul_karatsuba_results_file_name
-
-from conversions import int_to_hex_str
+from input_output import *
+from conversions import *
+from constants import *
 
 def binary_operator_check(result_file_name, op1, op2, op_name, py_op_symbol, result_is_long_number):
     res = read_numbers_from_file_coalesced(result_file_name)

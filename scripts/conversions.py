@@ -1,7 +1,4 @@
-from constants import min_bit_length
-from constants import max_bit_length
-from constants import min_hex_length
-from constants import max_hex_length
+from constants import *
 
 def bin_str_to_hex_str(bin_str):
     # no '0b'

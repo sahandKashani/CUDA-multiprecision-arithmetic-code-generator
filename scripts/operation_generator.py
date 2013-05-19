@@ -1,10 +1,4 @@
-from constants import precision
-from constants import bits_per_word
-from constants import min_bit_length
-from constants import file_name_operations_h
-from constants import max_bignum_number_of_words
-from constants import min_bignum_number_of_words
-
+from constants import *
 import math
 import re
 
