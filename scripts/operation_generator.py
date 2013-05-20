@@ -409,7 +409,7 @@ def mul_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, 
 
     return asm
 
-def mul_karatsuba_loc_generic(op_precision, op1_name, op2_name, res_name):
+def mul_karatsuba_loc_generic(op_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift, indent = 0):
     asm = []
     asm.append('{\\')
 
@@ -449,24 +449,24 @@ def mul_karatsuba_loc_generic(op_precision, op1_name, op2_name, res_name):
 
     # Low part multiplication (always the "bigger" multiplication of the 2
     # parts).
-    asm += mul_loc_generic(lo_precision, lo_precision, 'a_loc', 'b_loc', 'c0', 0, 0, 0)
+    asm += mul_loc_generic(lo_precision, lo_precision, 'a_loc', 'b_loc', 'c0', 0 + op1_shift, 0 + op2_shift, 0, indent)
 
     # Hi part multiplication (possibly the "smaller" multiplication of the 2
     # parts).
-    asm += mul_loc_generic(hi_precision, hi_precision, 'a_loc', 'b_loc', 'c2', lo_word_count, lo_word_count, 0)
+    asm += mul_loc_generic(hi_precision, hi_precision, 'a_loc', 'b_loc', 'c2', lo_word_count + op1_shift, lo_word_count + op2_shift, 0, indent)
 
     # c1 calculation
     # (a0 + a1) and (b0 + b1) has to be done with _exact_ function
-    asm += add_loc_exact_generic(lo_precision, hi_precision, 'a_loc', 'a_loc', 'a0_plus_a1', 0, lo_word_count, 0)
-    asm += add_loc_exact_generic(lo_precision, hi_precision, 'b_loc', 'b_loc', 'b0_plus_b1', 0, lo_word_count, 0)
+    asm += add_loc_exact_generic(lo_precision, hi_precision, 'a_loc', 'a_loc', 'a0_plus_a1', 0 + op1_shift, lo_word_count + op1_shift, 0, indent)
+    asm += add_loc_exact_generic(lo_precision, hi_precision, 'b_loc', 'b_loc', 'b0_plus_b1', 0 + op2_shift, lo_word_count + op2_shift, 0, indent)
 
     # (a0 + a1) * (b0 + b1)
-    asm += mul_loc_generic(lo_plus_hi_precision, lo_plus_hi_precision, 'a0_plus_a1', 'b0_plus_b1', 'c1', 0, 0, 0)
+    asm += mul_loc_generic(lo_plus_hi_precision, lo_plus_hi_precision, 'a0_plus_a1', 'b0_plus_b1', 'c1', 0, 0, 0, indent)
 
     # c1 = (a0 + a1) * (b0 + b1) - c0 - c2 = c1 - c0 - c2
     # Needs to be done with _exact_ function
-    asm += sub_loc_exact_generic(c1_precision, c0_precision, 'c1', 'c0', 'c1', 0, 0, 0)
-    asm += sub_loc_exact_generic(c1_precision, c2_precision, 'c1', 'c2', 'c1', 0, 0, 0)
+    asm += sub_loc_exact_generic(c1_precision, c0_precision, 'c1', 'c0', 'c1', 0, 0, 0, indent)
+    asm += sub_loc_exact_generic(c1_precision, c2_precision, 'c1', 'c2', 'c1', 0, 0, 0, indent)
 
     # final stage:
     # step = c0_word_count * bits_per_word
@@ -488,7 +488,7 @@ def mul_karatsuba_loc_generic(op_precision, op1_name, op2_name, res_name):
     # to be unchanged by the addition, so we assign them directly from the
     # values of c0[0 .. lo_word_count]
     for i in range(lo_word_count):
-        asm.append('    asm("add.u32     %0, %1,  0;" : "=r"(c_loc[' + str(i) + ']) : "r"(c0[' + str(i) + ']));\\')
+        asm.append('    asm("add.u32     %0, %1,  0;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(c0[' + str(i) + ']));\\')
 
     # now, we have to do the addition between c0[lo_word_count .. c0_word_count]
     # and c1[0 .. lo_word_count]
@@ -498,7 +498,7 @@ def mul_karatsuba_loc_generic(op_precision, op1_name, op2_name, res_name):
     # between c0 and c1 will always be an addc.cc operation on lo_word_count
     # words.
     overlap_1_precision = bits_per_word * lo_word_count
-    asm += add_cc_loc_generic(overlap_1_precision, overlap_1_precision, 'c0', 'c1', 'c_loc', lo_word_count, 0, lo_word_count)
+    asm += add_cc_loc_generic(overlap_1_precision, overlap_1_precision, 'c0', 'c1', 'c_loc', lo_word_count, 0, lo_word_count + res_shift, indent)
 
     # finally, we have to do the addition between c1[lo_word_count ..
     # c1_word_count] and c2[0 .. c2_word_count] by taking the carry_in into
@@ -519,14 +519,14 @@ def mul_karatsuba_loc_generic(op_precision, op1_name, op2_name, res_name):
     if c2_overlap_precision >= overlap_2_precision:
         c2_overlap_precision = overlap_2_precision
 
-    asm += addc_loc_generic(c1_overlap_precision, c2_overlap_precision, 'c1', 'c2', 'c_loc', lo_word_count, 0, c0_word_count)
+    asm += addc_loc_generic(c1_overlap_precision, c2_overlap_precision, 'c1', 'c2', 'c_loc', lo_word_count, 0, c0_word_count + res_shift, indent)
 
     asm.append('}\\')
 
     # replace all occurrences of a_loc, b_loc and c_loc by their appropriate
     # names, as provided by the user.
     for i in range(len(asm)):
-        asm[i] = asm[i].replace('a_loc', op1_name).replace('b_loc', op2_name).replace('c_loc', res_name)
+        asm[i] = " " * 4 * indent + asm[i].replace('a_loc', op1_name).replace('b_loc', op2_name).replace('c_loc', res_name)
 
     return asm
 
@@ -591,7 +591,7 @@ def mul_karatsuba_loc():
     asm = []
     asm.append('#define mul_karatsuba_loc(c_loc, a_loc, b_loc)\\')
     asm.append('{\\')
-    asm += mul_karatsuba_loc_generic(precision, 'a_loc', 'b_loc', 'c_loc')
+    asm += mul_karatsuba_loc_generic(precision, 'a_loc', 'b_loc', 'c_loc', 0, 0, 0, 1)
     asm.append('}' + '\n')
     return asm
 
