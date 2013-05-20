@@ -176,41 +176,41 @@ def add_loc_exact_generic(op1_precision, op2_precision, op1_name, op2_name, res_
     asm.append('{\\')
 
     if res_number_of_words == 1:
-        asm.append('    asm("add.u32     %0, %1, %2;" : "=r"(c_loc[' + str(res_shift) + ']) : "r"(a_loc[' + str(op1_shift) + ']), "r"(b_loc[' + str(op2_shift) + ']));\\')
+        asm.append('asm("add.u32     %0, %1, %2;" : "=r"(c_loc[' + str(res_shift) + ']) : "r"(a_loc[' + str(op1_shift) + ']), "r"(b_loc[' + str(op2_shift) + ']));\\')
 
     elif res_number_of_words > 1:
-        asm.append('    asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[' + str(res_shift) + ']) : "r"(a_loc[' + str(op1_shift) + ']), "r"(b_loc[' + str(op2_shift) + ']));\\')
+        asm.append('asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[' + str(res_shift) + ']) : "r"(a_loc[' + str(op1_shift) + ']), "r"(b_loc[' + str(op2_shift) + ']));\\')
 
         if smaller_number_of_words == bigger_number_of_words == res_number_of_words:
             for i in range(1, res_number_of_words):
                 if i < res_number_of_words - 1:
-                    asm.append('    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(a_loc[' + str(i + op1_shift) + ']), "r"(b_loc[' + str(i + op2_shift) + ']));\\')
+                    asm.append('asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(a_loc[' + str(i + op1_shift) + ']), "r"(b_loc[' + str(i + op2_shift) + ']));\\')
                 elif i == res_number_of_words - 1:
-                    asm.append('    asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(a_loc[' + str(i + op1_shift) + ']), "r"(b_loc[' + str(i + op2_shift) + ']));\\')
+                    asm.append('asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(a_loc[' + str(i + op1_shift) + ']), "r"(b_loc[' + str(i + op2_shift) + ']));\\')
 
         elif smaller_number_of_words < bigger_number_of_words == res_number_of_words:
             for i in range(1, res_number_of_words):
                 if i < smaller_number_of_words:
-                    asm.append('    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(a_loc[' + str(i + op1_shift) + ']), "r"(b_loc[' + str(i + op2_shift) + ']));\\')
+                    asm.append('asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(a_loc[' + str(i + op1_shift) + ']), "r"(b_loc[' + str(i + op2_shift) + ']));\\')
                 elif i < res_number_of_words - 1:
-                    asm.append('    asm("addc.cc.u32 %0, %1,  0;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(' + bigger_name + '[' + str(i + bigger_shift) + ']));\\')
+                    asm.append('asm("addc.cc.u32 %0, %1,  0;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(' + bigger_name + '[' + str(i + bigger_shift) + ']));\\')
                 elif i == res_number_of_words - 1:
-                    asm.append('    asm("addc.u32    %0, %1,  0;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(' + bigger_name + '[' + str(i + bigger_shift) + ']));\\')
+                    asm.append('asm("addc.u32    %0, %1,  0;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(' + bigger_name + '[' + str(i + bigger_shift) + ']));\\')
 
         # special case in like 32-bit + 32-bit = 33-bit
         elif smaller_number_of_words <= bigger_number_of_words < res_number_of_words:
             for i in range(1, res_number_of_words):
                 if i < smaller_number_of_words:
-                    asm.append('    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(a_loc[' + str(i + op1_shift) + ']), "r"(b_loc[' + str(i + op2_shift) + ']));\\')
+                    asm.append('asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(a_loc[' + str(i + op1_shift) + ']), "r"(b_loc[' + str(i + op2_shift) + ']));\\')
                 elif i < bigger_number_of_words:
-                    asm.append('    asm("addc.cc.u32 %0, %1,  0;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(' + bigger_name + '[' + str(i + bigger_shift) + ']));\\')
+                    asm.append('asm("addc.cc.u32 %0, %1,  0;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(' + bigger_name + '[' + str(i + bigger_shift) + ']));\\')
 
                 # res_number_of_words can be at most 1 bigger than
                 # bigger_number_of_words, so we can just check if we have
                 # reached (res_number_of_words - 1) instead of having to check
                 # for (i < res_number_of_words)
                 elif i == res_number_of_words - 1:
-                    asm.append('    asm("addc.u32    %0,  0,  0;" : "=r"(c_loc[' + str(i + res_shift) + ']) : );\\')
+                    asm.append('asm("addc.u32    %0,  0,  0;" : "=r"(c_loc[' + str(i + res_shift) + ']) : );\\')
 
     asm.append('}\\')
 
@@ -239,26 +239,26 @@ def add_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, 
     asm.append('{\\')
 
     if bigger_number_of_words == 1:
-        asm.append('    asm("add.u32     %0, %1, %2;" : "=r"(c_loc[' + str(res_shift) + ']) : "r"(a_loc[' + str(op1_shift) + ']), "r"(b_loc[' + str(op2_shift) + ']));\\')
+        asm.append('asm("add.u32     %0, %1, %2;" : "=r"(c_loc[' + str(res_shift) + ']) : "r"(a_loc[' + str(op1_shift) + ']), "r"(b_loc[' + str(op2_shift) + ']));\\')
 
     elif bigger_number_of_words > 1:
-        asm.append('    asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[' + str(res_shift) + ']) : "r"(a_loc[' + str(op1_shift) + ']), "r"(b_loc[' + str(op2_shift) + ']));\\')
+        asm.append('asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[' + str(res_shift) + ']) : "r"(a_loc[' + str(op1_shift) + ']), "r"(b_loc[' + str(op2_shift) + ']));\\')
 
         if smaller_number_of_words == bigger_number_of_words:
             for i in range(1, bigger_number_of_words):
                 if i < bigger_number_of_words - 1:
-                    asm.append('    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(a_loc[' + str(i + op1_shift) + ']), "r"(b_loc[' + str(i + op2_shift) + ']));\\')
+                    asm.append('asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(a_loc[' + str(i + op1_shift) + ']), "r"(b_loc[' + str(i + op2_shift) + ']));\\')
                 elif i == bigger_number_of_words - 1:
-                    asm.append('    asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(a_loc[' + str(i + op1_shift) + ']), "r"(b_loc[' + str(i + op2_shift) + ']));\\')
+                    asm.append('asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(a_loc[' + str(i + op1_shift) + ']), "r"(b_loc[' + str(i + op2_shift) + ']));\\')
 
         elif smaller_number_of_words < bigger_number_of_words:
             for i in range(1, bigger_number_of_words):
                 if i < smaller_number_of_words:
-                    asm.append('    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(a_loc[' + str(i + op1_shift) + ']), "r"(b_loc[' + str(i + op2_shift) + ']));\\')
+                    asm.append('asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(a_loc[' + str(i + op1_shift) + ']), "r"(b_loc[' + str(i + op2_shift) + ']));\\')
                 elif i < bigger_number_of_words - 1:
-                    asm.append('    asm("addc.cc.u32 %0, %1,  0;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(' + bigger_name + '[' + str(i + bigger_shift) + ']));\\')
+                    asm.append('asm("addc.cc.u32 %0, %1,  0;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(' + bigger_name + '[' + str(i + bigger_shift) + ']));\\')
                 elif i == bigger_number_of_words - 1:
-                    asm.append('    asm("addc.u32    %0, %1,  0;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(' + bigger_name + '[' + str(i + bigger_shift) + ']));\\')
+                    asm.append('asm("addc.u32    %0, %1,  0;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(' + bigger_name + '[' + str(i + bigger_shift) + ']));\\')
 
     asm.append('}\\')
 
@@ -352,9 +352,9 @@ def mul_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, 
 
     # we don't need a carry variable if the result holds on 1 word
     if res_number_of_words != 1:
-        asm.append('    uint32_t carry = 0;\\')
+        asm.append('uint32_t carry = 0;\\')
 
-    asm.append('    asm("mul.lo.u32    %0, %1, %2    ;" : "=r"(c_loc[' + str(res_shift) + ']) : "r"(b_loc[' + str(op2_shift) + ']), "r"(a_loc[' + str(op1_shift) + ']));\\')
+    asm.append('asm("mul.lo.u32    %0, %1, %2    ;" : "=r"(c_loc[' + str(res_shift) + ']) : "r"(b_loc[' + str(op2_shift) + ']), "r"(a_loc[' + str(op1_shift) + ']));\\')
 
     for i in range(1, len(mul_index_tuples)):
         c_index = i
@@ -362,8 +362,8 @@ def mul_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, 
         # There is no carry to add to c_loc[1] in the very first iteration. We
         # don't need to set carry to 0 either if we are in this case.
         if i != 1:
-            asm.append('    asm("add.u32       %0, %1,  0    ;" : "=r"(c_loc[' + str(c_index + res_shift) + ']) : "r"(carry));\\')
-            asm.append('    asm("add.u32       %0,  0,  0    ;" : "=r"(carry));\\')
+            asm.append('asm("add.u32       %0, %1,  0    ;" : "=r"(c_loc[' + str(c_index + res_shift) + ']) : "r"(carry));\\')
+            asm.append('asm("add.u32       %0,  0,  0    ;" : "=r"(carry));\\')
 
         # .hi bit operations
         for k in range(len(mul_index_tuples[i - 1])):
@@ -374,31 +374,31 @@ def mul_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, 
             # value of c_loc[1] to add, so we just do a normal mul instead of
             # mad.
             if (c_index - 1) == 0:
-                asm.append('    asm("mul.hi.u32    %0, %1, %2    ;" : "=r"(c_loc[' + str(c_index + res_shift) + ']) : "r"(b_loc[' + str(b_index + op2_shift) + ']), "r"(a_loc[' + str(a_index + op1_shift) + ']));\\')
+                asm.append('asm("mul.hi.u32    %0, %1, %2    ;" : "=r"(c_loc[' + str(c_index + res_shift) + ']) : "r"(b_loc[' + str(b_index + op2_shift) + ']), "r"(a_loc[' + str(a_index + op1_shift) + ']));\\')
             else:
                 # multiply add, with carry-out this time.
-                asm.append('    asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c_loc[' + str(c_index + res_shift) + ']) : "r"(b_loc[' + str(b_index + op2_shift) + ']), "r"(a_loc[' + str(a_index + op1_shift) + ']));\\')
-                asm.append('    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\\')
+                asm.append('asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c_loc[' + str(c_index + res_shift) + ']) : "r"(b_loc[' + str(b_index + op2_shift) + ']), "r"(a_loc[' + str(a_index + op1_shift) + ']));\\')
+                asm.append('asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\\')
 
         # .lo bit operations
         for j in range(len(mul_index_tuples[i])):
             b_index = mul_index_tuples[c_index][j][0]
             a_index = mul_index_tuples[c_index][j][1]
 
-            asm.append('    asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c_loc[' + str(c_index + res_shift) + ']) : "r"(b_loc[' + str(b_index + op2_shift) + ']), "r"(a_loc[' + str(a_index + op1_shift) + ']));\\')
+            asm.append('asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c_loc[' + str(c_index + res_shift) + ']) : "r"(b_loc[' + str(b_index + op2_shift) + ']), "r"(a_loc[' + str(a_index + op1_shift) + ']));\\')
 
             # in the second last shift iteration of the multiplication, if we
             # are at the last step, we no longer need to add the carry unless if
             # the result is indeed on (op1_number_of_words +
             # op2_number_of_words) words.
             if not ((i == len(mul_index_tuples) - 1) and (j == len(mul_index_tuples[i]) - 1)) or (res_number_of_words == (op1_number_of_words + op2_number_of_words)):
-                asm.append('    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\\')
+                asm.append('asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\\')
 
     # if it is possible for the multiplication of 2 bignums to give a result of
     # size (op1_number_of_words + op2_number_of_words), then calculate the final
     # index of C
     if res_number_of_words == (op1_number_of_words + op2_number_of_words):
-        asm.append('    asm("mad.hi.u32    %0, %1, %2, %3;" : "=r"(c_loc[' + str(res_number_of_words - 1 + res_shift) + ']) : "r"(b_loc[' + str(op2_number_of_words - 1 + op2_shift) + ']), "r"(a_loc[' + str(op1_number_of_words - 1 + op1_shift) + ']), "r"(carry));\\')
+        asm.append('asm("mad.hi.u32    %0, %1, %2, %3;" : "=r"(c_loc[' + str(res_number_of_words - 1 + res_shift) + ']) : "r"(b_loc[' + str(op2_number_of_words - 1 + op2_shift) + ']), "r"(a_loc[' + str(op1_number_of_words - 1 + op1_shift) + ']), "r"(carry));\\')
 
     asm.append('}\\')
 
@@ -414,8 +414,9 @@ def mul_karatsuba_loc_generic(op_precision, op1_name, op2_name, res_name, op1_sh
     asm.append('{\\')
 
     if op_precision <= bits_per_word + 1:
-        asm += mul_loc_generic(op_precision, op_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift, indent)
-        print('returned from lowest point')
+        asm += mul_loc_generic(op_precision, op_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift, 1)
+        print('returned from lowest point with precision = ' + str(op_precision))
+        print()
     else:
         # The low part of the cut will always have full precision, and will
         # therefore NEED 2 times the precision for the multiplication result storage
@@ -444,99 +445,98 @@ def mul_karatsuba_loc_generic(op_precision, op1_name, op2_name, res_name, op1_sh
         c1_precision = mul_res_precision(lo_plus_hi_precision, lo_plus_hi_precision)
         c1_word_count = number_of_words_needed_for_precision(c1_precision)
 
-        print()
         print('lo_precison = ' + str(lo_precision))
         print('hi_precison = ' + str(hi_precision))
         print('lh_precison = ' + str(lo_plus_hi_precision))
         print()
 
-        asm.append('    uint32_t c0[' + str(c0_word_count) + '] = ' + str([0] * c0_word_count).replace('[', '{').replace(']', '}') + ';\\')
-        asm.append('    uint32_t c1[' + str(c1_word_count) + '] = ' + str([0] * c1_word_count).replace('[', '{').replace(']', '}') + ';\\')
-        asm.append('    uint32_t c2[' + str(c2_word_count) + '] = ' + str([0] * c2_word_count).replace('[', '{').replace(']', '}') + ';\\')
+        asm.append('uint32_t c0[' + str(c0_word_count) + '] = ' + str([0] * c0_word_count).replace('[', '{').replace(']', '}') + ';\\')
+        asm.append('uint32_t c1[' + str(c1_word_count) + '] = ' + str([0] * c1_word_count).replace('[', '{').replace(']', '}') + ';\\')
+        asm.append('uint32_t c2[' + str(c2_word_count) + '] = ' + str([0] * c2_word_count).replace('[', '{').replace(']', '}') + ';\\')
 
-        asm.append('    uint32_t a0_plus_a1[' + str(lo_plus_hi_word_count) + '] = ' + str([0] * lo_plus_hi_word_count).replace('[', '{').replace(']', '}') + ';\\')
-        asm.append('    uint32_t b0_plus_b1[' + str(lo_plus_hi_word_count) + '] = ' + str([0] * lo_plus_hi_word_count).replace('[', '{').replace(']', '}') + ';\\')
+        asm.append('uint32_t a0_plus_a1[' + str(lo_plus_hi_word_count) + '] = ' + str([0] * lo_plus_hi_word_count).replace('[', '{').replace(']', '}') + ';\\')
+        asm.append('uint32_t b0_plus_b1[' + str(lo_plus_hi_word_count) + '] = ' + str([0] * lo_plus_hi_word_count).replace('[', '{').replace(']', '}') + ';\\')
 
         # Low part multiplication (always the "bigger" multiplication of the 2
         # parts).
-        asm += mul_karatsuba_loc_generic(lo_precision, 'a_loc', 'b_loc', 'c0', 0 + op1_shift, 0 + op2_shift, 0, indent)
+        asm += mul_karatsuba_loc_generic(lo_precision, 'a_loc', 'b_loc', 'c0', 0 + op1_shift, 0 + op2_shift, 0, 1)
 
-        # Hi part multiplication (possibly the "smaller" multiplication of the 2
-        # parts).
-        asm += mul_karatsuba_loc_generic(hi_precision, 'a_loc', 'b_loc', 'c2', lo_word_count + op1_shift, lo_word_count + op2_shift, 0, indent)
+        # # Hi part multiplication (possibly the "smaller" multiplication of the 2
+        # # parts).
+        asm += mul_karatsuba_loc_generic(hi_precision, 'a_loc', 'b_loc', 'c2', lo_word_count + op1_shift, lo_word_count + op2_shift, 0, 1)
 
         # c1 calculation
         # (a0 + a1) and (b0 + b1) has to be done with _exact_ function
-        asm += add_loc_exact_generic(lo_precision, hi_precision, 'a_loc', 'a_loc', 'a0_plus_a1', 0 + op1_shift, lo_word_count + op1_shift, 0, indent)
-        asm += add_loc_exact_generic(lo_precision, hi_precision, 'b_loc', 'b_loc', 'b0_plus_b1', 0 + op2_shift, lo_word_count + op2_shift, 0, indent)
+        asm += add_loc_exact_generic(lo_precision, hi_precision, 'a_loc', 'a_loc', 'a0_plus_a1', 0 + op1_shift, lo_word_count + op1_shift, 0, 1)
+        asm += add_loc_exact_generic(lo_precision, hi_precision, 'b_loc', 'b_loc', 'b0_plus_b1', 0 + op2_shift, lo_word_count + op2_shift, 0, 1)
 
         # (a0 + a1) * (b0 + b1)
-        asm += mul_karatsuba_loc_generic(lo_plus_hi_precision, 'a0_plus_a1', 'b0_plus_b1', 'c1', 0, 0, 0, indent)
+        asm += mul_karatsuba_loc_generic(lo_plus_hi_precision, 'a0_plus_a1', 'b0_plus_b1', 'c1', 0, 0, 0, 1)
 
-        # c1 = (a0 + a1) * (b0 + b1) - c0 - c2 = c1 - c0 - c2
-        # Needs to be done with _exact_ function
-        asm += sub_loc_exact_generic(c1_precision, c0_precision, 'c1', 'c0', 'c1', 0, 0, 0, indent)
-        asm += sub_loc_exact_generic(c1_precision, c2_precision, 'c1', 'c2', 'c1', 0, 0, 0, indent)
+        # # c1 = (a0 + a1) * (b0 + b1) - c0 - c2 = c1 - c0 - c2
+        # # Needs to be done with _exact_ function
+        # asm += sub_loc_exact_generic(c1_precision, c0_precision, 'c1', 'c0', 'c1', 0, 0, 0, indent)
+        # asm += sub_loc_exact_generic(c1_precision, c2_precision, 'c1', 'c2', 'c1', 0, 0, 0, indent)
 
-        # final stage:
-        # step = c0_word_count * bits_per_word
-        # c_loc = c2 * 2^(2*step) + c1 * 2^(step) + c0
+        # # final stage:
+        # # step = c0_word_count * bits_per_word
+        # # c_loc = c2 * 2^(2*step) + c1 * 2^(step) + c0
 
-        # Example of overlap addition if precision = 131-bits
-        #
-        #                                   | c0[5] | c0[4] | c0[3] | c0[2] | c0[1] | c0[0] |   =>   c0
-        # + | c1[6] | c1[5] | c1[4] | c1[3] | c1[2] | c1[1] | c1[0] |                           =>   c1
-        # +         | c2[2] | c2[1] | c2[0] |                                                   =>   c2
-        # -----------------------------------------------------------------------------------
-        #   | re[9] | re[8] | re[7] | re[6] | re[5] | re[4] | re[3] | re[2] | re[1] | re[0] |   =>   result
-        #
-        # Note: It is possible that re[9] will not be calculated if we are sure that
-        # the result of the multiplication will never need that storage location.
-        # For 131-bits, re[9] will not be calculated.
+        # # Example of overlap addition if precision = 131-bits
+        # #
+        # #                                   | c0[5] | c0[4] | c0[3] | c0[2] | c0[1] | c0[0] |   =>   c0
+        # # + | c1[6] | c1[5] | c1[4] | c1[3] | c1[2] | c1[1] | c1[0] |                           =>   c1
+        # # +         | c2[2] | c2[1] | c2[0] |                                                   =>   c2
+        # # -----------------------------------------------------------------------------------
+        # #   | re[9] | re[8] | re[7] | re[6] | re[5] | re[4] | re[3] | re[2] | re[1] | re[0] |   =>   result
+        # #
+        # # Note: It is possible that re[9] will not be calculated if we are sure that
+        # # the result of the multiplication will never need that storage location.
+        # # For 131-bits, re[9] will not be calculated.
 
-        # we always know that the first lo_word_count words of the result are going
-        # to be unchanged by the addition, so we assign them directly from the
-        # values of c0[0 .. lo_word_count]
-        for i in range(lo_word_count):
-            asm.append('    asm("add.u32     %0, %1,  0;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(c0[' + str(i) + ']));\\')
+        # # we always know that the first lo_word_count words of the result are going
+        # # to be unchanged by the addition, so we assign them directly from the
+        # # values of c0[0 .. lo_word_count]
+        # for i in range(lo_word_count):
+        #     asm.append('asm("add.u32     %0, %1,  0;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(c0[' + str(i) + ']));\\')
 
-        # now, we have to do the addition between c0[lo_word_count .. c0_word_count]
-        # and c1[0 .. lo_word_count]
+        # # now, we have to do the addition between c0[lo_word_count .. c0_word_count]
+        # # and c1[0 .. lo_word_count]
 
-        # we know that c1 has at least 1 word more than c0, so we don't need to deal
-        # with special cases where one is shorter than another. The overlapped part
-        # between c0 and c1 will always be an addc.cc operation on lo_word_count
-        # words.
-        overlap_1_precision = bits_per_word * lo_word_count
-        asm += add_cc_loc_generic(overlap_1_precision, overlap_1_precision, 'c0', 'c1', 'c_loc', lo_word_count, 0, lo_word_count + res_shift, indent)
+        # # we know that c1 has at least 1 word more than c0, so we don't need to deal
+        # # with special cases where one is shorter than another. The overlapped part
+        # # between c0 and c1 will always be an addc.cc operation on lo_word_count
+        # # words.
+        # overlap_1_precision = bits_per_word * lo_word_count
+        # asm += add_cc_loc_generic(overlap_1_precision, overlap_1_precision, 'c0', 'c1', 'c_loc', lo_word_count, 0, lo_word_count + res_shift, indent)
 
-        # finally, we have to do the addition between c1[lo_word_count ..
-        # c1_word_count] and c2[0 .. c2_word_count] by taking the carry_in into
-        # account, because of the first overlap addition that may have overflowed.
-        result_precision = mul_res_precision(op_precision, op_precision)
-        overlap_2_precision = result_precision - c0_precision
+        # # finally, we have to do the addition between c1[lo_word_count ..
+        # # c1_word_count] and c2[0 .. c2_word_count] by taking the carry_in into
+        # # account, because of the first overlap addition that may have overflowed.
+        # result_precision = mul_res_precision(op_precision, op_precision)
+        # overlap_2_precision = result_precision - c0_precision
 
-        # we may not need to add the full c1 precision or c2 precision, because we
-        # may know that c_loc would not need certain parts of c1 or c2. The upper
-        # bound on c1's and c2's words are provided by result_precision, which is
-        # the total number of words that the complete multiplication algorithm is to
-        # yield. We can thus restrain c1's and c2's words to that upper bound.
-        c1_overlap_precision = c1_precision - lo_word_count * bits_per_word
-        if c1_overlap_precision >= overlap_2_precision:
-            c1_overlap_precision = overlap_2_precision
+        # # we may not need to add the full c1 precision or c2 precision, because we
+        # # may know that c_loc would not need certain parts of c1 or c2. The upper
+        # # bound on c1's and c2's words are provided by result_precision, which is
+        # # the total number of words that the complete multiplication algorithm is to
+        # # yield. We can thus restrain c1's and c2's words to that upper bound.
+        # c1_overlap_precision = c1_precision - lo_word_count * bits_per_word
+        # if c1_overlap_precision >= overlap_2_precision:
+        #     c1_overlap_precision = overlap_2_precision
 
-        c2_overlap_precision = c2_precision
-        if c2_overlap_precision >= overlap_2_precision:
-            c2_overlap_precision = overlap_2_precision
+        # c2_overlap_precision = c2_precision
+        # if c2_overlap_precision >= overlap_2_precision:
+        #     c2_overlap_precision = overlap_2_precision
 
-        asm += addc_loc_generic(c1_overlap_precision, c2_overlap_precision, 'c1', 'c2', 'c_loc', lo_word_count, 0, c0_word_count + res_shift, indent)
+        # asm += addc_loc_generic(c1_overlap_precision, c2_overlap_precision, 'c1', 'c2', 'c_loc', lo_word_count, 0, c0_word_count + res_shift, indent)
 
-        asm.append('}\\')
+    asm.append('}\\')
 
-    # replace all occurrences of a_loc, b_loc and c_loc by their appropriate
-    # names, as provided by the user.
-    for i in range(len(asm)):
-        asm[i] = " " * 4 * indent + asm[i].replace('a_loc', op1_name).replace('b_loc', op2_name).replace('c_loc', res_name)
+    # # replace all occurrences of a_loc, b_loc and c_loc by their appropriate
+    # # names, as provided by the user.
+    # for i in range(len(asm)):
+    #     asm[i] = " " * 4 * indent + asm[i].replace('a_loc', op1_name).replace('b_loc', op2_name).replace('c_loc', res_name)
 
     return asm
 
@@ -610,7 +610,7 @@ def add_m_loc():
     asm = []
     asm.append('#define add_m_loc(c_loc, a_loc, b_loc, m_loc)\\')
     asm.append('{\\')
-    asm.append('    uint32_t mask[' + str(min_bignum_number_of_words) + '] = ' + str([0] * min_bignum_number_of_words).replace('[', '{').replace(']', '}') + ';\\')
+    asm.append('uint32_t mask[' + str(min_bignum_number_of_words) + '] = ' + str([0] * min_bignum_number_of_words).replace('[', '{').replace(']', '}') + ';\\')
 
     # c = (a + b)
     asm += add_loc_generic(precision, precision, 'a_loc', 'b_loc', 'c_loc', 0, 0, 0, 1)
@@ -623,7 +623,7 @@ def add_m_loc():
 
     # mask = mask & m
     for i in range(min_bignum_number_of_words):
-        asm.append('    asm("and.b32     %0, %0, %1;" : "+r"(mask[' + str(i) + ']) : "r"(m_loc[' + str(i) + ']));\\')
+        asm.append('asm("and.b32     %0, %0, %1;" : "+r"(mask[' + str(i) + ']) : "r"(m_loc[' + str(i) + ']));\\')
 
     # c = c + mask
     asm += add_loc_generic(precision, precision, 'c_loc', 'mask', 'c_loc', 0, 0, 0, 1)
@@ -636,7 +636,7 @@ def sub_m_loc():
     asm = []
     asm.append('#define sub_m_loc(c_loc, a_loc, b_loc, m_loc)\\')
     asm.append('{\\')
-    asm.append('    uint32_t mask[' + str(min_bignum_number_of_words) + '] = ' + str([0] * min_bignum_number_of_words).replace('[', '{').replace(']', '}') + ';\\')
+    asm.append('uint32_t mask[' + str(min_bignum_number_of_words) + '] = ' + str([0] * min_bignum_number_of_words).replace('[', '{').replace(']', '}') + ';\\')
 
     # c = (a - b) (with borrow out, because we need it to create the mask)
     asm += sub_cc_loc_generic(precision, precision, 'a_loc', 'b_loc', 'c_loc', 0, 0, 0, 1)
@@ -646,7 +646,7 @@ def sub_m_loc():
 
     # mask = mask & m
     for i in range(min_bignum_number_of_words):
-        asm.append('    asm("and.b32     %0, %0, %1;" : "+r"(mask[' + str(i) + ']) : "r"(m_loc[' + str(i) + ']));\\')
+        asm.append('asm("and.b32     %0, %0, %1;" : "+r"(mask[' + str(i) + ']) : "r"(m_loc[' + str(i) + ']));\\')
 
     # c = c + mask
     asm += add_loc_generic(precision, precision, 'c_loc', 'mask', 'c_loc', 0, 0, 0, 1)
