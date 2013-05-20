@@ -413,115 +413,125 @@ def mul_karatsuba_loc_generic(op_precision, op1_name, op2_name, res_name, op1_sh
     asm = []
     asm.append('{\\')
 
-    # The low part of the cut will always have full precision, and will
-    # therefore NEED 2 times the precision for the multiplication result storage
-    op_word_count = number_of_words_needed_for_precision(op_precision)
-    lo_precision = bits_per_word * math.ceil(op_word_count / 2)
-    lo_word_count = number_of_words_needed_for_precision(lo_precision)
-    c0_precision = mul_res_precision(lo_precision, lo_precision)
-    c0_word_count = number_of_words_needed_for_precision(c0_precision)
+    if op_precision <= bits_per_word + 1:
+        asm += mul_loc_generic(op_precision, op_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift, indent)
+        print('returned from lowest point')
+    else:
+        # The low part of the cut will always have full precision, and will
+        # therefore NEED 2 times the precision for the multiplication result storage
+        op_word_count = number_of_words_needed_for_precision(op_precision)
+        lo_precision = bits_per_word * math.ceil(op_word_count / 2)
+        lo_word_count = number_of_words_needed_for_precision(lo_precision)
+        c0_precision = mul_res_precision(lo_precision, lo_precision)
+        c0_word_count = number_of_words_needed_for_precision(c0_precision)
 
-    # The hi part could have optimizations to save storage, since it might most
-    # likely be shorter than the low part. We can do smaller multiplications by
-    # taking this into account.
-    hi_precision = op_precision - lo_precision
-    hi_word_count = number_of_words_needed_for_precision(hi_precision)
-    c2_precision = mul_res_precision(hi_precision, hi_precision)
-    c2_word_count = number_of_words_needed_for_precision(c2_precision)
+        # The hi part could have optimizations to save storage, since it might most
+        # likely be shorter than the low part. We can do smaller multiplications by
+        # taking this into account.
+        hi_precision = op_precision - lo_precision
+        hi_word_count = number_of_words_needed_for_precision(hi_precision)
+        c2_precision = mul_res_precision(hi_precision, hi_precision)
+        c2_word_count = number_of_words_needed_for_precision(c2_precision)
 
-    # For c1, the situation is different from the other parts. We are going to
-    # need to add 2 numbers which do not have the same precision, and we need
-    # the complete result, so we are going to be using add_loc_exact_generic()
-    # to do the calculation, instead of using add_loc_generic(), because we want
-    # the full result, not just the result that holds on the number of words of
-    # the bigger of the 2 words.
-    lo_plus_hi_precision = add_res_precision(lo_precision, hi_precision)
-    lo_plus_hi_word_count = number_of_words_needed_for_precision(lo_plus_hi_precision)
-    c1_precision = mul_res_precision(lo_plus_hi_precision, lo_plus_hi_precision)
-    c1_word_count = number_of_words_needed_for_precision(c1_precision)
+        # For c1, the situation is different from the other parts. We are going to
+        # need to add 2 numbers which do not have the same precision, and we need
+        # the complete result, so we are going to be using add_loc_exact_generic()
+        # to do the calculation, instead of using add_loc_generic(), because we want
+        # the full result, not just the result that holds on the number of words of
+        # the bigger of the 2 words.
+        lo_plus_hi_precision = add_res_precision(lo_precision, hi_precision)
+        lo_plus_hi_word_count = number_of_words_needed_for_precision(lo_plus_hi_precision)
+        c1_precision = mul_res_precision(lo_plus_hi_precision, lo_plus_hi_precision)
+        c1_word_count = number_of_words_needed_for_precision(c1_precision)
 
-    asm.append('    uint32_t c0[' + str(c0_word_count) + '] = ' + str([0] * c0_word_count).replace('[', '{').replace(']', '}') + ';\\')
-    asm.append('    uint32_t c1[' + str(c1_word_count) + '] = ' + str([0] * c1_word_count).replace('[', '{').replace(']', '}') + ';\\')
-    asm.append('    uint32_t c2[' + str(c2_word_count) + '] = ' + str([0] * c2_word_count).replace('[', '{').replace(']', '}') + ';\\')
+        print()
+        print('lo_precison = ' + str(lo_precision))
+        print('hi_precison = ' + str(hi_precision))
+        print('lh_precison = ' + str(lo_plus_hi_precision))
+        print()
 
-    asm.append('    uint32_t a0_plus_a1[' + str(lo_plus_hi_word_count) + '] = ' + str([0] * lo_plus_hi_word_count).replace('[', '{').replace(']', '}') + ';\\')
-    asm.append('    uint32_t b0_plus_b1[' + str(lo_plus_hi_word_count) + '] = ' + str([0] * lo_plus_hi_word_count).replace('[', '{').replace(']', '}') + ';\\')
+        asm.append('    uint32_t c0[' + str(c0_word_count) + '] = ' + str([0] * c0_word_count).replace('[', '{').replace(']', '}') + ';\\')
+        asm.append('    uint32_t c1[' + str(c1_word_count) + '] = ' + str([0] * c1_word_count).replace('[', '{').replace(']', '}') + ';\\')
+        asm.append('    uint32_t c2[' + str(c2_word_count) + '] = ' + str([0] * c2_word_count).replace('[', '{').replace(']', '}') + ';\\')
 
-    # Low part multiplication (always the "bigger" multiplication of the 2
-    # parts).
-    asm += mul_loc_generic(lo_precision, lo_precision, 'a_loc', 'b_loc', 'c0', 0 + op1_shift, 0 + op2_shift, 0, indent)
+        asm.append('    uint32_t a0_plus_a1[' + str(lo_plus_hi_word_count) + '] = ' + str([0] * lo_plus_hi_word_count).replace('[', '{').replace(']', '}') + ';\\')
+        asm.append('    uint32_t b0_plus_b1[' + str(lo_plus_hi_word_count) + '] = ' + str([0] * lo_plus_hi_word_count).replace('[', '{').replace(']', '}') + ';\\')
 
-    # Hi part multiplication (possibly the "smaller" multiplication of the 2
-    # parts).
-    asm += mul_loc_generic(hi_precision, hi_precision, 'a_loc', 'b_loc', 'c2', lo_word_count + op1_shift, lo_word_count + op2_shift, 0, indent)
+        # Low part multiplication (always the "bigger" multiplication of the 2
+        # parts).
+        asm += mul_karatsuba_loc_generic(lo_precision, 'a_loc', 'b_loc', 'c0', 0 + op1_shift, 0 + op2_shift, 0, indent)
 
-    # c1 calculation
-    # (a0 + a1) and (b0 + b1) has to be done with _exact_ function
-    asm += add_loc_exact_generic(lo_precision, hi_precision, 'a_loc', 'a_loc', 'a0_plus_a1', 0 + op1_shift, lo_word_count + op1_shift, 0, indent)
-    asm += add_loc_exact_generic(lo_precision, hi_precision, 'b_loc', 'b_loc', 'b0_plus_b1', 0 + op2_shift, lo_word_count + op2_shift, 0, indent)
+        # Hi part multiplication (possibly the "smaller" multiplication of the 2
+        # parts).
+        asm += mul_karatsuba_loc_generic(hi_precision, 'a_loc', 'b_loc', 'c2', lo_word_count + op1_shift, lo_word_count + op2_shift, 0, indent)
 
-    # (a0 + a1) * (b0 + b1)
-    asm += mul_loc_generic(lo_plus_hi_precision, lo_plus_hi_precision, 'a0_plus_a1', 'b0_plus_b1', 'c1', 0, 0, 0, indent)
+        # c1 calculation
+        # (a0 + a1) and (b0 + b1) has to be done with _exact_ function
+        asm += add_loc_exact_generic(lo_precision, hi_precision, 'a_loc', 'a_loc', 'a0_plus_a1', 0 + op1_shift, lo_word_count + op1_shift, 0, indent)
+        asm += add_loc_exact_generic(lo_precision, hi_precision, 'b_loc', 'b_loc', 'b0_plus_b1', 0 + op2_shift, lo_word_count + op2_shift, 0, indent)
 
-    # c1 = (a0 + a1) * (b0 + b1) - c0 - c2 = c1 - c0 - c2
-    # Needs to be done with _exact_ function
-    asm += sub_loc_exact_generic(c1_precision, c0_precision, 'c1', 'c0', 'c1', 0, 0, 0, indent)
-    asm += sub_loc_exact_generic(c1_precision, c2_precision, 'c1', 'c2', 'c1', 0, 0, 0, indent)
+        # (a0 + a1) * (b0 + b1)
+        asm += mul_karatsuba_loc_generic(lo_plus_hi_precision, 'a0_plus_a1', 'b0_plus_b1', 'c1', 0, 0, 0, indent)
 
-    # final stage:
-    # step = c0_word_count * bits_per_word
-    # c_loc = c2 * 2^(2*step) + c1 * 2^(step) + c0
+        # c1 = (a0 + a1) * (b0 + b1) - c0 - c2 = c1 - c0 - c2
+        # Needs to be done with _exact_ function
+        asm += sub_loc_exact_generic(c1_precision, c0_precision, 'c1', 'c0', 'c1', 0, 0, 0, indent)
+        asm += sub_loc_exact_generic(c1_precision, c2_precision, 'c1', 'c2', 'c1', 0, 0, 0, indent)
 
-    # Example of overlap addition if precision = 131-bits
-    #
-    #                                   | c0[5] | c0[4] | c0[3] | c0[2] | c0[1] | c0[0] |   => c0
-    # + | c1[6] | c1[5] | c1[4] | c1[3] | c1[2] | c1[1] | c1[0] |                           => c1
-    # +         | c2[2] | c2[1] | c2[0] |                                                   => c2
-    # -----------------------------------------------------------------------------------
-    #   | re[9] | re[8] | re[7] | re[6] | re[5] | re[4] | re[3] | re[2] | re[1] | re[0] |   => result
-    #
-    # Note: It is possible that re[9] will not be calculated if we are sure that
-    # the result of the multiplication will never need that storage location.
-    # For 131-bits, re[9] will not be calculated.
+        # final stage:
+        # step = c0_word_count * bits_per_word
+        # c_loc = c2 * 2^(2*step) + c1 * 2^(step) + c0
 
-    # we always know that the first lo_word_count words of the result are going
-    # to be unchanged by the addition, so we assign them directly from the
-    # values of c0[0 .. lo_word_count]
-    for i in range(lo_word_count):
-        asm.append('    asm("add.u32     %0, %1,  0;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(c0[' + str(i) + ']));\\')
+        # Example of overlap addition if precision = 131-bits
+        #
+        #                                   | c0[5] | c0[4] | c0[3] | c0[2] | c0[1] | c0[0] |   =>   c0
+        # + | c1[6] | c1[5] | c1[4] | c1[3] | c1[2] | c1[1] | c1[0] |                           =>   c1
+        # +         | c2[2] | c2[1] | c2[0] |                                                   =>   c2
+        # -----------------------------------------------------------------------------------
+        #   | re[9] | re[8] | re[7] | re[6] | re[5] | re[4] | re[3] | re[2] | re[1] | re[0] |   =>   result
+        #
+        # Note: It is possible that re[9] will not be calculated if we are sure that
+        # the result of the multiplication will never need that storage location.
+        # For 131-bits, re[9] will not be calculated.
 
-    # now, we have to do the addition between c0[lo_word_count .. c0_word_count]
-    # and c1[0 .. lo_word_count]
+        # we always know that the first lo_word_count words of the result are going
+        # to be unchanged by the addition, so we assign them directly from the
+        # values of c0[0 .. lo_word_count]
+        for i in range(lo_word_count):
+            asm.append('    asm("add.u32     %0, %1,  0;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(c0[' + str(i) + ']));\\')
 
-    # we know that c1 has at least 1 word more than c0, so we don't need to deal
-    # with special cases where one is shorter than another. The overlapped part
-    # between c0 and c1 will always be an addc.cc operation on lo_word_count
-    # words.
-    overlap_1_precision = bits_per_word * lo_word_count
-    asm += add_cc_loc_generic(overlap_1_precision, overlap_1_precision, 'c0', 'c1', 'c_loc', lo_word_count, 0, lo_word_count + res_shift, indent)
+        # now, we have to do the addition between c0[lo_word_count .. c0_word_count]
+        # and c1[0 .. lo_word_count]
 
-    # finally, we have to do the addition between c1[lo_word_count ..
-    # c1_word_count] and c2[0 .. c2_word_count] by taking the carry_in into
-    # account, because of the first overlap addition that may have overflowed.
-    result_precision = mul_res_precision(op_precision, op_precision)
-    overlap_2_precision = result_precision - c0_precision
+        # we know that c1 has at least 1 word more than c0, so we don't need to deal
+        # with special cases where one is shorter than another. The overlapped part
+        # between c0 and c1 will always be an addc.cc operation on lo_word_count
+        # words.
+        overlap_1_precision = bits_per_word * lo_word_count
+        asm += add_cc_loc_generic(overlap_1_precision, overlap_1_precision, 'c0', 'c1', 'c_loc', lo_word_count, 0, lo_word_count + res_shift, indent)
 
-    # we may not need to add the full c1 precision or c2 precision, because we
-    # may know that c_loc would not need certain parts of c1 or c2. The upper
-    # bound on c1's and c2's words are provided by result_precision, which is
-    # the total number of words that the complete multiplication algorithm is to
-    # yield. We can thus restrain c1's and c2's words to that upper bound.
-    c1_overlap_precision = c1_precision - lo_word_count * bits_per_word
-    if c1_overlap_precision >= overlap_2_precision:
-        c1_overlap_precision = overlap_2_precision
+        # finally, we have to do the addition between c1[lo_word_count ..
+        # c1_word_count] and c2[0 .. c2_word_count] by taking the carry_in into
+        # account, because of the first overlap addition that may have overflowed.
+        result_precision = mul_res_precision(op_precision, op_precision)
+        overlap_2_precision = result_precision - c0_precision
 
-    c2_overlap_precision = c2_precision
-    if c2_overlap_precision >= overlap_2_precision:
-        c2_overlap_precision = overlap_2_precision
+        # we may not need to add the full c1 precision or c2 precision, because we
+        # may know that c_loc would not need certain parts of c1 or c2. The upper
+        # bound on c1's and c2's words are provided by result_precision, which is
+        # the total number of words that the complete multiplication algorithm is to
+        # yield. We can thus restrain c1's and c2's words to that upper bound.
+        c1_overlap_precision = c1_precision - lo_word_count * bits_per_word
+        if c1_overlap_precision >= overlap_2_precision:
+            c1_overlap_precision = overlap_2_precision
 
-    asm += addc_loc_generic(c1_overlap_precision, c2_overlap_precision, 'c1', 'c2', 'c_loc', lo_word_count, 0, c0_word_count + res_shift, indent)
+        c2_overlap_precision = c2_precision
+        if c2_overlap_precision >= overlap_2_precision:
+            c2_overlap_precision = overlap_2_precision
 
-    asm.append('}\\')
+        asm += addc_loc_generic(c1_overlap_precision, c2_overlap_precision, 'c1', 'c2', 'c_loc', lo_word_count, 0, c0_word_count + res_shift, indent)
+
+        asm.append('}\\')
 
     # replace all occurrences of a_loc, b_loc and c_loc by their appropriate
     # names, as provided by the user.
