@@ -327,7 +327,7 @@ def mul_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, 
         asm.append('asm("mul.lo.u32    %0, %1, %2    ;" : "=r"(c_loc[' + str(res_shift) + ']) : "r"(b_loc[' + str(op2_shift) + ']), "r"(a_loc[' + str(op1_shift) + ']));\\')
     elif res_number_of_words == 2:
         asm.append('asm("mul.lo.u32    %0, %1, %2    ;" : "=r"(c_loc[' + str(res_shift) + ']) : "r"(b_loc[' + str(op2_shift) + ']), "r"(a_loc[' + str(op1_shift) + ']));\\')
-        asm.append('asm("mul.hi.u32    %0, %1, %2    ;" : "=r"(c_loc[' + str(1 + res_shift) + ']) : "r"(b_loc[' + str(1 + op2_shift) + ']), "r"(a_loc[' + str(1 + op1_shift) + ']));\\')
+        asm.append('asm("mul.hi.u32    %0, %1, %2    ;" : "=r"(c_loc[' + str(1 + res_shift) + ']) : "r"(b_loc[' + str(op2_shift) + ']), "r"(a_loc[' + str(op1_shift) + ']));\\')
     else:
         # sum until op1_number_of_words and op2_number_of_words, because we know
         # that a number is actually represented on those number of words, but the
