@@ -33,7 +33,6 @@ file_name_operations_h = r'../src/operations.h'
 # the addition of two n-bit numbers can give a (n + 1)-bit number, an our
 # algorithms go by the principle that this (n + 1)-bit number is representable
 # on the same number of bits as the n-bit number.
-assert min_bignum_number_of_words >= 2
 assert min_bignum_number_of_words == math.ceil((precision + 1) / bits_per_word)
 
 # set constants in C code ######################################################

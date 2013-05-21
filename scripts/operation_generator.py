@@ -173,7 +173,6 @@ def add_loc_exact_generic(op1_precision, op2_precision, op1_name, op2_name, res_
         bigger_shift = op2_shift
 
     asm = []
-    asm.append('{\\')
 
     if res_number_of_words == 1:
         asm.append('asm("add.u32     %0, %1, %2;" : "=r"(c_loc[' + str(res_shift) + ']) : "r"(a_loc[' + str(op1_shift) + ']), "r"(b_loc[' + str(op2_shift) + ']));\\')
@@ -212,7 +211,6 @@ def add_loc_exact_generic(op1_precision, op2_precision, op1_name, op2_name, res_
                 elif i == res_number_of_words - 1:
                     asm.append('asm("addc.u32    %0,  0,  0;" : "=r"(c_loc[' + str(i + res_shift) + ']) : );\\')
 
-    asm.append('}\\')
 
     # replace all occurrences of a_loc, b_loc and c_loc by their appropriate
     # names, as provided by the user.
@@ -236,7 +234,6 @@ def add_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, 
         bigger_shift = op2_shift
 
     asm = []
-    asm.append('{\\')
 
     if bigger_number_of_words == 1:
         asm.append('asm("add.u32     %0, %1, %2;" : "=r"(c_loc[' + str(res_shift) + ']) : "r"(a_loc[' + str(op1_shift) + ']), "r"(b_loc[' + str(op2_shift) + ']));\\')
@@ -260,7 +257,6 @@ def add_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, 
                 elif i == bigger_number_of_words - 1:
                     asm.append('asm("addc.u32    %0, %1,  0;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(' + bigger_name + '[' + str(i + bigger_shift) + ']));\\')
 
-    asm.append('}\\')
 
     # replace all occurrences of a_loc, b_loc and c_loc by their appropriate
     # names, as provided by the user.
@@ -272,27 +268,27 @@ def add_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, 
 def addc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift, indent = 0):
     asm = add_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift, indent)
     if number_of_words_needed_for_precision(max(op1_precision, op2_precision)) == 1:
-        asm[1] = asm[1].replace("add.u32     ", "addc.u32    ")
+        asm[0] = asm[0].replace("add.u32     ", "addc.u32    ")
     else:
-        asm[1] = asm[1].replace("add.cc.u32  ", "addc.cc.u32 ")
+        asm[0] = asm[0].replace("add.cc.u32  ", "addc.cc.u32 ")
     return asm
 
 def add_cc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift, indent = 0):
     asm = add_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift, indent)
     if number_of_words_needed_for_precision(max(op1_precision, op2_precision)) == 1:
-        asm[1] = asm[1].replace("add.u32     ", "add.cc.u32  ")
+        asm[0] = asm[0].replace("add.u32     ", "add.cc.u32  ")
     else:
-        last_index = len(asm) - 2
+        last_index = len(asm) - 1
         asm[last_index] = asm[last_index].replace("addc.u32    ", "addc.cc.u32 ")
     return asm
 
 def addc_cc_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift, indent = 0):
     asm = add_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift, indent)
     if number_of_words_needed_for_precision(max(op1_precision, op2_precision)) == 1:
-        asm[1] = asm[1].replace("add.u32     ", "addc.cc.u32 ")
+        asm[0] = asm[0].replace("add.u32     ", "addc.cc.u32 ")
     else:
-        last_index = len(asm) - 2
-        asm[1] = asm[1].replace("add.cc.u32  ", "addc.cc.u32 ")
+        last_index = len(asm) - 1
+        asm[0] = asm[0].replace("add.cc.u32  ", "addc.cc.u32 ")
         asm[last_index] = asm[last_index].replace("addc.u32    ", "addc.cc.u32 ")
     return asm
 
@@ -326,7 +322,6 @@ def mul_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, 
     res_number_of_words = number_of_words_needed_for_precision(res_precision)
 
     asm = []
-    asm.append('{\\')
 
     # sum until op1_number_of_words and op2_number_of_words, because we know
     # that a number is actually represented on those number of words, but the
@@ -352,6 +347,7 @@ def mul_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, 
 
     # we don't need a carry variable if the result holds on 1 word
     if res_number_of_words != 1:
+        asm.append('{\\')
         asm.append('uint32_t carry = 0;\\')
 
     asm.append('asm("mul.lo.u32    %0, %1, %2    ;" : "=r"(c_loc[' + str(res_shift) + ']) : "r"(b_loc[' + str(op2_shift) + ']), "r"(a_loc[' + str(op1_shift) + ']));\\')
@@ -400,7 +396,10 @@ def mul_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, 
     if res_number_of_words == (op1_number_of_words + op2_number_of_words):
         asm.append('asm("mad.hi.u32    %0, %1, %2, %3;" : "=r"(c_loc[' + str(res_number_of_words - 1 + res_shift) + ']) : "r"(b_loc[' + str(op2_number_of_words - 1 + op2_shift) + ']), "r"(a_loc[' + str(op1_number_of_words - 1 + op1_shift) + ']), "r"(carry));\\')
 
-    asm.append('}\\')
+    # we don't need a carry variable if the result holds on 1 word, so we don't
+    # need a special scope to hold the carry variable either.
+    if res_number_of_words != 1:
+        asm.append('}\\')
 
     # replace all occurrences of a_loc, b_loc and c_loc by their appropriate
     # names, as provided by the user.
@@ -610,7 +609,7 @@ def add_m_loc():
     asm = []
     asm.append('#define add_m_loc(c_loc, a_loc, b_loc, m_loc)\\')
     asm.append('{\\')
-    asm.append('uint32_t mask[' + str(min_bignum_number_of_words) + '] = ' + str([0] * min_bignum_number_of_words).replace('[', '{').replace(']', '}') + ';\\')
+    asm.append('    uint32_t mask[' + str(min_bignum_number_of_words) + '] = ' + str([0] * min_bignum_number_of_words).replace('[', '{').replace(']', '}') + ';\\')
 
     # c = (a + b)
     asm += add_loc_generic(precision, precision, 'a_loc', 'b_loc', 'c_loc', 0, 0, 0, 1)
@@ -623,7 +622,7 @@ def add_m_loc():
 
     # mask = mask & m
     for i in range(min_bignum_number_of_words):
-        asm.append('asm("and.b32     %0, %0, %1;" : "+r"(mask[' + str(i) + ']) : "r"(m_loc[' + str(i) + ']));\\')
+        asm.append('    asm("and.b32     %0, %0, %1;" : "+r"(mask[' + str(i) + ']) : "r"(m_loc[' + str(i) + ']));\\')
 
     # c = c + mask
     asm += add_loc_generic(precision, precision, 'c_loc', 'mask', 'c_loc', 0, 0, 0, 1)
@@ -636,7 +635,7 @@ def sub_m_loc():
     asm = []
     asm.append('#define sub_m_loc(c_loc, a_loc, b_loc, m_loc)\\')
     asm.append('{\\')
-    asm.append('uint32_t mask[' + str(min_bignum_number_of_words) + '] = ' + str([0] * min_bignum_number_of_words).replace('[', '{').replace(']', '}') + ';\\')
+    asm.append('    uint32_t mask[' + str(min_bignum_number_of_words) + '] = ' + str([0] * min_bignum_number_of_words).replace('[', '{').replace(']', '}') + ';\\')
 
     # c = (a - b) (with borrow out, because we need it to create the mask)
     asm += sub_cc_loc_generic(precision, precision, 'a_loc', 'b_loc', 'c_loc', 0, 0, 0, 1)
@@ -646,7 +645,7 @@ def sub_m_loc():
 
     # mask = mask & m
     for i in range(min_bignum_number_of_words):
-        asm.append('asm("and.b32     %0, %0, %1;" : "+r"(mask[' + str(i) + ']) : "r"(m_loc[' + str(i) + ']));\\')
+        asm.append('    asm("and.b32     %0, %0, %1;" : "+r"(mask[' + str(i) + ']) : "r"(m_loc[' + str(i) + ']));\\')
 
     # c = c + mask
     asm += add_loc_generic(precision, precision, 'c_loc', 'mask', 'c_loc', 0, 0, 0, 1)
