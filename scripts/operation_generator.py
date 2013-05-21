@@ -323,82 +323,83 @@ def mul_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, 
 
     asm = []
 
-    # sum until op1_number_of_words and op2_number_of_words, because we know
-    # that a number is actually represented on those number of words, but the
-    # result is on res_number_of_words.
+    if res_number_of_words == 1:
+        asm.append('asm("mul.lo.u32    %0, %1, %2    ;" : "=r"(c_loc[' + str(res_shift) + ']) : "r"(b_loc[' + str(op2_shift) + ']), "r"(a_loc[' + str(op1_shift) + ']));\\')
+    elif res_number_of_words == 2:
+        asm.append('asm("mul.lo.u32    %0, %1, %2    ;" : "=r"(c_loc[' + str(res_shift) + ']) : "r"(b_loc[' + str(op2_shift) + ']), "r"(a_loc[' + str(op1_shift) + ']));\\')
+        asm.append('asm("mul.hi.u32    %0, %1, %2    ;" : "=r"(c_loc[' + str(1 + res_shift) + ']) : "r"(b_loc[' + str(1 + op2_shift) + ']), "r"(a_loc[' + str(1 + op1_shift) + ']));\\')
+    else:
+        # sum until op1_number_of_words and op2_number_of_words, because we know
+        # that a number is actually represented on those number of words, but the
+        # result is on res_number_of_words.
 
-    # generate tuples of indexes in arrays A and B that are to be multiplied
-    # together. "i" represents "b_loc" and "j" represents "a_loc"
-    mul_index_tuples = []
+        # generate tuples of indexes in arrays A and B that are to be multiplied
+        # together. "i" represents "b_loc" and "j" represents "a_loc"
+        mul_index_tuples = []
 
-    # min shifting value is 0 and max is (res_number_of_words - 1)
-    for shift_index in range(res_number_of_words):
-        shift_index_tuples = []
-        for j in range(op1_number_of_words):
-            for i in range(op2_number_of_words):
-                if i + j == shift_index:
-                    shift_index_tuples.append((i, j))
-        if shift_index_tuples != []:
-            mul_index_tuples.append(shift_index_tuples)
+        # min shifting value is 0 and max is (res_number_of_words - 1)
+        for shift_index in range(res_number_of_words):
+            shift_index_tuples = []
+            for j in range(op1_number_of_words):
+                for i in range(op2_number_of_words):
+                    if i + j == shift_index:
+                        shift_index_tuples.append((i, j))
+            if shift_index_tuples != []:
+                mul_index_tuples.append(shift_index_tuples)
 
-    # sort each tuple by its "b_loc" index, from smallest to biggest
-    for i in range(len(mul_index_tuples)):
-        mul_index_tuples[i] = list(sorted(mul_index_tuples[i], key = lambda tup: tup[0]))
+        # sort each tuple by its "b_loc" index, from smallest to biggest
+        for i in range(len(mul_index_tuples)):
+            mul_index_tuples[i] = list(sorted(mul_index_tuples[i], key = lambda tup: tup[0]))
 
-    # we don't need a carry variable if the result holds on 1 word
-    if res_number_of_words != 1:
         asm.append('{\\')
         asm.append('uint32_t carry = 0;\\')
 
-    asm.append('asm("mul.lo.u32    %0, %1, %2    ;" : "=r"(c_loc[' + str(res_shift) + ']) : "r"(b_loc[' + str(op2_shift) + ']), "r"(a_loc[' + str(op1_shift) + ']));\\')
+        asm.append('asm("mul.lo.u32    %0, %1, %2    ;" : "=r"(c_loc[' + str(res_shift) + ']) : "r"(b_loc[' + str(op2_shift) + ']), "r"(a_loc[' + str(op1_shift) + ']));\\')
 
-    for i in range(1, len(mul_index_tuples)):
-        c_index = i
+        for i in range(1, len(mul_index_tuples)):
+            c_index = i
 
-        # There is no carry to add to c_loc[1] in the very first iteration. We
-        # don't need to set carry to 0 either if we are in this case.
-        if i != 1:
-            asm.append('asm("add.u32       %0, %1,  0    ;" : "=r"(c_loc[' + str(c_index + res_shift) + ']) : "r"(carry));\\')
-            asm.append('asm("add.u32       %0,  0,  0    ;" : "=r"(carry));\\')
+            # There is no carry to add to c_loc[1] in the very first iteration. We
+            # don't need to set carry to 0 either if we are in this case.
+            if i != 1:
+                asm.append('asm("add.u32       %0, %1,  0    ;" : "=r"(c_loc[' + str(c_index + res_shift) + ']) : "r"(carry));\\')
+                asm.append('asm("add.u32       %0,  0,  0    ;" : "=r"(carry));\\')
 
-        # .hi bit operations
-        for k in range(len(mul_index_tuples[i - 1])):
-            b_index = mul_index_tuples[c_index - 1][k][0]
-            a_index = mul_index_tuples[c_index - 1][k][1]
+            # .hi bit operations
+            for k in range(len(mul_index_tuples[i - 1])):
+                b_index = mul_index_tuples[c_index - 1][k][0]
+                a_index = mul_index_tuples[c_index - 1][k][1]
 
-            # in the first iteration, we don't have any carry-out, or any older
-            # value of c_loc[1] to add, so we just do a normal mul instead of
-            # mad.
-            if (c_index - 1) == 0:
-                asm.append('asm("mul.hi.u32    %0, %1, %2    ;" : "=r"(c_loc[' + str(c_index + res_shift) + ']) : "r"(b_loc[' + str(b_index + op2_shift) + ']), "r"(a_loc[' + str(a_index + op1_shift) + ']));\\')
-            else:
-                # multiply add, with carry-out this time.
-                asm.append('asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c_loc[' + str(c_index + res_shift) + ']) : "r"(b_loc[' + str(b_index + op2_shift) + ']), "r"(a_loc[' + str(a_index + op1_shift) + ']));\\')
-                asm.append('asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\\')
+                # in the first iteration, we don't have any carry-out, or any older
+                # value of c_loc[1] to add, so we just do a normal mul instead of
+                # mad.
+                if (c_index - 1) == 0:
+                    asm.append('asm("mul.hi.u32    %0, %1, %2    ;" : "=r"(c_loc[' + str(c_index + res_shift) + ']) : "r"(b_loc[' + str(b_index + op2_shift) + ']), "r"(a_loc[' + str(a_index + op1_shift) + ']));\\')
+                else:
+                    # multiply add, with carry-out this time.
+                    asm.append('asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c_loc[' + str(c_index + res_shift) + ']) : "r"(b_loc[' + str(b_index + op2_shift) + ']), "r"(a_loc[' + str(a_index + op1_shift) + ']));\\')
+                    asm.append('asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\\')
 
-        # .lo bit operations
-        for j in range(len(mul_index_tuples[i])):
-            b_index = mul_index_tuples[c_index][j][0]
-            a_index = mul_index_tuples[c_index][j][1]
+            # .lo bit operations
+            for j in range(len(mul_index_tuples[i])):
+                b_index = mul_index_tuples[c_index][j][0]
+                a_index = mul_index_tuples[c_index][j][1]
 
-            asm.append('asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c_loc[' + str(c_index + res_shift) + ']) : "r"(b_loc[' + str(b_index + op2_shift) + ']), "r"(a_loc[' + str(a_index + op1_shift) + ']));\\')
+                asm.append('asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c_loc[' + str(c_index + res_shift) + ']) : "r"(b_loc[' + str(b_index + op2_shift) + ']), "r"(a_loc[' + str(a_index + op1_shift) + ']));\\')
 
-            # in the second last shift iteration of the multiplication, if we
-            # are at the last step, we no longer need to add the carry unless if
-            # the result is indeed on (op1_number_of_words +
-            # op2_number_of_words) words.
-            if not ((i == len(mul_index_tuples) - 1) and (j == len(mul_index_tuples[i]) - 1)) or (res_number_of_words == (op1_number_of_words + op2_number_of_words)):
-                asm.append('asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\\')
+                # in the second last shift iteration of the multiplication, if we
+                # are at the last step, we no longer need to add the carry unless if
+                # the result is indeed on (op1_number_of_words +
+                # op2_number_of_words) words.
+                if not ((i == len(mul_index_tuples) - 1) and (j == len(mul_index_tuples[i]) - 1)) or (res_number_of_words == (op1_number_of_words + op2_number_of_words)):
+                    asm.append('asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\\')
 
-    # if it is possible for the multiplication of 2 bignums to give a result of
-    # size (op1_number_of_words + op2_number_of_words), then calculate the final
-    # index of C
-    if res_number_of_words == (op1_number_of_words + op2_number_of_words):
-        asm.append('asm("mad.hi.u32    %0, %1, %2, %3;" : "=r"(c_loc[' + str(res_number_of_words - 1 + res_shift) + ']) : "r"(b_loc[' + str(op2_number_of_words - 1 + op2_shift) + ']), "r"(a_loc[' + str(op1_number_of_words - 1 + op1_shift) + ']), "r"(carry));\\')
+        # if it is possible for the multiplication of 2 bignums to give a result of
+        # size (op1_number_of_words + op2_number_of_words), then calculate the final
+        # index of C
+        if res_number_of_words == (op1_number_of_words + op2_number_of_words):
+            asm.append('asm("mad.hi.u32    %0, %1, %2, %3;" : "=r"(c_loc[' + str(res_number_of_words - 1 + res_shift) + ']) : "r"(b_loc[' + str(op2_number_of_words - 1 + op2_shift) + ']), "r"(a_loc[' + str(op1_number_of_words - 1 + op1_shift) + ']), "r"(carry));\\')
 
-    # we don't need a carry variable if the result holds on 1 word, so we don't
-    # need a special scope to hold the carry variable either.
-    if res_number_of_words != 1:
         asm.append('}\\')
 
     # replace all occurrences of a_loc, b_loc and c_loc by their appropriate
@@ -410,13 +411,15 @@ def mul_loc_generic(op1_precision, op2_precision, op1_name, op2_name, res_name, 
 
 def mul_karatsuba_loc_generic(op_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift, indent = 0):
     asm = []
-    asm.append('{\\')
+    print(indent)
 
     if op_precision <= bits_per_word + 1:
-        asm += mul_loc_generic(op_precision, op_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift, indent)
+        asm += mul_loc_generic(op_precision, op_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift, 0)
         print('returned from lowest point with precision = ' + str(op_precision))
         print()
     else:
+        asm.append('{\\')
+
         # The low part of the cut will always have full precision, and will
         # therefore NEED 2 times the precision for the multiplication result storage
         op_word_count = number_of_words_needed_for_precision(op_precision)
@@ -458,19 +461,19 @@ def mul_karatsuba_loc_generic(op_precision, op1_name, op2_name, res_name, op1_sh
 
         # Low part multiplication (always the "bigger" multiplication of the 2
         # parts).
-        asm += mul_karatsuba_loc_generic(lo_precision, 'a_loc', 'b_loc', 'c0', 0 + op1_shift, 0 + op2_shift, 0, 1)
+        # asm += mul_karatsuba_loc_generic(lo_precision, 'a_loc', 'b_loc', 'c0', 0 + op1_shift, 0 + op2_shift, 0, indent + 1)
 
-        # # Hi part multiplication (possibly the "smaller" multiplication of the 2
-        # # parts).
-        asm += mul_karatsuba_loc_generic(hi_precision, 'a_loc', 'b_loc', 'c2', lo_word_count + op1_shift, lo_word_count + op2_shift, 0, 1)
+        # Hi part multiplication (possibly the "smaller" multiplication of the 2
+        # parts).
+        asm += mul_karatsuba_loc_generic(hi_precision, 'a_loc', 'b_loc', 'c2', lo_word_count + op1_shift, lo_word_count + op2_shift, 0, indent + 1)
 
         # c1 calculation
         # (a0 + a1) and (b0 + b1) has to be done with _exact_ function
-        asm += add_loc_exact_generic(lo_precision, hi_precision, 'a_loc', 'a_loc', 'a0_plus_a1', 0 + op1_shift, lo_word_count + op1_shift, 0, 1)
-        asm += add_loc_exact_generic(lo_precision, hi_precision, 'b_loc', 'b_loc', 'b0_plus_b1', 0 + op2_shift, lo_word_count + op2_shift, 0, 1)
+        # asm += add_loc_exact_generic(lo_precision, hi_precision, 'a_loc', 'a_loc', 'a0_plus_a1', 0 + op1_shift, lo_word_count + op1_shift, 0, indent + 1)
+        # asm += add_loc_exact_generic(lo_precision, hi_precision, 'b_loc', 'b_loc', 'b0_plus_b1', 0 + op2_shift, lo_word_count + op2_shift, 0, indent + 1)
 
         # (a0 + a1) * (b0 + b1)
-        asm += mul_karatsuba_loc_generic(lo_plus_hi_precision, 'a0_plus_a1', 'b0_plus_b1', 'c1', 0, 0, 0, 1)
+        # asm += mul_karatsuba_loc_generic(lo_plus_hi_precision, 'a0_plus_a1', 'b0_plus_b1', 'c1', 0, 0, 0, indent)
 
         # # c1 = (a0 + a1) * (b0 + b1) - c0 - c2 = c1 - c0 - c2
         # # Needs to be done with _exact_ function
@@ -530,7 +533,7 @@ def mul_karatsuba_loc_generic(op_precision, op1_name, op2_name, res_name, op1_sh
 
         # asm += addc_loc_generic(c1_overlap_precision, c2_overlap_precision, 'c1', 'c2', 'c_loc', lo_word_count, 0, c0_word_count + res_shift, indent)
 
-    asm.append('}\\')
+        asm.append('}\\')
 
     # replace all occurrences of a_loc, b_loc and c_loc by their appropriate
     # names, as provided by the user.
@@ -599,9 +602,10 @@ def mul_glo():
 def mul_karatsuba_loc():
     asm = []
     asm.append('#define mul_karatsuba_loc(c_loc, a_loc, b_loc)\\')
-    asm.append('{\\')
-    # asm += mul_karatsuba_loc_generic(precision, 'a_loc', 'b_loc', 'c_loc', 0, 0, 0, 0)
-    asm.append('}' + '\n')
+    # asm.append('{\\')
+    asm += mul_karatsuba_loc_generic(precision, 'a_loc', 'b_loc', 'c_loc', 0, 0, 0, 0)
+    # asm.append('}' + '\n')
+    asm.append('')
     return asm
 
 # modular addition #############################################################
