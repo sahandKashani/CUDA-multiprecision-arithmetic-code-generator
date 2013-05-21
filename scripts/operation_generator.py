@@ -413,7 +413,7 @@ def mul_karatsuba_loc_generic(op_precision, op1_name, op2_name, res_name, op1_sh
     asm.append('{\\')
 
     if op_precision <= bits_per_word + 1:
-        asm += mul_loc_generic(op_precision, op_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift, 1)
+        asm += mul_loc_generic(op_precision, op_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift, indent)
         print('returned from lowest point with precision = ' + str(op_precision))
         print()
     else:
@@ -532,10 +532,10 @@ def mul_karatsuba_loc_generic(op_precision, op1_name, op2_name, res_name, op1_sh
 
     asm.append('}\\')
 
-    # # replace all occurrences of a_loc, b_loc and c_loc by their appropriate
-    # # names, as provided by the user.
-    # for i in range(len(asm)):
-    #     asm[i] = " " * 4 * indent + asm[i].replace('a_loc', op1_name).replace('b_loc', op2_name).replace('c_loc', res_name)
+    # replace all occurrences of a_loc, b_loc and c_loc by their appropriate
+    # names, as provided by the user.
+    for i in range(len(asm)):
+        asm[i] = " " * 4 * indent + asm[i].replace('a_loc', op1_name).replace('b_loc', op2_name).replace('c_loc', res_name)
 
     return asm
 
@@ -556,7 +556,7 @@ def add_loc():
     asm = []
     asm.append('#define add_loc(c_loc, a_loc, b_loc)\\')
     asm.append('{\\')
-    asm += add_loc_generic(precision, precision, 'a_loc', 'b_loc', 'c_loc', 0, 0, 0, 1)
+    asm += add_loc_generic(precision, precision, 'a_loc', 'b_loc', 'c_loc', 0, 0, 0, 0)
     asm.append('}' + '\n')
     return asm
 
@@ -571,7 +571,7 @@ def sub_loc():
     asm = []
     asm.append('#define sub_loc(c_loc, a_loc, b_loc)\\')
     asm.append('{\\')
-    asm += sub_loc_generic(precision, precision, 'a_loc', 'b_loc', 'c_loc', 0, 0, 0, 1)
+    asm += sub_loc_generic(precision, precision, 'a_loc', 'b_loc', 'c_loc', 0, 0, 0, 0)
     asm.append('}' + '\n')
     return asm
 
@@ -586,7 +586,7 @@ def mul_loc():
     asm = []
     asm.append('#define mul_loc(c_loc, a_loc, b_loc)\\')
     asm.append('{\\')
-    asm += mul_loc_generic(precision, precision, 'a_loc', 'b_loc', 'c_loc', 0, 0, 0, 1)
+    asm += mul_loc_generic(precision, precision, 'a_loc', 'b_loc', 'c_loc', 0, 0, 0, 0)
     asm.append('}' + '\n')
     return asm
 
@@ -600,7 +600,7 @@ def mul_karatsuba_loc():
     asm = []
     asm.append('#define mul_karatsuba_loc(c_loc, a_loc, b_loc)\\')
     asm.append('{\\')
-    asm += mul_karatsuba_loc_generic(precision, 'a_loc', 'b_loc', 'c_loc', 0, 0, 0, 1)
+    # asm += mul_karatsuba_loc_generic(precision, 'a_loc', 'b_loc', 'c_loc', 0, 0, 0, 0)
     asm.append('}' + '\n')
     return asm
 
@@ -609,23 +609,23 @@ def add_m_loc():
     asm = []
     asm.append('#define add_m_loc(c_loc, a_loc, b_loc, m_loc)\\')
     asm.append('{\\')
-    asm.append('    uint32_t mask[' + str(min_bignum_number_of_words) + '] = ' + str([0] * min_bignum_number_of_words).replace('[', '{').replace(']', '}') + ';\\')
+    asm.append('uint32_t mask[' + str(min_bignum_number_of_words) + '] = ' + str([0] * min_bignum_number_of_words).replace('[', '{').replace(']', '}') + ';\\')
 
     # c = (a + b)
-    asm += add_loc_generic(precision, precision, 'a_loc', 'b_loc', 'c_loc', 0, 0, 0, 1)
+    asm += add_loc_generic(precision, precision, 'a_loc', 'b_loc', 'c_loc', 0, 0, 0, 0)
 
     # c = c - m (with borrow out, because we need it to create the mask)
-    asm += sub_cc_loc_generic(precision, precision, 'c_loc', 'm_loc', 'c_loc', 0, 0, 0, 1)
+    asm += sub_cc_loc_generic(precision, precision, 'c_loc', 'm_loc', 'c_loc', 0, 0, 0, 0)
 
     # mask = 0 - borrow (we can do it with "mask = mask - mask - borrow")
-    asm += subc_loc_generic(precision, precision, 'mask', 'mask', 'mask', 0, 0, 0, 1)
+    asm += subc_loc_generic(precision, precision, 'mask', 'mask', 'mask', 0, 0, 0, 0)
 
     # mask = mask & m
     for i in range(min_bignum_number_of_words):
-        asm.append('    asm("and.b32     %0, %0, %1;" : "+r"(mask[' + str(i) + ']) : "r"(m_loc[' + str(i) + ']));\\')
+        asm.append('asm("and.b32     %0, %0, %1;" : "+r"(mask[' + str(i) + ']) : "r"(m_loc[' + str(i) + ']));\\')
 
     # c = c + mask
-    asm += add_loc_generic(precision, precision, 'c_loc', 'mask', 'c_loc', 0, 0, 0, 1)
+    asm += add_loc_generic(precision, precision, 'c_loc', 'mask', 'c_loc', 0, 0, 0, 0)
 
     asm.append('}' + '\n')
     return asm
@@ -635,20 +635,20 @@ def sub_m_loc():
     asm = []
     asm.append('#define sub_m_loc(c_loc, a_loc, b_loc, m_loc)\\')
     asm.append('{\\')
-    asm.append('    uint32_t mask[' + str(min_bignum_number_of_words) + '] = ' + str([0] * min_bignum_number_of_words).replace('[', '{').replace(']', '}') + ';\\')
+    asm.append('uint32_t mask[' + str(min_bignum_number_of_words) + '] = ' + str([0] * min_bignum_number_of_words).replace('[', '{').replace(']', '}') + ';\\')
 
     # c = (a - b) (with borrow out, because we need it to create the mask)
-    asm += sub_cc_loc_generic(precision, precision, 'a_loc', 'b_loc', 'c_loc', 0, 0, 0, 1)
+    asm += sub_cc_loc_generic(precision, precision, 'a_loc', 'b_loc', 'c_loc', 0, 0, 0, 0)
 
     # mask = 0 - borrow (we can do it with "mask = mask - mask - borrow")
-    asm += subc_loc_generic(precision, precision, 'mask', 'mask', 'mask', 0, 0, 0, 1)
+    asm += subc_loc_generic(precision, precision, 'mask', 'mask', 'mask', 0, 0, 0, 0)
 
     # mask = mask & m
     for i in range(min_bignum_number_of_words):
-        asm.append('    asm("and.b32     %0, %0, %1;" : "+r"(mask[' + str(i) + ']) : "r"(m_loc[' + str(i) + ']));\\')
+        asm.append('asm("and.b32     %0, %0, %1;" : "+r"(mask[' + str(i) + ']) : "r"(m_loc[' + str(i) + ']));\\')
 
     # c = c + mask
-    asm += add_loc_generic(precision, precision, 'c_loc', 'mask', 'c_loc', 0, 0, 0, 1)
+    asm += add_loc_generic(precision, precision, 'c_loc', 'mask', 'c_loc', 0, 0, 0, 0)
 
     asm.append('}' + '\n')
     return asm
