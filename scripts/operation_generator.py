@@ -472,12 +472,10 @@ def mul_karatsuba_loc_generic(op_precision, op1_name, op2_name, res_name, op1_sh
         # Low part multiplication (always the "full precision" multiplication of
         # the 2 parts).
         asm += mul_loc_generic(lo_precision, lo_precision, 'a0', 'b0', 'c0', 0, 0, 0, indent)
-        # asm += mul_karatsuba_loc_generic(lo_precision, 'a0', 'b0', 'c0', 0, 0, 0, indent + 1)
 
         # Hi part multiplication (possibly the "lesser precision" multiplication
         # of the 2 parts).
         asm += mul_loc_generic(hi_precision, hi_precision, 'a1', 'b1', 'c2', 0, 0, 0, indent)
-        # asm += mul_karatsuba_loc_generic(hi_precision, 'a1', 'b1', 'c2', 0, 0, 0, indent + 1)
 
         # c1 calculation
         # (a0 + a1) and (b0 + b1) has to be done with _exact_ function
@@ -486,7 +484,6 @@ def mul_karatsuba_loc_generic(op_precision, op1_name, op2_name, res_name, op1_sh
 
         # (a0 + a1) * (b0 + b1)
         asm += mul_loc_generic(lo_plus_hi_precision, lo_plus_hi_precision, 'a0_plus_a1', 'b0_plus_b1', 'c1', 0, 0, 0, indent)
-        # asm += mul_karatsuba_loc_generic(lo_plus_hi_precision, 'a0_plus_a1', 'b0_plus_b1', 'c1', 0, 0, 0, indent + 1)
 
         # c1 = (a0 + a1) * (b0 + b1) - c0 - c2 = c1 - c0 - c2
         # Needs to be done with _exact_ function
