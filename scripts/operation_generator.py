@@ -460,26 +460,29 @@ def mul_karatsuba_loc_generic(op_precision, op1_name, op2_name, res_name, op1_sh
         asm.append('uint32_t c1[' + str(c1_word_count) + '] = ' + str([0] * c1_word_count).replace('[', '{').replace(']', '}') + ';\\')
         asm.append('uint32_t c2[' + str(c2_word_count) + '] = ' + str([0] * c2_word_count).replace('[', '{').replace(']', '}') + ';\\')
 
+        asm.append('uint32_t a0[' + str(lo_word_count) + '] = ' + str(['a_loc!$' + str(i) + '$!' for i in range(lo_word_count)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
+        asm.append('uint32_t b0[' + str(lo_word_count) + '] = ' + str(['b_loc!$' + str(i) + '$!' for i in range(lo_word_count)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
+
+        asm.append('uint32_t a1[' + str(hi_word_count) + '] = ' + str(['a_loc!$' + str(i) + '$!' for i in range(lo_word_count, min_bignum_number_of_words)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
+        asm.append('uint32_t b1[' + str(hi_word_count) + '] = ' + str(['b_loc!$' + str(i) + '$!' for i in range(lo_word_count, min_bignum_number_of_words)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
+
         asm.append('uint32_t a0_plus_a1[' + str(lo_plus_hi_word_count) + '] = ' + str([0] * lo_plus_hi_word_count).replace('[', '{').replace(']', '}') + ';\\')
         asm.append('uint32_t b0_plus_b1[' + str(lo_plus_hi_word_count) + '] = ' + str([0] * lo_plus_hi_word_count).replace('[', '{').replace(']', '}') + ';\\')
 
-        # Low part multiplication (always the "bigger" multiplication of the 2
-        # parts).
-        # asm += mul_karatsuba_loc_generic(lo_precision, 'a_loc', 'b_loc', 'c0', 0 + op1_shift, 0 + op2_shift, 0, indent)
-        asm += mul_loc_generic(lo_precision, lo_precision, 'a_loc', 'b_loc', 'c0', 0 + op1_shift, 0 + op2_shift, 0, indent)
+        # Low part multiplication (always the "full precision" multiplication of
+        # the 2 parts).
+        asm += mul_loc_generic(lo_precision, lo_precision, 'a0', 'b0', 'c0', 0, 0, 0, indent)
 
-        # Hi part multiplication (possibly the "smaller" multiplication of the 2
-        # parts).
-        # asm += mul_karatsuba_loc_generic(hi_precision, 'a_loc', 'b_loc', 'c2', lo_word_count + op1_shift, lo_word_count + op2_shift, 0, indent)
-        asm += mul_loc_generic(hi_precision, hi_precision, 'a_loc', 'b_loc', 'c2', lo_word_count + op1_shift, lo_word_count + op2_shift, 0, indent)
+        # Hi part multiplication (possibly the "lesser precision" multiplication
+        # of the 2 parts).
+        asm += mul_loc_generic(hi_precision, hi_precision, 'a1', 'b1', 'c2', 0, 0, 0, indent)
 
         # c1 calculation
         # (a0 + a1) and (b0 + b1) has to be done with _exact_ function
-        asm += add_loc_exact_generic(lo_precision, hi_precision, 'a_loc', 'a_loc', 'a0_plus_a1', 0 + op1_shift, lo_word_count + op1_shift, 0, indent)
-        asm += add_loc_exact_generic(lo_precision, hi_precision, 'b_loc', 'b_loc', 'b0_plus_b1', 0 + op2_shift, lo_word_count + op2_shift, 0, indent)
+        asm += add_loc_exact_generic(lo_precision, hi_precision, 'a0', 'a1', 'a0_plus_a1', 0, 0, 0, indent)
+        asm += add_loc_exact_generic(lo_precision, hi_precision, 'b0', 'b1', 'b0_plus_b1', 0, 0, 0, indent)
 
         # (a0 + a1) * (b0 + b1)
-        # asm += mul_karatsuba_loc_generic(lo_plus_hi_precision, 'a0_plus_a1', 'b0_plus_b1', 'c1', 0, 0, 0, indent)
         asm += mul_loc_generic(lo_plus_hi_precision, lo_plus_hi_precision, 'a0_plus_a1', 'b0_plus_b1', 'c1', 0, 0, 0, indent)
 
         # c1 = (a0 + a1) * (b0 + b1) - c0 - c2 = c1 - c0 - c2
@@ -507,7 +510,7 @@ def mul_karatsuba_loc_generic(op_precision, op1_name, op2_name, res_name, op1_sh
         # going to be unchanged by the addition, so we assign them directly from
         # the values of c0[0 .. lo_word_count]
         for i in range(lo_word_count):
-            asm.append('asm("add.u32     %0, %1,  0;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(c0[' + str(i) + ']));\\')
+            asm.append(" " * 4 * indent + 'asm("add.u32     %0, %1,  0;" : "=r"(c_loc[' + str(i + res_shift) + ']) : "r"(c0[' + str(i) + ']));\\')
 
         # now, we have to do the addition between c0[lo_word_count ..
         # c0_word_count] and c1[0 .. lo_word_count]
