@@ -420,9 +420,9 @@ def mul_karatsuba_loc_generic(op_precision, op1_name, op2_name, res_name, op1_sh
     asm = []
 
     if op_precision <= bits_per_word + 1:
-        asm += mul_loc_generic(op_precision, op_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift, 0)
+        asm += mul_loc_generic(op_precision, op_precision, op1_name, op2_name, res_name, op1_shift, op2_shift, res_shift, indent)
     else:
-        asm.append('{\\')
+        asm.append(" " * 4 * indent + '{\\')
 
         op_word_count = number_of_words_needed_for_precision(op_precision)
         lo_precision = bits_per_word * math.ceil(op_word_count / 2)
@@ -456,26 +456,28 @@ def mul_karatsuba_loc_generic(op_precision, op1_name, op2_name, res_name, op1_sh
         c1_precision = mul_res_precision(lo_plus_hi_precision, lo_plus_hi_precision)
         c1_word_count = number_of_words_needed_for_precision(c1_precision)
 
-        asm.append('uint32_t c0[' + str(c0_word_count) + '] = ' + str([0] * c0_word_count).replace('[', '{').replace(']', '}') + ';\\')
-        asm.append('uint32_t c1[' + str(c1_word_count) + '] = ' + str([0] * c1_word_count).replace('[', '{').replace(']', '}') + ';\\')
-        asm.append('uint32_t c2[' + str(c2_word_count) + '] = ' + str([0] * c2_word_count).replace('[', '{').replace(']', '}') + ';\\')
+        asm.append(" " * 4 * indent + 'uint32_t c0[' + str(c0_word_count) + '] = ' + str([0] * c0_word_count).replace('[', '{').replace(']', '}') + ';\\')
+        asm.append(" " * 4 * indent + 'uint32_t c1[' + str(c1_word_count) + '] = ' + str([0] * c1_word_count).replace('[', '{').replace(']', '}') + ';\\')
+        asm.append(" " * 4 * indent + 'uint32_t c2[' + str(c2_word_count) + '] = ' + str([0] * c2_word_count).replace('[', '{').replace(']', '}') + ';\\')
 
-        asm.append('uint32_t a0[' + str(lo_word_count) + '] = ' + str(['a_loc!$' + str(i) + '$!' for i in range(lo_word_count)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
-        asm.append('uint32_t b0[' + str(lo_word_count) + '] = ' + str(['b_loc!$' + str(i) + '$!' for i in range(lo_word_count)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
+        asm.append(" " * 4 * indent + 'uint32_t a0[' + str(lo_word_count) + '] = ' + str(['a_loc!$' + str(i + op1_shift) + '$!' for i in range(lo_word_count)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
+        asm.append(" " * 4 * indent + 'uint32_t b0[' + str(lo_word_count) + '] = ' + str(['b_loc!$' + str(i + op2_shift) + '$!' for i in range(lo_word_count)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
 
-        asm.append('uint32_t a1[' + str(hi_word_count) + '] = ' + str(['a_loc!$' + str(i) + '$!' for i in range(lo_word_count, min_bignum_number_of_words)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
-        asm.append('uint32_t b1[' + str(hi_word_count) + '] = ' + str(['b_loc!$' + str(i) + '$!' for i in range(lo_word_count, min_bignum_number_of_words)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
+        asm.append(" " * 4 * indent + 'uint32_t a1[' + str(hi_word_count) + '] = ' + str(['a_loc!$' + str(i + op1_shift) + '$!' for i in range(lo_word_count, lo_word_count + hi_word_count)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
+        asm.append(" " * 4 * indent + 'uint32_t b1[' + str(hi_word_count) + '] = ' + str(['b_loc!$' + str(i + op2_shift) + '$!' for i in range(lo_word_count, lo_word_count + hi_word_count)]).replace('[', '{').replace(']', '}').replace('!$', '[').replace('$!', ']').replace('\'', '') + ';\\')
 
-        asm.append('uint32_t a0_plus_a1[' + str(lo_plus_hi_word_count) + '] = ' + str([0] * lo_plus_hi_word_count).replace('[', '{').replace(']', '}') + ';\\')
-        asm.append('uint32_t b0_plus_b1[' + str(lo_plus_hi_word_count) + '] = ' + str([0] * lo_plus_hi_word_count).replace('[', '{').replace(']', '}') + ';\\')
+        asm.append(" " * 4 * indent + 'uint32_t a0_plus_a1[' + str(lo_plus_hi_word_count) + '] = ' + str([0] * lo_plus_hi_word_count).replace('[', '{').replace(']', '}') + ';\\')
+        asm.append(" " * 4 * indent + 'uint32_t b0_plus_b1[' + str(lo_plus_hi_word_count) + '] = ' + str([0] * lo_plus_hi_word_count).replace('[', '{').replace(']', '}') + ';\\')
 
         # Low part multiplication (always the "full precision" multiplication of
         # the 2 parts).
         asm += mul_loc_generic(lo_precision, lo_precision, 'a0', 'b0', 'c0', 0, 0, 0, indent)
+        # asm += mul_karatsuba_loc_generic(lo_precision, 'a0', 'b0', 'c0', 0, 0, 0, indent + 1)
 
         # Hi part multiplication (possibly the "lesser precision" multiplication
         # of the 2 parts).
         asm += mul_loc_generic(hi_precision, hi_precision, 'a1', 'b1', 'c2', 0, 0, 0, indent)
+        # asm += mul_karatsuba_loc_generic(hi_precision, 'a1', 'b1', 'c2', 0, 0, 0, indent + 1)
 
         # c1 calculation
         # (a0 + a1) and (b0 + b1) has to be done with _exact_ function
@@ -484,6 +486,7 @@ def mul_karatsuba_loc_generic(op_precision, op1_name, op2_name, res_name, op1_sh
 
         # (a0 + a1) * (b0 + b1)
         asm += mul_loc_generic(lo_plus_hi_precision, lo_plus_hi_precision, 'a0_plus_a1', 'b0_plus_b1', 'c1', 0, 0, 0, indent)
+        # asm += mul_karatsuba_loc_generic(lo_plus_hi_precision, 'a0_plus_a1', 'b0_plus_b1', 'c1', 0, 0, 0, indent + 1)
 
         # c1 = (a0 + a1) * (b0 + b1) - c0 - c2 = c1 - c0 - c2
         # Needs to be done with _exact_ function
@@ -545,12 +548,12 @@ def mul_karatsuba_loc_generic(op_precision, op1_name, op2_name, res_name, op1_sh
 
         asm += addc_loc_generic(c1_overlap_precision, c2_overlap_precision, 'c1', 'c2', 'c_loc', lo_word_count, 0, c0_word_count + res_shift, indent)
 
-        asm.append('}\\')
+        asm.append(" " * 4 * indent + '}\\')
 
     # replace all occurrences of a_loc, b_loc and c_loc by their appropriate
     # names, as provided by the user.
     for i in range(len(asm)):
-        asm[i] = " " * 4 * indent + asm[i].replace('a_loc', op1_name).replace('b_loc', op2_name).replace('c_loc', res_name)
+        asm[i] = asm[i].replace('a_loc', op1_name).replace('b_loc', op2_name).replace('c_loc', res_name)
 
     return asm
 

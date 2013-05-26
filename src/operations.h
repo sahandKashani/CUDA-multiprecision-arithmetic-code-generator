@@ -265,129 +265,129 @@
     uint32_t b1[3] = {b_loc[2], b_loc[3], b_loc[4]};\
     uint32_t a0_plus_a1[3] = {0, 0, 0};\
     uint32_t b0_plus_b1[3] = {0, 0, 0};\
-        {\
-        uint32_t carry = 0;\
-        asm("mul.lo.u32    %0, %1, %2    ;" : "=r"(c0[0]) : "r"(b0[0]), "r"(a0[0]));\
-        asm("mul.hi.u32    %0, %1, %2    ;" : "=r"(c0[1]) : "r"(b0[0]), "r"(a0[0]));\
-        asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c0[1]) : "r"(b0[0]), "r"(a0[1]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c0[1]) : "r"(b0[1]), "r"(a0[0]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("add.u32       %0, %1,  0    ;" : "=r"(c0[2]) : "r"(carry));\
-        asm("add.u32       %0,  0,  0    ;" : "=r"(carry));\
-        asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c0[2]) : "r"(b0[0]), "r"(a0[1]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c0[2]) : "r"(b0[1]), "r"(a0[0]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c0[2]) : "r"(b0[1]), "r"(a0[1]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("mad.hi.u32    %0, %1, %2, %3;" : "=r"(c0[3]) : "r"(b0[1]), "r"(a0[1]), "r"(carry));\
-        }\
-        {\
-        uint32_t carry = 0;\
-        asm("mul.lo.u32    %0, %1, %2    ;" : "=r"(c2[0]) : "r"(b1[0]), "r"(a1[0]));\
-        asm("mul.hi.u32    %0, %1, %2    ;" : "=r"(c2[1]) : "r"(b1[0]), "r"(a1[0]));\
-        asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c2[1]) : "r"(b1[0]), "r"(a1[1]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c2[1]) : "r"(b1[1]), "r"(a1[0]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("add.u32       %0, %1,  0    ;" : "=r"(c2[2]) : "r"(carry));\
-        asm("add.u32       %0,  0,  0    ;" : "=r"(carry));\
-        asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c2[2]) : "r"(b1[0]), "r"(a1[1]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c2[2]) : "r"(b1[1]), "r"(a1[0]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c2[2]) : "r"(b1[0]), "r"(a1[2]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c2[2]) : "r"(b1[1]), "r"(a1[1]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c2[2]) : "r"(b1[2]), "r"(a1[0]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("add.u32       %0, %1,  0    ;" : "=r"(c2[3]) : "r"(carry));\
-        asm("add.u32       %0,  0,  0    ;" : "=r"(carry));\
-        asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c2[3]) : "r"(b1[0]), "r"(a1[2]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c2[3]) : "r"(b1[1]), "r"(a1[1]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c2[3]) : "r"(b1[2]), "r"(a1[0]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c2[3]) : "r"(b1[1]), "r"(a1[2]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c2[3]) : "r"(b1[2]), "r"(a1[1]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("add.u32       %0, %1,  0    ;" : "=r"(c2[4]) : "r"(carry));\
-        asm("add.u32       %0,  0,  0    ;" : "=r"(carry));\
-        asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c2[4]) : "r"(b1[1]), "r"(a1[2]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c2[4]) : "r"(b1[2]), "r"(a1[1]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c2[4]) : "r"(b1[2]), "r"(a1[2]));\
-        }\
-        asm("add.cc.u32  %0, %1, %2;" : "=r"(a0_plus_a1[0]) : "r"(a0[0]), "r"(a1[0]));\
-        asm("addc.cc.u32 %0, %1, %2;" : "=r"(a0_plus_a1[1]) : "r"(a0[1]), "r"(a1[1]));\
-        asm("addc.u32    %0, %1,  0;" : "=r"(a0_plus_a1[2]) : "r"(a1[2]));\
-        asm("add.cc.u32  %0, %1, %2;" : "=r"(b0_plus_b1[0]) : "r"(b0[0]), "r"(b1[0]));\
-        asm("addc.cc.u32 %0, %1, %2;" : "=r"(b0_plus_b1[1]) : "r"(b0[1]), "r"(b1[1]));\
-        asm("addc.u32    %0, %1,  0;" : "=r"(b0_plus_b1[2]) : "r"(b1[2]));\
-        {\
-        uint32_t carry = 0;\
-        asm("mul.lo.u32    %0, %1, %2    ;" : "=r"(c1[0]) : "r"(b0_plus_b1[0]), "r"(a0_plus_a1[0]));\
-        asm("mul.hi.u32    %0, %1, %2    ;" : "=r"(c1[1]) : "r"(b0_plus_b1[0]), "r"(a0_plus_a1[0]));\
-        asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c1[1]) : "r"(b0_plus_b1[0]), "r"(a0_plus_a1[1]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c1[1]) : "r"(b0_plus_b1[1]), "r"(a0_plus_a1[0]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("add.u32       %0, %1,  0    ;" : "=r"(c1[2]) : "r"(carry));\
-        asm("add.u32       %0,  0,  0    ;" : "=r"(carry));\
-        asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c1[2]) : "r"(b0_plus_b1[0]), "r"(a0_plus_a1[1]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c1[2]) : "r"(b0_plus_b1[1]), "r"(a0_plus_a1[0]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c1[2]) : "r"(b0_plus_b1[0]), "r"(a0_plus_a1[2]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c1[2]) : "r"(b0_plus_b1[1]), "r"(a0_plus_a1[1]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c1[2]) : "r"(b0_plus_b1[2]), "r"(a0_plus_a1[0]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("add.u32       %0, %1,  0    ;" : "=r"(c1[3]) : "r"(carry));\
-        asm("add.u32       %0,  0,  0    ;" : "=r"(carry));\
-        asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c1[3]) : "r"(b0_plus_b1[0]), "r"(a0_plus_a1[2]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c1[3]) : "r"(b0_plus_b1[1]), "r"(a0_plus_a1[1]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c1[3]) : "r"(b0_plus_b1[2]), "r"(a0_plus_a1[0]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c1[3]) : "r"(b0_plus_b1[1]), "r"(a0_plus_a1[2]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c1[3]) : "r"(b0_plus_b1[2]), "r"(a0_plus_a1[1]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("add.u32       %0, %1,  0    ;" : "=r"(c1[4]) : "r"(carry));\
-        asm("add.u32       %0,  0,  0    ;" : "=r"(carry));\
-        asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c1[4]) : "r"(b0_plus_b1[1]), "r"(a0_plus_a1[2]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c1[4]) : "r"(b0_plus_b1[2]), "r"(a0_plus_a1[1]));\
-        asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
-        asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c1[4]) : "r"(b0_plus_b1[2]), "r"(a0_plus_a1[2]));\
-        }\
-        asm("sub.cc.u32  %0, %1, %2;" : "=r"(c1[0]) : "r"(c1[0]), "r"(c0[0]));\
-        asm("subc.cc.u32 %0, %1, %2;" : "=r"(c1[1]) : "r"(c1[1]), "r"(c0[1]));\
-        asm("subc.cc.u32 %0, %1, %2;" : "=r"(c1[2]) : "r"(c1[2]), "r"(c0[2]));\
-        asm("subc.cc.u32 %0, %1, %2;" : "=r"(c1[3]) : "r"(c1[3]), "r"(c0[3]));\
-        asm("subc.u32    %0, %1,  0;" : "=r"(c1[4]) : "r"(c1[4]));\
-        asm("sub.cc.u32  %0, %1, %2;" : "=r"(c1[0]) : "r"(c1[0]), "r"(c2[0]));\
-        asm("subc.cc.u32 %0, %1, %2;" : "=r"(c1[1]) : "r"(c1[1]), "r"(c2[1]));\
-        asm("subc.cc.u32 %0, %1, %2;" : "=r"(c1[2]) : "r"(c1[2]), "r"(c2[2]));\
-        asm("subc.cc.u32 %0, %1, %2;" : "=r"(c1[3]) : "r"(c1[3]), "r"(c2[3]));\
-        asm("subc.u32    %0, %1, %2;" : "=r"(c1[4]) : "r"(c1[4]), "r"(c2[4]));\
-        asm("add.u32     %0, %1,  0;" : "=r"(c_loc[0]) : "r"(c0[0]));\
-        asm("add.u32     %0, %1,  0;" : "=r"(c_loc[1]) : "r"(c0[1]));\
-        asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[2]) : "r"(c0[2]), "r"(c1[0]));\
-        asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[3]) : "r"(c0[3]), "r"(c1[1]));\
-        asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[4]) : "r"(c1[2]), "r"(c2[0]));\
-        asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[5]) : "r"(c1[3]), "r"(c2[1]));\
-        asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[6]) : "r"(c1[4]), "r"(c2[2]));\
-        asm("addc.cc.u32 %0, %1,  0;" : "=r"(c_loc[7]) : "r"(c2[3]));\
-        asm("addc.u32    %0, %1,  0;" : "=r"(c_loc[8]) : "r"(c2[4]));\
+    {\
+    uint32_t carry = 0;\
+    asm("mul.lo.u32    %0, %1, %2    ;" : "=r"(c0[0]) : "r"(b0[0]), "r"(a0[0]));\
+    asm("mul.hi.u32    %0, %1, %2    ;" : "=r"(c0[1]) : "r"(b0[0]), "r"(a0[0]));\
+    asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c0[1]) : "r"(b0[0]), "r"(a0[1]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c0[1]) : "r"(b0[1]), "r"(a0[0]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("add.u32       %0, %1,  0    ;" : "=r"(c0[2]) : "r"(carry));\
+    asm("add.u32       %0,  0,  0    ;" : "=r"(carry));\
+    asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c0[2]) : "r"(b0[0]), "r"(a0[1]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c0[2]) : "r"(b0[1]), "r"(a0[0]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c0[2]) : "r"(b0[1]), "r"(a0[1]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("mad.hi.u32    %0, %1, %2, %3;" : "=r"(c0[3]) : "r"(b0[1]), "r"(a0[1]), "r"(carry));\
+    }\
+    {\
+    uint32_t carry = 0;\
+    asm("mul.lo.u32    %0, %1, %2    ;" : "=r"(c2[0]) : "r"(b1[0]), "r"(a1[0]));\
+    asm("mul.hi.u32    %0, %1, %2    ;" : "=r"(c2[1]) : "r"(b1[0]), "r"(a1[0]));\
+    asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c2[1]) : "r"(b1[0]), "r"(a1[1]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c2[1]) : "r"(b1[1]), "r"(a1[0]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("add.u32       %0, %1,  0    ;" : "=r"(c2[2]) : "r"(carry));\
+    asm("add.u32       %0,  0,  0    ;" : "=r"(carry));\
+    asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c2[2]) : "r"(b1[0]), "r"(a1[1]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c2[2]) : "r"(b1[1]), "r"(a1[0]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c2[2]) : "r"(b1[0]), "r"(a1[2]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c2[2]) : "r"(b1[1]), "r"(a1[1]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c2[2]) : "r"(b1[2]), "r"(a1[0]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("add.u32       %0, %1,  0    ;" : "=r"(c2[3]) : "r"(carry));\
+    asm("add.u32       %0,  0,  0    ;" : "=r"(carry));\
+    asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c2[3]) : "r"(b1[0]), "r"(a1[2]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c2[3]) : "r"(b1[1]), "r"(a1[1]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c2[3]) : "r"(b1[2]), "r"(a1[0]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c2[3]) : "r"(b1[1]), "r"(a1[2]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c2[3]) : "r"(b1[2]), "r"(a1[1]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("add.u32       %0, %1,  0    ;" : "=r"(c2[4]) : "r"(carry));\
+    asm("add.u32       %0,  0,  0    ;" : "=r"(carry));\
+    asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c2[4]) : "r"(b1[1]), "r"(a1[2]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c2[4]) : "r"(b1[2]), "r"(a1[1]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c2[4]) : "r"(b1[2]), "r"(a1[2]));\
+    }\
+    asm("add.cc.u32  %0, %1, %2;" : "=r"(a0_plus_a1[0]) : "r"(a0[0]), "r"(a1[0]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(a0_plus_a1[1]) : "r"(a0[1]), "r"(a1[1]));\
+    asm("addc.u32    %0, %1,  0;" : "=r"(a0_plus_a1[2]) : "r"(a1[2]));\
+    asm("add.cc.u32  %0, %1, %2;" : "=r"(b0_plus_b1[0]) : "r"(b0[0]), "r"(b1[0]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(b0_plus_b1[1]) : "r"(b0[1]), "r"(b1[1]));\
+    asm("addc.u32    %0, %1,  0;" : "=r"(b0_plus_b1[2]) : "r"(b1[2]));\
+    {\
+    uint32_t carry = 0;\
+    asm("mul.lo.u32    %0, %1, %2    ;" : "=r"(c1[0]) : "r"(b0_plus_b1[0]), "r"(a0_plus_a1[0]));\
+    asm("mul.hi.u32    %0, %1, %2    ;" : "=r"(c1[1]) : "r"(b0_plus_b1[0]), "r"(a0_plus_a1[0]));\
+    asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c1[1]) : "r"(b0_plus_b1[0]), "r"(a0_plus_a1[1]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c1[1]) : "r"(b0_plus_b1[1]), "r"(a0_plus_a1[0]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("add.u32       %0, %1,  0    ;" : "=r"(c1[2]) : "r"(carry));\
+    asm("add.u32       %0,  0,  0    ;" : "=r"(carry));\
+    asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c1[2]) : "r"(b0_plus_b1[0]), "r"(a0_plus_a1[1]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c1[2]) : "r"(b0_plus_b1[1]), "r"(a0_plus_a1[0]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c1[2]) : "r"(b0_plus_b1[0]), "r"(a0_plus_a1[2]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c1[2]) : "r"(b0_plus_b1[1]), "r"(a0_plus_a1[1]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c1[2]) : "r"(b0_plus_b1[2]), "r"(a0_plus_a1[0]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("add.u32       %0, %1,  0    ;" : "=r"(c1[3]) : "r"(carry));\
+    asm("add.u32       %0,  0,  0    ;" : "=r"(carry));\
+    asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c1[3]) : "r"(b0_plus_b1[0]), "r"(a0_plus_a1[2]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c1[3]) : "r"(b0_plus_b1[1]), "r"(a0_plus_a1[1]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c1[3]) : "r"(b0_plus_b1[2]), "r"(a0_plus_a1[0]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c1[3]) : "r"(b0_plus_b1[1]), "r"(a0_plus_a1[2]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c1[3]) : "r"(b0_plus_b1[2]), "r"(a0_plus_a1[1]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("add.u32       %0, %1,  0    ;" : "=r"(c1[4]) : "r"(carry));\
+    asm("add.u32       %0,  0,  0    ;" : "=r"(carry));\
+    asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c1[4]) : "r"(b0_plus_b1[1]), "r"(a0_plus_a1[2]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("mad.hi.cc.u32 %0, %1, %2, %0;" : "+r"(c1[4]) : "r"(b0_plus_b1[2]), "r"(a0_plus_a1[1]));\
+    asm("addc.u32      %0, %0,  0    ;" : "+r"(carry));\
+    asm("mad.lo.cc.u32 %0, %1, %2, %0;" : "+r"(c1[4]) : "r"(b0_plus_b1[2]), "r"(a0_plus_a1[2]));\
+    }\
+    asm("sub.cc.u32  %0, %1, %2;" : "=r"(c1[0]) : "r"(c1[0]), "r"(c0[0]));\
+    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c1[1]) : "r"(c1[1]), "r"(c0[1]));\
+    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c1[2]) : "r"(c1[2]), "r"(c0[2]));\
+    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c1[3]) : "r"(c1[3]), "r"(c0[3]));\
+    asm("subc.u32    %0, %1,  0;" : "=r"(c1[4]) : "r"(c1[4]));\
+    asm("sub.cc.u32  %0, %1, %2;" : "=r"(c1[0]) : "r"(c1[0]), "r"(c2[0]));\
+    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c1[1]) : "r"(c1[1]), "r"(c2[1]));\
+    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c1[2]) : "r"(c1[2]), "r"(c2[2]));\
+    asm("subc.cc.u32 %0, %1, %2;" : "=r"(c1[3]) : "r"(c1[3]), "r"(c2[3]));\
+    asm("subc.u32    %0, %1, %2;" : "=r"(c1[4]) : "r"(c1[4]), "r"(c2[4]));\
+    asm("add.u32     %0, %1,  0;" : "=r"(c_loc[0]) : "r"(c0[0]));\
+    asm("add.u32     %0, %1,  0;" : "=r"(c_loc[1]) : "r"(c0[1]));\
+    asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[2]) : "r"(c0[2]), "r"(c1[0]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[3]) : "r"(c0[3]), "r"(c1[1]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[4]) : "r"(c1[2]), "r"(c2[0]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[5]) : "r"(c1[3]), "r"(c2[1]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[6]) : "r"(c1[4]), "r"(c2[2]));\
+    asm("addc.cc.u32 %0, %1,  0;" : "=r"(c_loc[7]) : "r"(c2[3]));\
+    asm("addc.u32    %0, %1,  0;" : "=r"(c_loc[8]) : "r"(c2[4]));\
     }\
 }
 
