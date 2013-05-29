@@ -2,18 +2,22 @@ import math
 import re
 
 # change anything you want here
-precision = 131
-threads_per_block = 16
-blocks_per_grid = 16
+precision = 63
+threads_per_block = 2
+blocks_per_grid = 2
 coalesced_m_file_name = r'../data/coalesced_m.txt'
 coalesced_a_file_name = r'../data/coalesced_a.txt'
 coalesced_b_file_name = r'../data/coalesced_b.txt'
+coalesced_a_mon_file_name = r'../data/coalesced_a_mon.txt'
+coalesced_b_mon_file_name = r'../data/coalesced_b_mon.txt'
 add_results_file_name = r'../data/add_results.txt'
 sub_results_file_name = r'../data/sub_results.txt'
 mul_results_file_name = r'../data/mul_results.txt'
 mul_karatsuba_results_file_name = r'../data/mul_karatsuba_results.txt'
 add_m_results_file_name = r'../data/add_m_results.txt'
 sub_m_results_file_name = r'../data/sub_m_results.txt'
+montgomery_reduction_results_file_name = r'../data/montgomery_reduction_results.txt'
+inverse_R_file_name = r'../data/inverse_R.txt'
 
 # don't touch anything here
 seed = 12345
@@ -27,6 +31,7 @@ min_hex_length = min_bignum_number_of_words * hex_digits_per_word
 max_hex_length = max_bignum_number_of_words * hex_digits_per_word
 number_of_bignums = threads_per_block * blocks_per_grid
 file_name_operations_h = r'../src/operations.h'
+R = 2 ** precision
 
 # The number of words needed to hold "precision" bits MUST be the same as the
 # number of words needed to hold "precision + 1" bits. This is needed, because
