@@ -10,7 +10,7 @@ def k_bit_rand_int(precision):
     assert precision > 0
     while True:
         number = random.getrandbits(precision)
-        if len(bin(number)[2:]) == precision and gmpy2.invert(R, number) != 0:
+        if len(bin(number)[2:]) == precision and gmpy2.invert(R, number) != 0 and gmpy2.gcd(number, 2**bits_per_word) == 1:
             assert number > 0
             return number
 

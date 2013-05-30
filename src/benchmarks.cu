@@ -25,7 +25,7 @@ __global__ void mul_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b
 __global__ void mul_karatsuba_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b);
 __global__ void add_m_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b, uint32_t* dev_m);
 __global__ void sub_m_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b, uint32_t* dev_m);
-__global__ void montgomery_reduction_loc_kernel(uint32_t* dev_c, uint32_t* dev_T, uint32_t* dev_inv_R, uint32_t* dev_m);
+__global__ void montgomery_reduction_loc_kernel(uint32_t* dev_c, uint32_t* dev_T, uint32_t* dev_m, uint32_t* dev_m_prime);
 
 // global data kernels
 __global__ void add_glo_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b);
@@ -430,14 +430,14 @@ __global__ void sub_m_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev
     }
 }
 
-__global__ void montgomery_reduction_loc_kernel(uint32_t* dev_c, uint32_t* dev_T, uint32_t* dev_inv_R, uint32_t* dev_m)
+__global__ void montgomery_reduction_loc_kernel(uint32_t* dev_c, uint32_t* dev_T, uint32_t* dev_m, uint32_t* dev_m_prime)
 {
     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
 
-    uint32_t T    [MAX_BIGNUM_NUMBER_OF_WORDS];
-    uint32_t inv_R[MIN_BIGNUM_NUMBER_OF_WORDS];
-    uint32_t m    [MIN_BIGNUM_NUMBER_OF_WORDS];
-    uint32_t c    [MIN_BIGNUM_NUMBER_OF_WORDS];
+    uint32_t T[MAX_BIGNUM_NUMBER_OF_WORDS];
+    uint32_t m[MIN_BIGNUM_NUMBER_OF_WORDS];
+    uint32_t c[MIN_BIGNUM_NUMBER_OF_WORDS];
+    uint32_t m_prime;
 
     for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
     {
@@ -446,21 +446,22 @@ __global__ void montgomery_reduction_loc_kernel(uint32_t* dev_c, uint32_t* dev_T
 
     for (uint32_t i = 0; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
     {
-        inv_R[i] = dev_inv_R[COAL_IDX(i, tid)];
-        m    [i] = dev_m    [COAL_IDX(i, tid)];
+        m[i] = dev_m    [COAL_IDX(i, tid)];
     }
 
+    m_prime = dev_m_prime[COAL_IDX(0, tid)];
+
     // 10 iterations
-    // sub_m_loc(c, a, b, m);
-    // sub_m_loc(c, a, b, m);
-    // sub_m_loc(c, a, b, m);
-    // sub_m_loc(c, a, b, m);
-    // sub_m_loc(c, a, b, m);
-    // sub_m_loc(c, a, b, m);
-    // sub_m_loc(c, a, b, m);
-    // sub_m_loc(c, a, b, m);
-    // sub_m_loc(c, a, b, m);
-    // sub_m_loc(c, a, b, m);
+    // montgomery_reduction(c, T, m, m_prime);
+    // montgomery_reduction(c, T, m, m_prime);
+    // montgomery_reduction(c, T, m, m_prime);
+    // montgomery_reduction(c, T, m, m_prime);
+    // montgomery_reduction(c, T, m, m_prime);
+    // montgomery_reduction(c, T, m, m_prime);
+    // montgomery_reduction(c, T, m, m_prime);
+    // montgomery_reduction(c, T, m, m_prime);
+    // montgomery_reduction(c, T, m, m_prime);
+    // montgomery_reduction(c, T, m, m_prime);
 
     for (uint32_t i = 0; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
     {
@@ -610,59 +611,59 @@ void modular_binary_operator_benchmark(uint32_t* host_c, uint32_t* host_a, uint3
 void montgomery_reduction_benchmark()
 {
     // host
-    uint32_t* host_T     = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
-    uint32_t* host_inv_R = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
-    uint32_t* host_m     = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
-    uint32_t* host_c     = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
+    uint32_t* host_T       = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
+    uint32_t* host_m       = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
+    uint32_t* host_c       = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
+    uint32_t* host_m_prime = (uint32_t*) calloc(1                                             , sizeof(uint32_t));
 
-    assert(host_T     != NULL);
-    assert(host_inv_R != NULL);
-    assert(host_m     != NULL);
-    assert(host_c     != NULL);
+    assert(host_T       != NULL);
+    assert(host_m       != NULL);
+    assert(host_c       != NULL);
+    assert(host_m_prime != NULL);
 
-    read_coalesced_bignums_from_file(COALESCED_T_MON_FILE_NAME, host_T    , MAX_BIGNUM_NUMBER_OF_WORDS);
-    read_coalesced_bignums_from_file(INVERSE_R_FILE_NAME      , host_inv_R, MIN_BIGNUM_NUMBER_OF_WORDS);
-    read_coalesced_bignums_from_file(COALESCED_M_FILE_NAME    , host_m    , MIN_BIGNUM_NUMBER_OF_WORDS);
+    read_coalesced_bignums_from_file(COALESCED_T_MON_FILE_NAME, host_T      , MAX_BIGNUM_NUMBER_OF_WORDS);
+    read_coalesced_bignums_from_file(COALESCED_M_FILE_NAME    , host_m      , MIN_BIGNUM_NUMBER_OF_WORDS);
+    read_coalesced_bignums_from_file(M_PRIME_FILE_NAME        , host_m_prime, 1                         );
 
     // device operands (dev_a, dev_b, dev_m) and results (dev_c)
     uint32_t* dev_T;
-    uint32_t* dev_inv_R;
     uint32_t* dev_m;
     uint32_t* dev_c;
+    uint32_t* dev_m_prime;
 
     // allocate gpu memory
-    cudaError dev_T_malloc_success     = cudaMalloc((void**) &dev_T    , NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
-    cudaError dev_inv_R_malloc_success = cudaMalloc((void**) &dev_inv_R, NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
-    cudaError dev_m_malloc_success     = cudaMalloc((void**) &dev_m    , NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
-    cudaError dev_c_malloc_success     = cudaMalloc((void**) &dev_c    , NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
-    assert(dev_T_malloc_success     == cudaSuccess);
-    assert(dev_inv_R_malloc_success == cudaSuccess);
-    assert(dev_m_malloc_success     == cudaSuccess);
-    assert(dev_c_malloc_success     == cudaSuccess);
+    cudaError dev_T_malloc_success       = cudaMalloc((void**) &dev_T      , NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
+    cudaError dev_m_malloc_success       = cudaMalloc((void**) &dev_m      , NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
+    cudaError dev_c_malloc_success       = cudaMalloc((void**) &dev_c      , NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
+    cudaError dev_m_prime_malloc_success = cudaMalloc((void**) &dev_m_prime, NUMBER_OF_BIGNUMS * 1                          * sizeof(uint32_t));
+    assert(dev_T_malloc_success       == cudaSuccess);
+    assert(dev_m_malloc_success       == cudaSuccess);
+    assert(dev_c_malloc_success       == cudaSuccess);
+    assert(dev_m_prime_malloc_success == cudaSuccess);
 
     // make sure gpu memory is clean before our calculations (you never know ...)
-    cudaError dev_T_cleanup_memset_success     = cudaMemset(dev_T    , 0, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
-    cudaError dev_inv_R_cleanup_memset_success = cudaMemset(dev_inv_R, 0, NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
-    cudaError dev_m_cleanup_memset_success     = cudaMemset(dev_m    , 0, NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
-    cudaError dev_c_cleanup_memset_success     = cudaMemset(dev_c    , 0, NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
-    assert(dev_T_cleanup_memset_success     == cudaSuccess);
-    assert(dev_inv_R_cleanup_memset_success == cudaSuccess);
-    assert(dev_m_cleanup_memset_success     == cudaSuccess);
-    assert(dev_c_cleanup_memset_success     == cudaSuccess);
+    cudaError dev_T_cleanup_memset_success       = cudaMemset(dev_T      , 0, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
+    cudaError dev_m_cleanup_memset_success       = cudaMemset(dev_m      , 0, NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
+    cudaError dev_c_cleanup_memset_success       = cudaMemset(dev_c      , 0, NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
+    cudaError dev_m_prime_cleanup_memset_success = cudaMemset(dev_m_prime, 0, NUMBER_OF_BIGNUMS * 1                          * sizeof(uint32_t));
+    assert(dev_T_cleanup_memset_success       == cudaSuccess);
+    assert(dev_m_cleanup_memset_success       == cudaSuccess);
+    assert(dev_c_cleanup_memset_success       == cudaSuccess);
+    assert(dev_m_prime_cleanup_memset_success == cudaSuccess);
 
     // copy operands to device memory
-    cudaError dev_T_memcpy_succes     = cudaMemcpy(dev_T    , host_T    , NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t), cudaMemcpyHostToDevice);
-    cudaError dev_inv_R_memcpy_succes = cudaMemcpy(dev_inv_R, host_inv_R, NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t), cudaMemcpyHostToDevice);
-    cudaError dev_m_memcpy_succes     = cudaMemcpy(dev_m    , host_m    , NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t), cudaMemcpyHostToDevice);
-    assert(dev_T_memcpy_succes     == cudaSuccess);
-    assert(dev_inv_R_memcpy_succes == cudaSuccess);
-    assert(dev_m_memcpy_succes     == cudaSuccess);
+    cudaError dev_T_memcpy_succes       = cudaMemcpy(dev_T      , host_T      , NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t), cudaMemcpyHostToDevice);
+    cudaError dev_m_memcpy_succes       = cudaMemcpy(dev_m      , host_m      , NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t), cudaMemcpyHostToDevice);
+    cudaError dev_m_prime_memcpy_succes = cudaMemcpy(dev_m_prime, host_m_prime, NUMBER_OF_BIGNUMS * 1                          * sizeof(uint32_t), cudaMemcpyHostToDevice);
+    assert(dev_T_memcpy_succes       == cudaSuccess);
+    assert(dev_m_memcpy_succes       == cudaSuccess);
+    assert(dev_m_prime_memcpy_succes == cudaSuccess);
 
     printf("Benchmarking \"montgomery_reduction\" on GPU ... ");
     fflush(stdout);
 
     // execute kernel
-    montgomery_reduction_loc_kernel<<<BLOCKS_PER_GRID, THREADS_PER_BLOCK>>>(dev_c, dev_T, dev_inv_R, dev_m);
+    montgomery_reduction_loc_kernel<<<BLOCKS_PER_GRID, THREADS_PER_BLOCK>>>(dev_c, dev_T, dev_m, dev_m_prime);
 
     printf("done\n");
     fflush(stdout);
@@ -672,25 +673,25 @@ void montgomery_reduction_benchmark()
     assert(dev_c_memcpy_success == cudaSuccess);
 
     // clean up gpu memory after our calculations
-    dev_T_cleanup_memset_success     = cudaMemset(dev_T    , 0, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
-    dev_inv_R_cleanup_memset_success = cudaMemset(dev_inv_R, 0, NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
-    dev_m_cleanup_memset_success     = cudaMemset(dev_m    , 0, NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
-    dev_c_cleanup_memset_success     = cudaMemset(dev_c    , 0, NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
-    assert(dev_T_cleanup_memset_success     == cudaSuccess);
-    assert(dev_inv_R_cleanup_memset_success == cudaSuccess);
-    assert(dev_m_cleanup_memset_success     == cudaSuccess);
-    assert(dev_c_cleanup_memset_success     == cudaSuccess);
+    dev_T_cleanup_memset_success       = cudaMemset(dev_T      , 0, NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
+    dev_m_cleanup_memset_success       = cudaMemset(dev_m      , 0, NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
+    dev_c_cleanup_memset_success       = cudaMemset(dev_c      , 0, NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS * sizeof(uint32_t));
+    dev_m_prime_cleanup_memset_success = cudaMemset(dev_m_prime, 0, NUMBER_OF_BIGNUMS * 1                          * sizeof(uint32_t));
+    assert(dev_T_cleanup_memset_success       == cudaSuccess);
+    assert(dev_m_cleanup_memset_success       == cudaSuccess);
+    assert(dev_c_cleanup_memset_success       == cudaSuccess);
+    assert(dev_m_prime_cleanup_memset_success == cudaSuccess);
 
     // free device memory
     cudaFree(dev_T);
-    cudaFree(dev_inv_R);
     cudaFree(dev_m);
     cudaFree(dev_c);
+    cudaFree(dev_m_prime);
 
     write_coalesced_bignums_to_file(MONTGOMERY_REDUCTION_RESULTS_FILE_NAME, host_c, MIN_BIGNUM_NUMBER_OF_WORDS);
 
     free(host_T);
-    free(host_inv_R);
     free(host_m);
     free(host_c);
+    free(host_m_prime);
 }
