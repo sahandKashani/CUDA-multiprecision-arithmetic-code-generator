@@ -65,16 +65,16 @@ def modular_binary_operator_check(c_file_name, a_file_name, b_file_name, m_file_
     if not error:
         print("ok")
 
-def montgomery_reduction_check(result_file_name, T_mon_file_name, inverse_R_file_name, m_file_name):
-    res_data   = read_numbers_from_file_coalesced(result_file_name)
+def montgomery_reduction_check(c_file_name, T_mon_file_name, inverse_R_file_name, m_file_name):
+    c_data     = read_numbers_from_file_coalesced(c_file_name)
     T_mon_data = read_numbers_from_file_coalesced(T_mon_file_name)
     inv_R_data = read_numbers_from_file_coalesced(inverse_R_file_name)
     m_data     = read_numbers_from_file_coalesced(m_file_name)
 
-    print("Checking \"montgomery reduction\" results => ", end = '')
+    print("Checking \"montgomery_reduction\" results => ", end = '')
 
     error = False
-    for (i, T_mon, inverse_R, m, c_mon) in zip(range(len(res_data)), T_mon_data, inv_R_data, m_data, res_data):
+    for (i, T_mon, inverse_R, m, c_mon) in zip(range(len(c_data)), T_mon_data, inv_R_data, m_data, c_data):
         expected_mon = (T_mon * inverse_R) % m
 
         T_mon_hex_str        = int_to_hex_str(T_mon, True)
