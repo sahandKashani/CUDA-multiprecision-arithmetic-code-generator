@@ -31,6 +31,7 @@ a_mon = []
 b_mon = []
 T_mon = []
 inverse_R = []
+m_prime = []
 
 print("Generating random numbers ... ", end = '')
 for i in range(number_of_bignums):
@@ -42,6 +43,7 @@ for i in m:
     b_montgo = (b_normal * R) % i
     T_montgo = (a_montgo * b_montgo)
     inv_R = gmpy2.invert(R, i)
+    m_p = (-gmpy2.invert(i, 2**bits_per_word)) % (2**bits_per_word)
 
     a.append(a_normal)
     b.append(b_normal)
@@ -49,6 +51,7 @@ for i in m:
     b_mon.append(b_montgo)
     T_mon.append(T_montgo)
     inverse_R.append(inv_R)
+    m_prime.append(m_p)
 print("done")
 
 write_numbers_to_file_coalesced(m, False, coalesced_m_file_name)
@@ -58,3 +61,4 @@ write_numbers_to_file_coalesced(a_mon, False, coalesced_a_mon_file_name)
 write_numbers_to_file_coalesced(b_mon, False, coalesced_b_mon_file_name)
 write_numbers_to_file_coalesced(T_mon, True, coalesced_T_mon_file_name)
 write_numbers_to_file_coalesced(inverse_R, False, inverse_R_file_name)
+write_numbers_to_file_coalesced(m_prime, False, m_prime_file_name)

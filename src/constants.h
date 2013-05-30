@@ -3,9 +3,9 @@
 
 #include <stdint.h>
 
-#define THREADS_PER_BLOCK 4
-#define BLOCKS_PER_GRID 4
-#define NUMBER_OF_BIGNUMS 16
+#define THREADS_PER_BLOCK 2
+#define BLOCKS_PER_GRID 2
+#define NUMBER_OF_BIGNUMS 4
 #define COALESCED_A_FILE_NAME "../data/coalesced_a.txt"
 #define COALESCED_B_FILE_NAME "../data/coalesced_b.txt"
 #define COALESCED_M_FILE_NAME "../data/coalesced_m.txt"
@@ -20,5 +20,6 @@
 #define MONTGOMERY_REDUCTION_RESULTS_FILE_NAME "../data/montgomery_reduction_results.txt"
 #define COALESCED_T_MON_FILE_NAME "../data/coalesced_T_mon.txt"
 #define INVERSE_R_FILE_NAME "../data/inverse_R.txt"
+#define M_PRIME_FILE_NAME "../data/m_prime.txt"
 
 #endif

@@ -3,8 +3,8 @@ import re
 
 # change anything you want here
 precision = 131
-threads_per_block = 4
-blocks_per_grid = 4
+threads_per_block = 2
+blocks_per_grid = 2
 coalesced_m_file_name = r'../data/coalesced_m.txt'
 coalesced_a_file_name = r'../data/coalesced_a.txt'
 coalesced_b_file_name = r'../data/coalesced_b.txt'
@@ -19,6 +19,7 @@ sub_m_results_file_name = r'../data/sub_m_results.txt'
 montgomery_reduction_results_file_name = r'../data/montgomery_reduction_results.txt'
 coalesced_T_mon_file_name = r'../data/coalesced_T_mon.txt'
 inverse_R_file_name = r'../data/inverse_R.txt'
+m_prime_file_name = r'../data/m_prime.txt'
 
 # don't touch anything here
 seed = 12345
@@ -68,5 +69,7 @@ with open('../src/constants.h', 'r') as input_file:
     contents = [re.sub(r'#define MONTGOMERY_REDUCTION_RESULTS_FILE_NAME "(.*)"' , r'#define MONTGOMERY_REDUCTION_RESULTS_FILE_NAME "' + montgomery_reduction_results_file_name + r'"', line) for line in contents]
     contents = [re.sub(r'#define COALESCED_T_MON_FILE_NAME "(.*)"'              , r'#define COALESCED_T_MON_FILE_NAME "'              + coalesced_T_mon_file_name              + r'"', line) for line in contents]
     contents = [re.sub(r'#define INVERSE_R_FILE_NAME "(.*)"'                    , r'#define INVERSE_R_FILE_NAME "'                    + inverse_R_file_name                    + r'"', line) for line in contents]
+    contents = [re.sub(r'#define M_PRIME_FILE_NAME "(.*)"'                      , r'#define M_PRIME_FILE_NAME "'                      + m_prime_file_name                      + r'"', line) for line in contents]
+
 with open('../src/constants.h', 'w') as output_file:
     output_file.write("".join(contents))
