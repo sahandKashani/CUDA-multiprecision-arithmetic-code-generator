@@ -15,5 +15,10 @@
 #define MUL_KARATSUBA_RESULTS_FILE_NAME "../data/mul_karatsuba_results.txt"
 #define ADD_M_RESULTS_FILE_NAME "../data/add_m_results.txt"
 #define SUB_M_RESULTS_FILE_NAME "../data/sub_m_results.txt"
+#define COALESCED_A_MON_FILE_NAME "../data/coalesced_a_mon.txt"
+#define COALESCED_B_MON_FILE_NAME "../data/coalesced_b_mon.txt"
+#define MONTGOMERY_REDUCTION_RESULTS_FILE_NAME "../data/montgomery_reduction_results.txt"
+#define COALESCED_T_MON_FILE_NAME "../data/coalesced_T_mon.txt"
+#define INVERSE_R_FILE_NAME "../data/inverse_R.txt"
 
 #endif

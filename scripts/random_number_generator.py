@@ -29,6 +29,7 @@ a = []
 b = []
 a_mon = []
 b_mon = []
+T_mon = []
 inverse_R = []
 
 print("Generating random numbers ... ", end = '')
@@ -39,12 +40,14 @@ for i in m:
     b_normal = k_bit_rand_int_less_than(i, precision)
     a_montgo = (a_normal * R) % i
     b_montgo = (b_normal * R) % i
+    T_montgo = (a_montgo * b_montgo)
     inv_R = gmpy2.invert(R, i)
 
     a.append(a_normal)
     b.append(b_normal)
     a_mon.append(a_montgo)
     b_mon.append(b_montgo)
+    T_mon.append(T_montgo)
     inverse_R.append(inv_R)
 print("done")
 
@@ -53,4 +56,5 @@ write_numbers_to_file_coalesced(a, False, coalesced_a_file_name)
 write_numbers_to_file_coalesced(b, False, coalesced_b_file_name)
 write_numbers_to_file_coalesced(a_mon, False, coalesced_a_mon_file_name)
 write_numbers_to_file_coalesced(b_mon, False, coalesced_b_mon_file_name)
+write_numbers_to_file_coalesced(T_mon, True, coalesced_T_mon_file_name)
 write_numbers_to_file_coalesced(inverse_R, False, inverse_R_file_name)

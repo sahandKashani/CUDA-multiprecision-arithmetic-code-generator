@@ -555,10 +555,8 @@ def mul_karatsuba_loc_generic(op_precision, op1_name, op2_name, res_name, op1_sh
 
     return asm
 
-def montgomery_reduction(m):
-    R = 2**precision
-    inverse_m_mod_R = gmpy2.invert(m, R)
-    m_prime = (-inverse_m_mod_R) % R
+def montgomery_reduction():
+    return []
 
 ################################################################################
 ################################ EXPORTED MACROS ###############################
@@ -687,22 +685,23 @@ def sub_m_loc():
 ################################################################################
 
 macros_to_print = [
-                   # montgomery_reduction
-                   # add_doc,
-                   # add_loc,
-                   # add_glo,
+                   add_doc,
+                   add_loc,
+                   add_glo,
 
-                   # sub_doc,
-                   # sub_loc,
-                   # sub_glo,
+                   sub_doc,
+                   sub_loc,
+                   sub_glo,
 
-                   # mul_doc,
-                   # mul_loc,
-                   # mul_karatsuba_loc,
-                   # mul_glo,
+                   mul_doc,
+                   mul_loc,
+                   mul_karatsuba_loc,
+                   mul_glo,
 
-                   # add_m_loc,
-                   # sub_m_loc
+                   add_m_loc,
+                   sub_m_loc,
+
+                   montgomery_reduction
                    ]
 
 all_lines = []
