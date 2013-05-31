@@ -100,12 +100,12 @@ def montgomery_reduction_check(c_file_name, T_mon_file_name, inverse_R_file_name
 
 print("Checking operation results:")
 
-binary_operator_check(add_results_file_name          , coalesced_a_file_name, coalesced_b_file_name, "add"          , "+", False)
-binary_operator_check(sub_results_file_name          , coalesced_a_file_name, coalesced_b_file_name, "sub"          , "-", False)
-binary_operator_check(mul_results_file_name          , coalesced_a_file_name, coalesced_b_file_name, "mul"          , "*", True)
-binary_operator_check(mul_karatsuba_results_file_name, coalesced_a_file_name, coalesced_b_file_name, "mul_karatsuba", "*", True)
+# binary_operator_check(add_results_file_name          , coalesced_a_file_name, coalesced_b_file_name, "add"          , "+", False)
+# binary_operator_check(sub_results_file_name          , coalesced_a_file_name, coalesced_b_file_name, "sub"          , "-", False)
+# binary_operator_check(mul_results_file_name          , coalesced_a_file_name, coalesced_b_file_name, "mul"          , "*", True)
+# binary_operator_check(mul_karatsuba_results_file_name, coalesced_a_file_name, coalesced_b_file_name, "mul_karatsuba", "*", True)
 
-modular_binary_operator_check(add_m_results_file_name, coalesced_a_file_name, coalesced_b_file_name, coalesced_m_file_name, "add_m", "+")
-modular_binary_operator_check(sub_m_results_file_name, coalesced_a_file_name, coalesced_b_file_name, coalesced_m_file_name, "sub_m", "-")
+# modular_binary_operator_check(add_m_results_file_name, coalesced_a_file_name, coalesced_b_file_name, coalesced_m_file_name, "add_m", "+")
+# modular_binary_operator_check(sub_m_results_file_name, coalesced_a_file_name, coalesced_b_file_name, coalesced_m_file_name, "sub_m", "-")
 
 montgomery_reduction_check(montgomery_reduction_results_file_name, coalesced_T_mon_file_name, inverse_R_file_name, coalesced_m_file_name)

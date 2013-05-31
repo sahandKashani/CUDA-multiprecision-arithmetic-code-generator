@@ -452,7 +452,7 @@ __global__ void montgomery_reduction_loc_kernel(uint32_t* dev_c, uint32_t* dev_T
     m_prime = dev_m_prime[COAL_IDX(0, tid)];
 
     // 10 iterations
-    // montgomery_reduction(c, T, m, m_prime);
+    montgomery_reduction(c, T, m, m_prime);
     // montgomery_reduction(c, T, m, m_prime);
     // montgomery_reduction(c, T, m, m_prime);
     // montgomery_reduction(c, T, m, m_prime);
@@ -614,7 +614,7 @@ void montgomery_reduction_benchmark()
     uint32_t* host_T       = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MAX_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
     uint32_t* host_m       = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
     uint32_t* host_c       = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * MIN_BIGNUM_NUMBER_OF_WORDS, sizeof(uint32_t));
-    uint32_t* host_m_prime = (uint32_t*) calloc(1                                             , sizeof(uint32_t));
+    uint32_t* host_m_prime = (uint32_t*) calloc(NUMBER_OF_BIGNUMS * 1                         , sizeof(uint32_t));
 
     assert(host_T       != NULL);
     assert(host_m       != NULL);

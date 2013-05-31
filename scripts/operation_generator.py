@@ -555,8 +555,61 @@ def mul_karatsuba_loc_generic(op_precision, op1_name, op2_name, res_name, op1_sh
 
     return asm
 
+def montgomery_reduction_generic(indent):
+    asm = []
+
+    u_i_m_precision = mul_res_precision(bits_per_word, precision)
+    u_i_m_word_count = number_of_words_needed_for_precision(u_i_m_precision)
+
+    T_precision = mul_res_precision(precision, precision)
+    A_precision = add_res_precision(T_precision, u_i_m_precision + (min_bignum_number_of_words - 1) * bits_per_word)
+    A_word_count = number_of_words_needed_for_precision(A_precision)
+
+    # We need to declare u_i as an array of 1 element, because the _generic_
+    # functions expect arrays as inputs.
+    asm.append('uint32_t A[' + str(A_word_count) + '] = {' + str(['T_loc!$' + str(i) + '$!' for i in range(max_bignum_number_of_words)]).replace('[', '').replace(']', '').replace('!$', '[').replace('$!', ']').replace('\'', '') + ', ' + str([0] * (A_word_count - max_bignum_number_of_words)).replace('[', '').replace(']', '') + '};\\')
+    asm.append('uint32_t u_i_m[' + str(u_i_m_word_count) + '] = ' + str([0] * u_i_m_word_count).replace('[', '{').replace(']', '}') + ';\\')
+    asm.append('uint32_t u_i[1] = {0};\\')
+
+    # for (i = 0, i < min_bignum_number_of_words, i++)
+    # {
+    #     u_i = a_i * m_prime mod 2^32
+    #     A = A + u_i * m * 2^(32 * i)
+    # }
+    for i in range(min_bignum_number_of_words):
+        asm.append('asm("mul.lo.u32 %0, %1, %2;" : "=r"(u_i[0]) : "r"(A[' + str(i) + ']), "r"(m_prime));\\')
+        asm += mul_loc_generic(bits_per_word, precision, 'u_i', 'm_loc', 'u_i_m', 0, 0, 0, 0)
+        asm += add_loc_generic(A_precision - i * bits_per_word, u_i_m_precision, 'A', 'u_i_m', 'A', i, 0, i, 0)
+
+    # A = A >> precision
+    pass
+
+    # if A >= m
+    # {
+    #     A = A - m
+    # }
+    pass
+
+    # c_loc = A
+    for i in range(min_bignum_number_of_words):
+        asm.append('asm("add.u32 %0, %1,  0;" : "=r"(c_loc[' + str(i) + ']) : "r"(A[' + str(i) + ']));\\')
+
+    # replace all occurrences of a_loc, b_loc and c_loc by their appropriate
+    # names, as provided by the user.
+    for i in range(len(asm)):
+        asm[i] = " " * 4 * indent + asm[i]
+
+    return asm
+
 def montgomery_reduction():
-    return []
+    indent = 1
+
+    asm = []
+    asm.append('#define montgomery_reduction(c_loc, T_loc, m_loc, m_prime)\\')
+    asm.append('{\\')
+    asm += montgomery_reduction_generic(indent)
+    asm.append('}' + '\n')
+    return asm
 
 ################################################################################
 ################################ EXPORTED MACROS ###############################
