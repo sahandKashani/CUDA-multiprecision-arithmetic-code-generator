@@ -582,17 +582,32 @@ def montgomery_reduction_generic(indent):
         asm += add_loc_generic(A_precision - i * bits_per_word, u_i_m_precision, 'A', 'u_i_m', 'A', i, 0, i, 0)
 
     # A = A >> precision
-    pass
+    complete_words_with_zeros_count = min_bignum_number_of_words
+    if min_bit_length != precision:
+        complete_words_with_zeros_count -= 1
+
+    # extra_0_bit_count = precision - complete_words_with_zeros_count * bits_per_word
+    # lo_mask = '0x' + hex((2**extra_0_bit_count) - 1)[2:].rjust(hex_digits_per_word, '0')
+    # hi_mask = '0x' + hex((2**bits_per_word - 1) - int(lo_mask, 16))[2:].rjust(hex_digits_per_word, '0')
+
+    # asm.append('uint32_t upper = 0;\\')
+
+    # for i in range(complete_words_with_zeros_count, complete_words_with_zeros_count + min_bignum_number_of_words):
+    #     asm.append('asm("and.b32 %0, %0, ' + hi_mask + ';" : "+r"(A[' + str(i) + ']) : );\\')
+    #     asm.append('asm("shr.b32 %0, %0, ' + str(extra_0_bit_count) + ';" : "+r"(A[' + str(i) + ']) : );\\')
+    #     asm.append('asm("and.b32 %0, %1, ' + lo_mask + ';" : "=r"(upper) : "r"(A[' + str(i + 1) + ']));\\')
+    #     asm.append('asm("shl.b32 %0, %0, ' + str(bits_per_word - extra_0_bit_count) + ';" : "+r"(upper) : );\\')
+    #     asm.append('asm("or.b32  %0, %0, %1;" : "+r"(A[' + str(i) + ']) : "r"(upper));\\')
 
     # if A >= m
     # {
     #     A = A - m
     # }
-    pass
 
     # c_loc = A
     for i in range(min_bignum_number_of_words):
         asm.append('asm("add.u32 %0, %1,  0;" : "=r"(c_loc[' + str(i) + ']) : "r"(A[' + str(i) + ']));\\')
+        # asm.append('asm("add.u32 %0, %1,  0;" : "=r"(c_loc[' + str(i) + ']) : "r"(A[' + str(i + complete_words_with_zeros_count) + ']));\\')
 
     # replace all occurrences of a_loc, b_loc and c_loc by their appropriate
     # names, as provided by the user.
