@@ -6,3 +6,5 @@
 - effect of memory access patterns on performance (coalesced vs non-coalesced)
 - benchmarks
 - testing framework
+
+- explain the python framework

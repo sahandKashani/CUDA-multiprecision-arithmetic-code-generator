@@ -1,0 +1,54 @@
+Introduction to GPUs:
+---------------------
+A graphics processing unit, also known as a GPU, is a specialized electronic
+circuit initially designed for fast memory manipulations needed to accelerate
+the creation of images in a frame buffer, which are then outputted to a display
+for viewing.
+
+Nowadays, GPUs are present in almost all electronics, including, but not limited
+to embedded systems, mobile phones, personal computers, workstations, and game
+consoles.
+
+Modern GPUs have highly parallel structures, making them much more effective
+than general-purpose CPUs for algorithms which process large blocks of data in
+parallel.
+
+Thus, GPUs have become very efficient at manipulating imagery, which consists
+of applying an algorithm parallely to all output pixels, which explains their
+abundant use in computer graphics.
+
+Modern GPUs use most of their circuitry to perform calculations related to 3D
+computer graphics.
+
+Computational Aspects:
+----------------------
+GPUs were initially used to accelerate texture mapping, polygon rendering, and
+geometry.
+
+The first GPUs had a fixed rendering pipeline, and could not be used for
+anything other than common geometry transformation and pixel-shading functions.
+
+With the introduction of programmable shaders, users could write their own
+shading programs to perform custom effects on the GPU with a high degree of
+flexibility, since programmable shaders could manipulate vertices and textures
+with many operations supported only by CPUs at the time.
+
+For example, programmable shaders could be used to perform oversampling and
+interpolation techniques to reduce aliasing, something that was not possible
+earlier with the fixed rendering pipeline.
+
+Computations performed by programmable shaders mostly involved matrix and vector
+operations, for which GPUs were very well suited (processing blocks of data in
+parallel).
+The availability of high speed linear algebra operations made scientists start
+using GPUs for non-graphical calculations.
+This was achieved by GPGPU techniques
+
+Computational Considerations:
+-----------------------------
+
+Bibliography:
+http://en.wikipedia.org/wiki/Graphics_processing_unit
+http://en.wikipedia.org/wiki/Programmable_shader
+http://en.wikipedia.org/wiki/General-purpose_computing_on_graphics_processing_units
+http://www.mathematik.uni-dortmund.de/~goeddeke/gpgpu/tutorial.html
