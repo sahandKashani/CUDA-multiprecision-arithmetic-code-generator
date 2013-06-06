@@ -321,7 +321,53 @@ simplicity, a 2D identifier is drawn in the figure above).
 Similarly, each thread within a block has a unique 1D, 2D, or 3D thread
 identifier.
 
-With CUDA 5, a maximum of 1024 threads can be contained in a block.
+With NVIDIA's Fermi (compute capability 2.0) and Kepler (compute capability 3.0)
+architectures, a maximum of 1024 threads can be contained in a block.
+
+Once a kernel is launched, the CUDA runtime generates the corresponding grid of
+threads, which are then assigned to execution resources on a block-by-block
+basis.
+
+CUDA execution resources are organized into streaming multiprocessors (SMs), two
+of which are shown in the following figure.
+
+< insert graphics: thread block assignment to SMs >
+
+A maximum number of blocks can be assigned to each SM (8 on Fermi GPUs, and 16
+on Kepler GPUs) as long as there are enough resources to satisfy the needs of
+all the blocks.
+
+If any of the resources needed for the simultaneous execution of the blocks are
+unavailable, less blocks will be scheduled for execution on the SM.
+
+The remaining blocks will execute once the resources needed are available again.
+
+Although blocks are scheduled to be run on an SM, it is the threads of that
+block that execute the computations.
+
+All threads of a block are scheduled for execution in structures called warps,
+each of which contain 32 continuous threads (identified by their threadIdx
+values).
+
+A crucial aspect about warps is that the hardware executes an instruction for
+all threads in the same warp before moving to the next instruction.
+
+It works well when all threads within a warp follow te same control flow path
+when working on their data.
+
+For example, branch statements work well when either all threads take the then
+statement, or all the threads take the else statement.
+
+If some threads execute the then part, and others execute the else part, the
+SIMT execution no longer works and the warps execution will require multiple
+passes through the divergent paths.
+
+One pass will be needed for each divergent path.
+
+These passes occur sequentially, thus increasing the execution time.
+
+The situation is even worse for loops, therefore it is very important to try and
+keep thread divergence low.
 
 CUDA Memory Structure:
 ----------------------
@@ -340,13 +386,121 @@ CUDA devices have several different memory types available to developers.
 
 Note that texture memory is not shown in the above figure.
 
-At the bottom of the figure, we see global memory, and constant memory.
+At the bottom of the figure, we see global memory, and constant memory, the 2
+off-chip memories available on a CUDA GPU.
 
-These are the memories to which the host can transfer data and from which it can
-recover data.
+Global memory is memory to which the host can write data to, and read data from.
 
-Constant memory provides read-only access to the device code, whereas global
-memory can be used for device reads and writes.
+Global memory is typically implemented as DRAM, and suffers from long access
+latencies, and finite access bandwidth.
+
+Constant memory supports short-latency, high-bandwidth, read-only access by the
+device when all threads simultaneously access the same location.
+
+Registers and shared memory are on-chip memories, and are thus accessible at
+very high speeds, and in a parallel way.
+
+Global Memory Coalescing:
+-------------------------
+Because of the high access latencies of DRAM, global memory is organized in such
+a way that when reading a certain location, several consecutive memory locations
+are returned.
+
+If an application can make use of multiple consecutive global memory locations
+before moving to other locations, the DRAMs can supply the data at a much higher
+rate than if random locations are accessed.
+
+When all threads in a warp execute a load instruction, the hardware detects
+if the threads access consecutive global memory locations.
+
+If it is the case, then it does not issue multiple load instruction, but will
+combine, or coalesce them into less read instructions.
+
+Therefore, to achieve anywhere close to the peak advertised global memory
+bandwidth, it is important to take advantage of memory coalescing, by organizing
+data in memory in such a way that each thread can read the data it needs at the
+same time as the other threads.
+
+Lets demonstrate this on an example where threads try to read a matrix.
+
+< insert graphics: inkscape drawing of coalesced vs non-coalesced >
+
+For example, normal CPU C code for accessing a 4x4 matrix would ressemble the
+following:
+
+int matrix[4][4];
+
+< insert graphics: 4x4 matrix drawing >
+
+for (int i = 0; i < 4; i++)
+{
+    for (int j = 0; j < 4; j++)
+    {
+        matrix[i][j] = ... ;
+    }
+}
+
+If we use 4 GPU threads, we get the following code:
+
+for (int j = 0; j < 4; j++)
+{
+    matrix[threadIdx.x][j] = ... ;
+}
+
+This matrix is stored in memory as a continuous 1D array of data, and accessing
+the data on the GPU with 4 threads parallely would look like this:
+
+< insert graphics: 1D 16-element drawing with arrows every 4 blocks >
+
+Note that each thread tries to load its "line" at the same time as the others.
+
+This results in 4 scattered global memory reads.
+
+What we would want to have, is reads of the following form:
+
+< insert graphics: 1D 16-element drawing with arrows on the first 4 blocks >
+
+The code corresponding the the above memory access pattern is:
+
+for (int j = 0; j < 4; j++)
+{
+    matrix[j][threadIdx.x] = ... ;
+}
+
+But then, each thread would no longer be accessing the element it initially
+wanted.
+
+The solution to this problem is to transpose the initial matrix, thus yielding
+the following 1D memory access pattern:
+
+< insert graphics: 1D matrix, but with 4 arrows on first 4 blocks, and indices
+correct this time (transposed) >
+
+This yields perfect coalescing, resulting in minimal global memory accesses.
+
+Therefore, a "simple" port from C code is to transpose arrays, since they are
+mostly accessed one row at a time, whereas GPUs can load one column at a time
+better for each thread's data to be fetched at the same time.
+
+One must strive for perfect coalescing per warp by aligning starting addresses
+(may need padding), and accessing continuous memory regions.
+
+General performance considerations summary:
+-------------------------------------------
+So, in order to maximize the use of all execution units on a CUDA GPU, it is
+important to make sure global memory reads and writes are coalesced whenever
+possible.
+
+If memory coalescing is not done, then all other "optimizations" would not be
+very significant.
+
+In case they are difficult to coalesce, it is better to try and use 1D texture
+lookups instead.
+
+One should make use of shared memory as much as possible, as it is much faster
+than global memory.
+
+If possible, avoid divergent branches at all cost, otherwise, keep them low.
 
 --------------------------------------------------------------------------------
 Bibliography:
