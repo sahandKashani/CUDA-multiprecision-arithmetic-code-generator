@@ -1,5 +1,5 @@
 - introduction to cuda architecture:
-- implications on coding style (branches, thread divergence, coalescing)
+- implications on coding style (branches, thread divergence, coalescing, warps)
 - introduction to why we need multiple precision arithmetic (at least, for a predefined input size)
 - presentation of operations needed (addition, subtraction, multiplication, and their modular counterparts)
 - implementation of operations, with detailed graph of each one, and with a specific output of the python script for each

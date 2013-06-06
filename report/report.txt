@@ -29,9 +29,9 @@ The first GPUs had a fixed-function rendering pipeline, and could not be used
 for anything other than common geometry transformation and pixel-shading
 functions that were pre-defined in hardware.
 
-Later on, GPUs added programmable shading to their capabilities, which allowed
-programmers to define their own straight-line shading programs to perform custom
-effects on the GPU.
+With the introduction of the NVIDA GeForce 3 in 2001, GPUs added programmable
+shading to their capabilities, which allowed developers to define their own
+straight-line shading programs to perform custom effects on the GPU.
 
 Bypassing the fixed-function rendering pipeline opened the door towards many
 future graphics novelties, such as cel shading, mip mapping, shadow volumes,
@@ -58,21 +58,30 @@ The shaders were written to apply transformations to a large set of elements at
 a time, such as to each pixel of the screen, or to every vertex of a 3D
 geometric model.
 
+Prior to the introduction of the GeForce 8800 GPU in 2006, GPUs had different
+processing units for each type of shader.
+
+The GeForce 8800 mapped the separate programmable graphics stages to an array of
+unified processors, which allowed dynamic partitioning of the computing elements
+to the different shaders.
+
+This allowed the GPU to achieve better load balancing.
+
+< insert graphics: unified programmable processor array of the GeForce 8800 GTX
+graphics pipeline >
+
 Computations performed by programmable shaders mostly involved matrix and vector
 operations, for which GPUs were very well suited (processing blocks of data in
 parallel).
 
-Previous generation GPUs had different processing units for each type of shader,
-but recent GPUs have moved towards unified shaders, which are able to execute
-any of the previous shaders.
-
-This allows GPUs to use their processing units for efficiently.
-
 Early GPGPU Principles:
 -----------------------
+GPU hardware designs evolved towards more unified processors, and were getting
+more similar to high-performance parallel computers.
 
-The availability of these high speed linear algebraic operations pushed
-scientists to start studying the use of GPUs for non-graphical calculations.
+The availability of high speed linear algebraic operations, as well as the
+unified procesors pushed scientists to start studying the use of GPUs for non-
+graphical calculations.
 
 This was achieved through the use of GPGPU (General Purpose computing on
 Graphics Processing Units) techniques.
@@ -86,6 +95,12 @@ of operations on arbitrary bits, thus can computer any value.
 
 At the time, programmers could only interface with GPUs through graphics APIs
 such as the OpenGL or DirectX.
+
+However, APIs had been designed to only match features required in graphics.
+
+To access the computational resources, programmers had to map their problem into
+graphics operations so the computations could be launched through OpenGL or
+DirectX API calls.
 
 With this consideration in mind, programmers had to arrange their data in such a
 way to "trick" the GPU in performing the calculations defined in the
@@ -226,24 +241,129 @@ buffer.
 
 As one can see, early GPGPU programming can quickly become quite tedious, even
 for simple algorithms, as one must understand the complete graphics rendering
-pipeline in order to manipulate their data on a GPU, and write their kernels.
+pipeline in order to trick the GPU in thinking it's performing graphics
+calculations, whereas the programmers are actually manipulating their data on
+GPU textures, and writing their kernels in shaders.
 
 Indeed, graphics APIs were not intended for scientific computations, and are
 thus not easily programmable.
 
-In order to fully benefit from the ... more computational oriented languages
-were created.
+In order to fully benefit from the parallel processing power of GPUs without
+having to know anything about the graphics rendering pipeline, more
+computational oriented languages were created.
 
 Nvidia CUDA:
 ------------
-
 The Compute Unified Device Architecture, more commonly known under the name
-CUDA, is a parallel
+CUDA, is a parallel computing platform and programming model developed by
+NVIDIA in 2006, and implemented by the GPUs they produce.
+
+CUDA was designed for GPGPU programming, as developers can compile C code for
+CUDA capable GPUs, thus avoiding the tedious work of mapping their algorithms to
+graphics concepts.
+
+Essentially, CUDA's main advantage is that developers have explicit access to
+the GPUs virtual instruction, as well as its device memory.
+
+By using CUDA, developers can use GPUs in a similar way as CPUs, without having
+to know anything about the graphics rendering pipeline.
+
+CUDA also exposes several GPU hardware features that are not accessible through
+graphics APIs, the most important of which is access to GPU shared memory, an
+area of on-chip GPU memory which can be accessed in parallel by several blocks
+of threads.
+
+CUDA also supports a thread synchronization primitive, allowing cooperative
+parallel processing of on-chip data, greatly reducing the high-latency off-chip
+bandwidth requirements of many parallel algorithms.
+
+CUDA Program Structure:
+-----------------------
+A CUDA program consists of multiple interleavings of CPU (host) code segments,
+and GPU (device) code segments.
+
+The segments that exhibit little data parallelism are implemented as host code,
+whereas the data parallel segments are implemented as device code.
+
+< insert graphics: execution of cuda program >
+
+All the code is written in ANSI C extended with keywords for labeling data-
+parallel functions called kernels, and their associated data structures.
+
+The compilation process separates the host code from the device code, passing
+the host code to the host's standard C compiler, and the device code to the
+NVIDIA C compiler (nvcc).
+
+In CUDA, computations are carried out by threads, a large number of which are
+generated by kernels to exploit data parallelism.
+
+Kernels specify the code to be executed by all threads during a parallel
+segment.
+
+All the threads execute the same code, thus CUDA programming follows the SIMT
+(Single Instruction Multiple Thread) programming style.
+
+CUDA Thread Organization:
+-------------------------
+When a kernel is launched, a grid of parallel threads are executed.
+
+Threads in a grid are organized into a two-level hierarchy, as shown in the
+figure below.
+
+< insert graphics: cuda thread organization >
+
+A grid consists of one or more thread blocks, each of which contain the same
+number of threads.
+
+Each thread block has a unique 1D, 2D, or 3D block identifier (note that for
+simplicity, a 2D identifier is drawn in the figure above).
+
+Similarly, each thread within a block has a unique 1D, 2D, or 3D thread
+identifier.
+
+With CUDA 5, a maximum of 1024 threads can be contained in a block.
+
+CUDA Memory Structure:
+----------------------
+In CUDA, the host and devices have separate memory spaces, as GPUs are typically
+hardware cards that come with their own DRAM.
+
+In order to provide data to a kernel, memory needs to be allocated on the
+device, and data has to be transferred to the allocated memory.
+
+Similarly, after kernel completion, device results must be transferred back from
+device memory to host memory.
+
+CUDA devices have several different memory types available to developers.
+
+< insert graphics: cuda memory hierarchy >
+
+Note that texture memory is not shown in the above figure.
+
+At the bottom of the figure, we see global memory, and constant memory.
+
+These are the memories to which the host can transfer data and from which it can
+recover data.
+
+Constant memory provides read-only access to the device code, whereas global
+memory can be used for device reads and writes.
 
 --------------------------------------------------------------------------------
 Bibliography:
+-------------
+Internet:
+---------
 http://en.wikipedia.org/wiki/Graphics_processing_unit
 http://en.wikipedia.org/wiki/Programmable_shader
 http://en.wikipedia.org/wiki/General-purpose_computing_on_graphics_processing_units
 http://en.wikipedia.org/wiki/Functional_completeness
 http://www.mathematik.uni-dortmund.de/~goeddeke/gpgpu/tutorial.html
+http://en.wikipedia.org/wiki/CUDA
+https://developer.nvidia.com/cuda-faq
+https://developer.nvidia.com/get-started-cuda-cc
+
+Books:
+------
+
+Papers:
+-------
