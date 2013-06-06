@@ -1,6 +1,11 @@
+DONE:
+-----
 - introduction to cuda architecture:
 - implications on coding style (branches, thread divergence, coalescing, warps)
 - effect of memory access patterns on performance (coalesced vs non-coalesced)
+
+PENDING:
+--------
 - introduction to why we need multiple precision arithmetic (at least, for a predefined input size)
 - presentation of operations needed (addition, subtraction, multiplication, and their modular counterparts)
 - first try: addition, and finding the best memory layout

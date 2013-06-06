@@ -423,8 +423,6 @@ same time as the other threads.
 
 Lets demonstrate this on an example where threads try to read a matrix.
 
-< insert graphics: inkscape drawing of coalesced vs non-coalesced >
-
 For example, normal CPU C code for accessing a 4x4 matrix would ressemble the
 following:
 
@@ -448,7 +446,8 @@ for (int j = 0; j < 4; j++)
 }
 
 This matrix is stored in memory as a continuous 1D array of data, and accessing
-the data on the GPU with 4 threads parallely would look like this:
+the data on the GPU with 4 threads parallely would look like this (1st loop
+iteration):
 
 < insert graphics: 1D 16-element drawing with arrows every 4 blocks >
 
@@ -472,6 +471,8 @@ wanted.
 
 The solution to this problem is to transpose the initial matrix, thus yielding
 the following 1D memory access pattern:
+
+< insert graphics: transposed matrix >
 
 < insert graphics: 1D matrix, but with 4 arrows on first 4 blocks, and indices
 correct this time (transposed) >
