@@ -12,7 +12,10 @@
 \date{\today}
 \maketitle
 
-\section*{Introduction}
+\tableofcontents
+\clearpage
+
+\section{Introduction}
 A graphics processing unit, also known as a GPU, is a specialized electronic
 circuit initially designed for fast memory manipulations needed to accelerate
 the creation of images in a frame buffer, which are then outputted to a display
@@ -28,9 +31,10 @@ Thus, GPUs have become very efficient at manipulating imagery, which consists
 of applying an algorithm parallely to all output pixels, which explains their
 abundant use in computer graphics.
 
-In this report, we look at ways to apply
+In this report, we explore the use of GPUs for arithmetic of specified
+precisions.
 
-\section*{Programmability}
+\section{GPU programmability evolution}
 GPUs were initially designed to accelerate texture mapping, polygon rendering,
 and geometry.
 The first GPUs had a fixed-function rendering pipeline, and could not be used
@@ -56,18 +60,19 @@ as other per-pixel attributes by using supplied textures as inputs.
 Soon, shaders could execute code loops and lengthy floating point math instead
 of straight-line code, which pushed them to quickly become as flexible as CPUs,
 while being orders of magnitude faster for image processing operations.
-The shaders were written to apply transformations to a large set of elements at
-a time, such as to each pixel of the screen, or to every vertex of a 3D
+The shaders were written to apply transformations to a large set of elements
+parallely, such as to each pixel of the screen, or to every vertex of a 3D
 geometric model.
 
-Prior to the introduction of the GeForce 8800 GPU in 2006 in 2006, GPUs had
-different processing units for each type of shader.
-The GeForce 8800 pipeline merged the separate programmable graphics stages to an
-array of unified processors, which allowed dynamic partitioning of the computing
-elements to the different shaders.
-This allowed the GPU to achieve better load balancing.
-The unified processor array of the GeForce 8800 GTX is shown on
+GPUs had different processing units for each type of shader, but with its
+introduction in 2006, the NVIDIA~GeForce~8800~GTX merged the separate
+programmable graphics stages to an array of unified processors, which allowed
+dynamic partitioning of the computing elements to the different shaders, thus
+attaining better load balancing.
+
+The unified processor array of the GeForce~8800~GTX is shown on
 Figure~\ref{fig:unified_programmable_processor_array_of_the_GeForce_8800_GTX_graphics_pipeline}.
+This unified design made GPUs architecturally closer to CPUs.
 
 \begin{figure}
 \includegraphics[width=\linewidth]{figs/unified_programmable_processor_array_of_the_GeForce_8800_GTX_graphics_pipeline}
@@ -75,15 +80,15 @@ Figure~\ref{fig:unified_programmable_processor_array_of_the_GeForce_8800_GTX_gra
 \label{fig:unified_programmable_processor_array_of_the_GeForce_8800_GTX_graphics_pipeline}
 \end{figure}
 
-\section*{The GPGPU Era}
+\section{The beginnings of GPGPU}
 GPU hardware designs evolved towards more unified processors, and were getting
 more similar to high-performance parallel computers.
 Computations performed by programmable shaders mostly involved matrix and vector
 operations, for which GPUs were very well suited (processing blocks of data in
 parallel).
 The availability of high speed linear algebraic operations, as well as the
-unified procesors pushed scientists to start studying the use of GPUs for non-
-graphical calculations.
+unified procesors pushed scientists to start studying the use of GPUs for
+non-graphical calculations.
 This was achieved through the use of GPGPU techniques.
 
 GPGPU, a shorthand for General Purpose computing on Graphics Processing Units,
@@ -91,104 +96,92 @@ consists of using a GPU, which typically only handles computations related to
 computer graphics, to perform computations for applications which are
 traditionally handled by a CPU.
 Such a consideration is possible since GPUs support a functionally complete set
-of operations on arbitrary bits, thus can computer any value.
+of operations on arbitrary bits, and can thus compute any value.
 
 At the time, programmers could only interface with GPUs through graphics APIs
-such as the OpenGL or DirectX.
-However, APIs had been designed to only match features required in graphics.
-To access the computational resources, programmers had to map their problem into
-graphics operations so the computations could be launched through OpenGL or
-DirectX API calls.
+such as OpenGL or DirectX.
+However, APIs had been designed to only support features required in graphics.
+To access the GPU's computational resources, programmers had to map their
+problem into graphics operations so the computations could be launched through
+OpenGL or DirectX API calls.
 With this consideration in mind, programmers had to arrange their data in such a
 way to ``trick'' the GPU in performing the calculations defined in the
 programmers' shaders as if they were graphics calculations, whereas in reality,
 they were scientific computations.
 
-\subsection*{GPGPU concepts}
+\subsection{GPGPU concepts}
 There are 4 main GPGPU concepts.
 
 \begin{enumerate}
 \item Data arrays are equivalent to GPU textures.
-\end{enumerate}
-
 The native data layout for CPUs is the one-dimensional array.
-
 Higher dimensional arrays are available for programmer convenience, but are
 actually implemented as one-dimensional arrays, and compilers use linear
 transformations to adapt the indices accordingly.
 
-On the other hand, GPUs use two-dimensional arrays as their native data layout,
-and are in fact textures.
-
+On the other hand, GPUs use two-dimensional arrays as their native data layout
+and are, in fact, textures.
 To make a data array available to the GPU, the CPU would need to create the
-data, then map it to a GPU texture which a shader could later read in order to
-process.
-
+data, then map it to a GPU texture which a shader could later read and process.
 In order to correctly use the memory available to a GPU, one needs to find a
 mapping between the CPU array indices, and the GPU texture coordinates.
-
 Once the mapping is done, the CPU would then transfer the data towards the GPU
 texture.
 
-The second GPGPU concept is that computation code (kernel) is equivalent to a
-shader.
-
-There is a fundamental difference between the computing model of a CPU and a
-GPU, and this impacts the way one needs to think algorithmically.
-
+\item Computation code, also called a \emph{kernel}, is equivalent to a shader.
+There is a fundamental difference between the computing model of CPUs and GPUs,
+and this impacts the way one needs to think algorithmically.
 GPUs follow the data-parallel programming paradigm, whereas CPUs follow the
 sequential programming paradigm.
 
-As such, CPUs code is usually implemented as loop-oriented programs, since they
-have to iterate over all elements and apply a function to each one.
-
-In contrast, GPUs have highly parallel structures which can apply the same
-algorithm to large blocks of data parallely, assuming that there is no
-dependence between the operations.
+As such, CPU code is usually implemented as a loop-oriented program, since it
+has to iterate over all elements of a data structure, and apply a function to
+each one.
+In contrast, GPUs have highly parallel structures which can apply the same code
+to large blocks of data parallely, assuming that there is no dependency among
+the operations.
 
 To show the contrast in the programming model, let's compare how one would
-compute the addition of 2 N-element vectors and store the result in the first
+compute the addition of 2 $N$-element vectors and store the result in the first
 vector.
 
 Assume we have the following 2 vectors already pre-filled with their respective
 data:
 
-int a[N];
-int b[N];
+\begin{verbatim}
+  int a[N];
+  int b[N];
+\end{verbatim}
 
 The CPU code to perform this vector addition would look like this:
 
-for (int i = 0; i < N; i += 1)
-{
-    a[i] = a[i] + b[i];
-}
+\begin{verbatim}
+  for (int i = 0; i < N; i += 1)
+  {
+      a[i] = a[i] + b[i];
+  }
+\end{verbatim}
 
 Note that the CPU will have to loop over all indices of the 2 arrays, and add
 each element one by one in a sequential way.
-
-It is important to note that each of the N computations are completely
-independent, as for a given output index, there are distinct input memory
-locations, and there are no data dependencies between elements in the result
+It is important to note that each of the $N$ computations are completely
+independent, as there are no data dependencies between elements in the result
 vector.
+For example, once we have computed \verb!a[0] = a[0] + b[0]!, its result will be
+of no help when it comes to computing \verb!a[1] = a[1] + b[1]!.
 
-For example, once we have computed a[0] = a[0] + b[0], its result will be of no
-help when it comes to computing a[1] = a[1] + b[1].
-
-As such, assuming we have a computation unit with N parallel structures, we
-would be able to compute the vector addition without the need of any loop by
-assigning one vector element addition to each computation element.
-
+As such, assuming we have a computation unit with $N$ parallel structures, we
+could be able to compute the vector addition without the need of any loop by
+assigning one vector element addition to each computation unit.
 This is easily done by adapting the index of the vector elements that are
 provided to each computation unit.
 
 This is the core idea behind GPGPU computing: separating the identical, but
-independent calculations from one another, and assigning them to execution units
-which can then execute them at the same time.
-
+independent calculations from one another, and assigning them to different
+execution units which can then execute them at the same time.
 Algorithms are extracted into computational kernels which are no longer vector
 expressions, but scalar templates of the algorithm that form a single output
 value from a set of input values.
-
 These algorithms are implemented in shaders which will then calculate the
 independent computations parallely.
 
@@ -196,212 +189,197 @@ For the vector addition used above, the 2 vectors will have to be written into
 textures by the CPU, then the shader will read the appropriate elements from the
 texture to perform its independent computation.
 
-The third GPGPU concept is that computations are equivalent to "drawing".
+\item Computations are equivalent to ``drawing''.
+Indeed, the final output of a GPU is an ``image'', therefore all computations
+have to, in some way or another, write their ``results'' to the frame buffer for
+it to be available to the programmer.
 
-Indeed, the final output of a GPU is an "image", therefore all computations have
-to, in some way or another, write their "results" to the frame buffer for it to
-be available to the programmer.
-
-Therefore, the programmer must tell the graphics API (either OpenGL or DirectX)
-to draw a rectangle over the whole screen (since our screens are rectangles), so
-that the fragment shader can apply its code to each pixel independently and
-output an answer.
-
+The programmer must tell the graphics API (either OpenGL or DirectX) to draw a
+rectangle over the whole screen, so that the fragment shader can apply its code
+to each pixel independently and output an answer.
 If the API were not instructed to draw something that fills the whole screen,
-then the fragment shader's code would not be applied to all our data in the
+then the fragment shader's code would not be applied to all the data in the
 textures we created, but only to a subset of it.
 
 By rendering the simple rectangle, we can be sure that the kernel is executed
 for each data item in the original texture.
 
-The fourth GPGPU concept is feedback.
-
-On CPUs, data is read from memory locations, and results are written to memory
-locations.
-
+\item On CPUs, data is read from memory locations, and results are written to
+memory locations.
 On GPUs, we just saw that the final output is written to the frame buffer.
 
 However, a huge number of algorithms are not straight-line code, and require the
 GPU's result to be used as input for another subsequent computation.
-
-To achieve this on a GPU, we need to execute another rendering pass
-
+To achieve this on a GPU, we need to execute another rendering pass.
 This is achieved by writing the current result to another texture, binding this
-texture as well as another input and output textures, and potentially also
-binding another shader for the algorithm to continue.
-
+texture as well as other input or output textures, and potentially also binding
+another shader for the algorithm to continue.
 This is known as the ping-pong technique since one has to keep juggling between
 textures until the algorithm is done and the result is outputted to the frame
 buffer.
+
+\end{enumerate}
 
 To recap all that is needed for GPGPU on graphics APIs, one needs to create data
 on the CPU, map it to GPU textures, write shaders to perform computations based
 on the data in the textures, and finally write the result back to the frame
 buffer.
 
-As one can see, early GPGPU programming can quickly become quite tedious, even
-for simple algorithms, as one must understand the complete graphics rendering
-pipeline in order to trick the GPU in thinking it's performing graphics
-calculations, whereas the programmers are actually manipulating their data on
-GPU textures, and writing their kernels in shaders.
+Early GPGPU programming can quickly become quite tedious, even for simple
+algorithms, as one must understand the complete graphics rendering pipeline in
+order to trick the GPU in thinking it's performing graphics calculations,
+whereas the programmers are actually manipulating their data on GPU textures,
+and writing their kernels in shaders.
 
 Indeed, graphics APIs were not intended for scientific computations, and are
 thus not easily programmable.
-
 In order to fully benefit from the parallel processing power of GPUs without
 having to know anything about the graphics rendering pipeline, more
 computational oriented languages were created.
 
-% Nvidia CUDA:
-% ------------
-% The Compute Unified Device Architecture, more commonly known under the name
-% CUDA, is a parallel computing platform and programming model developed by
-% NVIDIA in 2006, and implemented by the GPUs they produce.
+\section{NVIDIA CUDA}
+The Compute Unified Device Architecture, more commonly known under the name
+CUDA, is a parallel computing platform and programming model developed by
+NVIDIA in 2006, and implemented by the GPUs they produce.
 
-% CUDA was designed for GPGPU programming, as developers can compile C code for
-% CUDA capable GPUs, thus avoiding the tedious work of mapping their algorithms to
-% graphics concepts.
+CUDA was designed for GPGPU programming, as developers can compile C code for
+CUDA capable GPUs, thus avoiding the tedious work of mapping their algorithms to
+graphics concepts.
+Essentially, CUDA's main advantage is that developers have explicit access to
+the GPU's virtual instruction set, as well as its device memory.
+By using CUDA, developers can use GPUs in a similar way as CPUs, without having
+to know anything about the graphics rendering pipeline.
 
-% Essentially, CUDA's main advantage is that developers have explicit access to
-% the GPUs virtual instruction, as well as its device memory.
+CUDA also exposes several GPU hardware features that are not accessible through
+graphics APIs, the most important of which is access to GPU shared memory, an
+area of on-chip GPU memory which can be accessed in parallel by several blocks
+of threads.
+CUDA also supports a thread synchronization primitive, allowing cooperative
+parallel processing of on-chip data, greatly reducing the high-latency off-chip
+bandwidth requirements of many parallel algorithms.
 
-% By using CUDA, developers can use GPUs in a similar way as CPUs, without having
-% to know anything about the graphics rendering pipeline.
+\subsection{CUDA Program Structure}
+A CUDA program consists of multiple interleavings of CPU code segments,
+and GPU code segments.
+CPU code is called \emph{host} code, whereas GPU code is called \emph{device}
+code.
+The segments that exhibit little data parallelism are implemented as host code,
+whereas the data parallel segments are implemented as device code.
 
-% CUDA also exposes several GPU hardware features that are not accessible through
-% graphics APIs, the most important of which is access to GPU shared memory, an
-% area of on-chip GPU memory which can be accessed in parallel by several blocks
-% of threads.
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.35]{figs/cuda_program_execution_phases}
+\caption{Cuda program execution phases}
+\label{fig:cuda_program_execution_phases}
+\end{figure}
 
-% CUDA also supports a thread synchronization primitive, allowing cooperative
-% parallel processing of on-chip data, greatly reducing the high-latency off-chip
-% bandwidth requirements of many parallel algorithms.
+All the code is written in ANSI C extended with keywords for labeling data-
+parallel functions called \emph{kernels}, and their associated data structures.
+The compilation process separates the host code from the device code, passing
+the host code to the host's standard C compiler, and the device code to the
+NVIDIA C compiler (nvcc).
 
-% CUDA Program Structure:
-% -----------------------
-% A CUDA program consists of multiple interleavings of CPU (host) code segments,
-% and GPU (device) code segments.
+In CUDA, computations are carried out by \emph{threads}, a large number of which
+are generated by kernels to exploit data parallelism.
+Kernels specify the code to be executed by \emph{all} threads during a parallel
+segment.
+Since all threads execute the same code, thus CUDA programming model follows the
+\emph{SIMT} (Single Instruction Multiple Thread) programming style.
 
-% The segments that exhibit little data parallelism are implemented as host code,
-% whereas the data parallel segments are implemented as device code.
+\subsection{CUDA thread organization}
+When a kernel is launched, a \emph{grid} of parallel threads are executed.
+Threads in a grid are organized into a two-level hierarchy, as shown in
+Figure~\ref{fig:cuda_thread_organization}.
+A grid consists of one or more thread blocks, each of which contain the same
+number of threads.
+Each thread block has a unique 1D, 2D, or 3D block identifier (note that for
+simplicity, a 2D identifier is drawn in
+Figure~\ref{fig:cuda_thread_organization}).
+Similarly, each thread within a block has a unique 1D, 2D, or 3D thread
+identifier.
 
-% < insert graphics: execution of cuda program >
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.27]{figs/cuda_thread_organization}
+\caption{Two-level CUDA thread organization}
+\label{fig:cuda_thread_organization}
+\end{figure}
 
-% All the code is written in ANSI C extended with keywords for labeling data-
-% parallel functions called kernels, and their associated data structures.
+Once a kernel is launched, the CUDA runtime generates the corresponding grid of
+threads, which are then assigned to execution resources on a block-by-block
+basis.
+To have some numbers, NVIDIA's Fermi (compute capability 2.0) and Kepler
+(compute capability 3.0) architectures can have a maximum of 1024 threads
+concurrently running in a block.
 
-% The compilation process separates the host code from the device code, passing
-% the host code to the host's standard C compiler, and the device code to the
-% NVIDIA C compiler (nvcc).
+CUDA execution resources are organized into streaming multiprocessors (SMs), two
+of which are shown in Figure~\ref{fig:sm_thread_block_assignment}.
+A maximum number of blocks can be assigned to each SM (8 on Fermi GPUs, and 16
+on Kepler GPUs) as long as there are enough resources to satisfy the needs of
+all the blocks.
+If any of the resources needed for the simultaneous execution of the blocks are
+unavailable, less blocks will be scheduled for execution on the SM.
+The remaining blocks will execute once the resources needed are available again.
 
-% In CUDA, computations are carried out by threads, a large number of which are
-% generated by kernels to exploit data parallelism.
+\begin{figure}
+\centering
+\includegraphics[scale=0.4]{figs/sm_thread_block_assignment}
+\caption{SM thread block assignment}
+\label{fig:sm_thread_block_assignment}
+\end{figure}
 
-% Kernels specify the code to be executed by all threads during a parallel
-% segment.
+Although blocks are scheduled to be run on an SM, it is the threads of that
+block that execute the computations.
+All threads of a block are scheduled for execution in structures called warps,
+each of which contain 32 continuous threads (identified by their $threadIdx$
+values).
 
-% All the threads execute the same code, thus CUDA programming follows the SIMT
-% (Single Instruction Multiple Thread) programming style.
+A crucial aspect about warps is that the hardware executes an instruction for
+all threads in the same warp \emph{before} moving to the next instruction.
+This works well when all threads within a warp follow the same control flow path
+when working on their data.
+For example, \emph{if-then-else} style branch statements work well when either
+all threads take the \emph{then} statement, or all the threads take the
+\emph{else} statement.
+If some threads execute the \emph{then} part, and others execute the \emph{else}
+part, the SIMT execution model no longer works and the warp will require
+multiple execution passes through the divergent paths, with one pass for each
+divergent path.
+These passes occur sequentially, thus increasing the execution time.
+The situation is even worse for \emph{while} loops, since the each thread could
+potentially loop a different number of times compared to the others, therefore
+it is very important to try and keep thread divergence low.
 
-% CUDA Thread Organization:
-% -------------------------
-% When a kernel is launched, a grid of parallel threads are executed.
+\subsection{CUDA memory structure}
+In CUDA, the host and devices have separate memory spaces, as GPUs are typically
+hardware cards that come with their own DRAM.
+In order to provide data to a kernel, memory needs to be allocated on the
+device, and data has to be transferred to the allocated memory.
+Similarly, after kernel completion, device results must be transferred back from
+device memory to host memory.
+CUDA devices expose several different memories to developers, some of which are
+shown on Figure~\ref{fig:cuda_memory_hierarchy}.
+Note that for simplicity, texture memory is not shown.
 
-% Threads in a grid are organized into a two-level hierarchy, as shown in the
-% figure below.
+\begin{figure}
+\centering
+\includegraphics[scale=0.25]{figs/cuda_memory_hierarchy}
+\caption{CUDA memory hierarchy}
+\label{fig:cuda_memory_hierarchy}
+\end{figure}
 
-% < insert graphics: cuda thread organization >
+At the bottom of the figure, we see \emph{global} memory, and \emph{constant}
+memory, the 2 off-chip memories available on a CUDA GPU.
+Global memory, typically implemented as DRAM, can be written to, and read from
+the host.
+Because of its implementation technology, global memory suffers from long access
+latencies, and finite access bandwidth.
+In contrast, constant memory supports short-latency, high-bandwidth, read-only
+access by the device when all threads simultaneously access the same location.
+Registers and shared memory are on-chip memories, and are thus accessible at
+very high speeds, and in a parallel way.
 
-% A grid consists of one or more thread blocks, each of which contain the same
-% number of threads.
-
-% Each thread block has a unique 1D, 2D, or 3D block identifier (note that for
-% simplicity, a 2D identifier is drawn in the figure above).
-
-% Similarly, each thread within a block has a unique 1D, 2D, or 3D thread
-% identifier.
-
-% With NVIDIA's Fermi (compute capability 2.0) and Kepler (compute capability 3.0)
-% architectures, a maximum of 1024 threads can be contained in a block.
-
-% Once a kernel is launched, the CUDA runtime generates the corresponding grid of
-% threads, which are then assigned to execution resources on a block-by-block
-% basis.
-
-% CUDA execution resources are organized into streaming multiprocessors (SMs), two
-% of which are shown in the following figure.
-
-% < insert graphics: thread block assignment to SMs >
-
-% A maximum number of blocks can be assigned to each SM (8 on Fermi GPUs, and 16
-% on Kepler GPUs) as long as there are enough resources to satisfy the needs of
-% all the blocks.
-
-% If any of the resources needed for the simultaneous execution of the blocks are
-% unavailable, less blocks will be scheduled for execution on the SM.
-
-% The remaining blocks will execute once the resources needed are available again.
-
-% Although blocks are scheduled to be run on an SM, it is the threads of that
-% block that execute the computations.
-
-% All threads of a block are scheduled for execution in structures called warps,
-% each of which contain 32 continuous threads (identified by their threadIdx
-% values).
-
-% A crucial aspect about warps is that the hardware executes an instruction for
-% all threads in the same warp before moving to the next instruction.
-
-% It works well when all threads within a warp follow te same control flow path
-% when working on their data.
-
-% For example, branch statements work well when either all threads take the then
-% statement, or all the threads take the else statement.
-
-% If some threads execute the then part, and others execute the else part, the
-% SIMT execution no longer works and the warps execution will require multiple
-% passes through the divergent paths.
-
-% One pass will be needed for each divergent path.
-
-% These passes occur sequentially, thus increasing the execution time.
-
-% The situation is even worse for loops, therefore it is very important to try and
-% keep thread divergence low.
-
-% CUDA Memory Structure:
-% ----------------------
-% In CUDA, the host and devices have separate memory spaces, as GPUs are typically
-% hardware cards that come with their own DRAM.
-
-% In order to provide data to a kernel, memory needs to be allocated on the
-% device, and data has to be transferred to the allocated memory.
-
-% Similarly, after kernel completion, device results must be transferred back from
-% device memory to host memory.
-
-% CUDA devices have several different memory types available to developers.
-
-% < insert graphics: cuda memory hierarchy >
-
-% Note that texture memory is not shown in the above figure.
-
-% At the bottom of the figure, we see global memory, and constant memory, the 2
-% off-chip memories available on a CUDA GPU.
-
-% Global memory is memory to which the host can write data to, and read data from.
-
-% Global memory is typically implemented as DRAM, and suffers from long access
-% latencies, and finite access bandwidth.
-
-% Constant memory supports short-latency, high-bandwidth, read-only access by the
-% device when all threads simultaneously access the same location.
-
-% Registers and shared memory are on-chip memories, and are thus accessible at
-% very high speeds, and in a parallel way.
-
-% Global Memory Coalescing:
-% -------------------------
+\subsection{Maximizing global memory bandwidth}
 % Because of the high access latencies of DRAM, global memory is organized in such
 % a way that when reading a certain location, several consecutive memory locations
 % are returned.

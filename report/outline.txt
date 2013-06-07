@@ -13,3 +13,4 @@ PENDING:
 - explain the python framework
 - benchmarks
 - testing framework
+- fermi vs kepler
