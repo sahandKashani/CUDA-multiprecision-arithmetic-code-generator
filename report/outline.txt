@@ -1,16 +1,82 @@
 DONE:
 -----
+- introduction to GPUs
+- early GPGPU
 - introduction to cuda architecture:
-- implications on coding style (branches, thread divergence, coalescing, warps)
-- effect of memory access patterns on performance (coalesced vs non-coalesced)
+- implications on coding style
+    - thread execution
+    - branches
+    - thread divergence
+    - warps
+    - memory coalescing
 
 PENDING:
 --------
-- introduction to why we need multiple precision arithmetic (at least, for a predefined input size)
-- presentation of operations needed (addition, subtraction, multiplication, and their modular counterparts)
-- first try: addition, and finding the best memory layout
-- implementation of operations, with detailed graph of each one, and with a specific output of the python script for each
-- explain the python framework
-- benchmarks
-- testing framework
-- fermi vs kepler
+
+- Explain why it took so long?
+    - learning how to use CUDA from scratch with no prior experience
+    - not really knowing what is the best option since we've never done this
+      before, so we proceeded by trying different hypothesis' on paper, then
+      implementing them to see which ones are best, but then having to change
+      all the code to the newly discovered way of doing things.
+
+- data representation in memory:
+    - "endianness"
+    - memory layout for binary addition (operand interleaving)
+    - benchmarks proving which memory layout is better with graphs
+    - 2D vs 1D arrays and why we chose 1D (once the best memory layout was found,
+      we found out that transposing matrices was the way to go, but transposing
+      a 2D array type is not possible in C, because of type checking issues, so
+      we went for 1D arrays and in-place transposing algorithms)
+    - supported precisions, and why do we impose
+      min_bignum_number_of_words == math.ceil((precision + 1) / bits_per_word)?
+
+- Framework explanation:
+    - how do we test, and make sure the results are correct?
+    - explain why the benchmarks are only run on powers of 2 thread and block
+      count (this is to be sure warps are fully populated)
+
+- operation implementation:
+    - why assembly instead of C? (availability of carry flags, and also explain
+      that 100% C was first used for a large part of the project, but that it
+      made some parts infeasible, as the cuda runtime kept losing carries in
+      loops for our operations. When we went to assembly, it was hard at first,
+      but it payed off, as we could get the same job done in a more "verbose"
+      way, but the results were predictable, as we opted for hand-unrolled code)
+    - why did we choose to implement code generators for any precision, instead
+      of trying to just do 1 precision? (Explain that Andrea initially told us
+      that they have montgomery multiplication, but that it wasn't very
+      re-usable. After that, we had the idea to just make our operations work on
+      any precision, so that the next people who ever have to do a project on
+      GPUs already have operations on any precision operands they want, and can
+      focus on their algorithms, rather than basic operations, which turn out
+      not so basic at all in the end).
+    - Explain why we use python for assembly generation instead of C? (Talk
+      about problems we had when changing configurations, and all the changes it
+      implied to all the C code, since we were noobs and didn't know what we
+      were really looking for, just experimenting different stuff based on our
+      hypothesis')
+    - Explain how the operation generation script works (building blocks are the
+      _generic_ functions), and they are used to make the exported macros
+      available to the C code.
+    - explain why assembly lines are "separated", instead of in bigger blocks?
+      (used for maximizing register usage, otherwise limited to 30, and easily
+      exceeded). A quick example with the karatsuba or multiplication code shows
+      the limit is rapidly hit.
+    - For each operation:
+        - graph explaining algorithm in steps with optimizations, like only
+          adding parts of the words we know are needed, ...
+        - show generated code for a "small" precision, otherwise takes too much
+          space.
+        - xxplain that the script already takes optimum layout considerations
+          into account for any precision. Give example of such optimizations.
+        - for operations which have branches, explain how we try to avoid them.
+
+    - explain compiler bug with loops and macros, with the ptx extract we have
+      for multiplication.
+
+- benchmarks:
+    - benchmarks of all operations, in both "global" and "local" mode, along
+      with graphs.
+    - compare fermi vs kepler performance, and "try" to explain it, even though
+      not quite sure how to do this.
