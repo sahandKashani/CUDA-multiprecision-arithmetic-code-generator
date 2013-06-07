@@ -5,6 +5,7 @@
 \usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage[hypcap]{caption}
+\usepackage{listing}
 
 \begin{document}
 \title{Pending}
@@ -380,106 +381,132 @@ Registers and shared memory are on-chip memories, and are thus accessible at
 very high speeds, and in a parallel way.
 
 \subsection{Maximizing global memory bandwidth}
-% Because of the high access latencies of DRAM, global memory is organized in such
-% a way that when reading a certain location, several consecutive memory locations
-% are returned.
+Because of DRAM's high access latency, global memory is organized in such a way
+that when reading a certain location, several consecutive memory locations are
+returned.
+As such, if an application can make use of multiple consecutive global memory locations
+before moving to other locations, the DRAMs can supply the data at a much higher
+rate than if random locations are accessed.
 
-% If an application can make use of multiple consecutive global memory locations
-% before moving to other locations, the DRAMs can supply the data at a much higher
-% rate than if random locations are accessed.
+When all threads in a warp execute a load instruction, the hardware detects if
+the threads are accessing consecutive global memory locations, and if it is the
+case, then it does not issue multiple separate load instructions, but will
+combine, or \emph{coalesce} them into less load instructions.
+To achieve anywhere close to the peak advertised global memory bandwidth, it is
+important to take advantage of global memory coalescing, by organizing data in
+memory in such a way that each thread can read the data it needs at the same
+time as the other threads without requiring separate loads.
 
-% When all threads in a warp execute a load instruction, the hardware detects
-% if the threads access consecutive global memory locations.
+\subsubsection{Example}
+Suppose 4 threads are trying to read a \verb+4x4+ matrix \verb+m[4][4]+:
 
-% If it is the case, then it does not issue multiple load instruction, but will
-% combine, or coalesce them into less read instructions.
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.50]{figs/4x4_matrix}
+\label{fig:4x4_matrix}
+\end{figure}
 
-% Therefore, to achieve anywhere close to the peak advertised global memory
-% bandwidth, it is important to take advantage of memory coalescing, by organizing
-% data in memory in such a way that each thread can read the data it needs at the
-% same time as the other threads.
+\hspace{0pt} \\ \\
+Normal CPU code for accessing such a matrix would ressemble the following:
+\begin{verbatim}
+  for (int i = 0; i < 4; i++)
+  {
+      for (int j = 0; j < 4; j++)
+      {
+          m[i][j] = ... ;
+      }
+  }
+\end{verbatim}
 
-% Lets demonstrate this on an example where threads try to read a matrix.
+\hspace{0pt} \\
+If we use 4 GPU threads, we get the following code:
 
-% For example, normal CPU C code for accessing a 4x4 matrix would ressemble the
-% following:
+\begin{verbatim}
+  for (int j = 0; j < 4; j++)
+  {
+      m[threadIdx.x][j] = ... ;
+  }
+\end{verbatim}
 
-% int matrix[4][4];
+\hspace{0pt} \\
+This matrix is stored in memory as a continuous 1D array of data, and accessing
+the data on the GPU with 4 threads parallely would look like this (first loop
+iteration):
 
-% < insert graphics: 4x4 matrix drawing >
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{figs/4x4_matrix_non_coalesced_memory_access}
+\caption{Non-coalesced memory access}
+\label{fig:4x4_matrix_non_coalesced_memory_access}
+\end{figure}
 
-% for (int i = 0; i < 4; i++)
-% {
-%     for (int j = 0; j < 4; j++)
-%     {
-%         matrix[i][j] = ... ;
-%     }
-% }
+\hspace{0pt} \\
+Note that each thread tries to load its ``line'' at the same time as the others,
+resulting in 4 scattered global memory reads.
+What we would want to have, is reads of the following form:
 
-% If we use 4 GPU threads, we get the following code:
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{figs/4x4_matrix_coalesced_memory_access_no_transpose}
+\caption{Coalesced memory access}
+\label{fig:4x4_matrix_coalesced_memory_access_no_transpose}
+\end{figure}
 
-% for (int j = 0; j < 4; j++)
-% {
-%     matrix[threadIdx.x][j] = ... ;
-% }
+\hspace{0pt} \\
+The code corresponding to the memory access pattern in
+Figure~\ref{fig:4x4_matrix_coalesced_memory_access_no_transpose} is:
 
-% This matrix is stored in memory as a continuous 1D array of data, and accessing
-% the data on the GPU with 4 threads parallely would look like this (1st loop
-% iteration):
+\begin{verbatim}
+  for (int j = 0; j < 4; j++)
+  {
+      matrix[j][threadIdx.x] = ... ;
+  }
+\end{verbatim}
 
-% < insert graphics: 1D 16-element drawing with arrows every 4 blocks >
+\hspace{0pt} \\
+But then, each thread would no longer be accessing the element it initially
+wanted, as all threads in
+Figure~\ref{fig:4x4_matrix_coalesced_memory_access_no_transpose} are accessing
+thread 1's ``line''.
+The solution to this problem is to transpose the initial matrix, thus yielding
+the correct memory access pattern, as well as the minimum number of global
+memory accesses:
 
-% Note that each thread tries to load its "line" at the same time as the others.
+\begin{figure}[ht]
+\centering
+\includegraphics[scale=0.50]{figs/4x4_matrix_transposed}
+\caption{Transposed matrix}
+\label{fig:4x4_matrix_transposed}
+\end{figure}
 
-% This results in 4 scattered global memory reads.
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\linewidth]{figs/4x4_matrix_coalesced_memory_access}
+\caption{Correct coalesced memory access}
+\label{fig:4x4_matrix_coalesced_memory_access}
+\end{figure}
 
-% What we would want to have, is reads of the following form:
+\hspace{0pt} \\
+Therefore, a ``simple'' port of CPU code is to transpose data arrays, since
+concurrent GPU threads can load columns more efficiently.
+One must strive for perfect per-warp memory coalescing by aligning starting
+addresses (may need padding for this), and accessing continuous memory regions,
+all in order to reduce global memory accesses, and to maximize bandwidth.
 
-% < insert graphics: 1D 16-element drawing with arrows on the first 4 blocks >
+\subsection{Performance summary}
+So, in order to maximize the use of all execution units on a CUDA GPU, it is
+important to make sure global memory reads and writes are coalesced whenever
+possible.
+If memory coalescing is not done, then all other ``optimizations'' would mostly
+be insignificant.
+In case global memory accesses are difficult to coalesce, it is better to try
+and use 1D texture lookups instead, as they are more suited for scattered access
+patterns.
+One should make use of shared memory as much as possible, as it is much faster
+than global memory.
+Finally, if possible, divergent branches should be avoided at all cost to avoid
+warp rescheduling.
 
-% The code corresponding the the above memory access pattern is:
-
-% for (int j = 0; j < 4; j++)
-% {
-%     matrix[j][threadIdx.x] = ... ;
-% }
-
-% But then, each thread would no longer be accessing the element it initially
-% wanted.
-
-% The solution to this problem is to transpose the initial matrix, thus yielding
-% the following 1D memory access pattern:
-
-% < insert graphics: transposed matrix >
-
-% < insert graphics: 1D matrix, but with 4 arrows on first 4 blocks, and indices
-% correct this time (transposed) >
-
-% This yields perfect coalescing, resulting in minimal global memory accesses.
-
-% Therefore, a "simple" port from C code is to transpose arrays, since they are
-% mostly accessed one row at a time, whereas GPUs can load one column at a time
-% better for each thread's data to be fetched at the same time.
-
-% One must strive for perfect coalescing per warp by aligning starting addresses
-% (may need padding), and accessing continuous memory regions.
-
-% General performance considerations summary:
-% -------------------------------------------
-% So, in order to maximize the use of all execution units on a CUDA GPU, it is
-% important to make sure global memory reads and writes are coalesced whenever
-% possible.
-
-% If memory coalescing is not done, then all other "optimizations" would not be
-% very significant.
-
-% In case they are difficult to coalesce, it is better to try and use 1D texture
-% lookups instead.
-
-% One should make use of shared memory as much as possible, as it is much faster
-% than global memory.
-
-% If possible, avoid divergent branches at all cost, otherwise, keep them low.
 %
 % --------------------------------------------------------------------------------
 % Bibliography:
