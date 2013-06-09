@@ -17,6 +17,31 @@
 \clearpage
 
 \section{Introduction}
+For 30 years, one of the primary ways of speeding up electronic devices has been
+to increase CPU clock speeds.
+From around speeds of 1~MHz in the 1980s, clock speeds have risen to more than
+4~GHz in 2013.
+Although increasing CPU clock speeds is by far not the \emph{only} way to
+increase performance, it has been a reliable source for improvement.
+However, fundamental limits in the fabrication of integrated circuits makes it
+no longer feasible to just increase clock speeds of existing architectures as a
+way to gain more performance.
+For years, supercomputers have used another way to increase performance, which
+consists of performing more \emph{parallel} work by increasing the \emph{number}
+of processors used in machines.
+
+To apply this idea to personal computers, the industry has steadily been
+shifting towards multi-core CPUs.
+This trend can easily be seen since the introduction of the first dual-core
+consumer CPUs in 2005, up to the current high-end 16-core workstation CPUs.
+As such, parallel computing is no longer a \emph{niche} that only exotic
+supercomputers once claimed to perform.
+Indeed, more and more electronic devices have started to incorporate parallel
+computing capabilities as an effort to provide functionality well beyond those
+of their predecessors.
+
+However, CPUs are not the first devices with parallel computing in mind, as GPUs
+have applied this idea earlier.
 A graphics processing unit, also known as a GPU, is a specialized electronic
 circuit initially designed for fast memory manipulations needed to accelerate
 the creation of images in a frame buffer, which are then outputted to a display
@@ -24,7 +49,6 @@ for viewing.
 Nowadays, GPUs are present in almost all electronics, including, but not limited
 to embedded systems, mobile phones, personal computers, workstations, and game
 consoles.
-
 Modern GPUs have highly parallel structures, making them much more effective
 than general-purpose CPUs for algorithms which process large blocks of data in
 parallel.
@@ -32,8 +56,10 @@ Thus, GPUs have become very efficient at manipulating imagery, which consists
 of applying an algorithm parallely to all output pixels, which explains their
 abundant use in computer graphics.
 
-In this report, we explore the use of GPUs for arithmetic of specified
-precisions.
+In this report, we explore the implementation of a form of multiple-precision
+arithmetic on GPUs in order to leverage their high bandwidth capabilities.
+
+\clearpage
 
 \section{GPU programmability evolution}
 GPUs were initially designed to accelerate texture mapping, polygon rendering,
@@ -81,7 +107,8 @@ This unified design made GPUs architecturally closer to CPUs.
 \label{fig:unified_programmable_processor_array_of_the_GeForce_8800_GTX_graphics_pipeline}
 \end{figure}
 
-\section{The beginnings of GPGPU}
+\section{Early GPGPU}
+\subsection{Introduction}
 GPU hardware designs evolved towards more unified processors, and were getting
 more similar to high-performance parallel computers.
 Computations performed by programmable shaders mostly involved matrix and vector
@@ -472,14 +499,14 @@ The solution to this problem is to transpose the initial matrix, thus yielding
 the correct memory access pattern, as well as the minimum number of global
 memory accesses:
 
-\begin{figure}[ht]
+\begin{figure}[h]
 \centering
 \includegraphics[scale=0.50]{figs/4x4_matrix_transposed}
 \caption{Transposed matrix}
 \label{fig:4x4_matrix_transposed}
 \end{figure}
 
-\begin{figure}[ht]
+\begin{figure}[h]
 \centering
 \includegraphics[width=\linewidth]{figs/4x4_matrix_coalesced_memory_access}
 \caption{Correct coalesced memory access}
