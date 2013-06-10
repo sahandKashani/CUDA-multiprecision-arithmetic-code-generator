@@ -559,10 +559,22 @@ GMP is a reference, because it is carefully designed to be as fast as possible,
 both for small operands, and for big operands by using fullwords as the basic
 arithmetic type, fast algorithms, and highly optimized assembly code.
 
-GMP stores integers as arrays of machine words, under the type name of
-\verb+mpz_t+.
+GMP keeps integers in a structure called \verb+mpz_t+.
+Each \verb+mpz_t+ structure stores numbers under sign and magnitude
+representation, which involves keeping the number's sign bit in a field,
+separate from its absolute value, which is contained in another field.
+The number's absolute value is represented as an array of unsigned integers.
 Each \verb+mpz_t+ may be composed of a different number of machine words, in
 order to maintain maximum memory efficiency.
+
+It is important to note that while GMP uses \emph{sign and magnitude}
+representation for its integers, native machine integers are stored in another
+form called \emph{two's complement} representation.
+Two's complement notation has many advantages at the hardware level, but its
+main drawback is that it is bit-length dependent, and is thus impossible
+to use for multiple precision arithmetic, for which one does not know in advance
+what the precision of its operands are going to be.
+
 By examining the source code of some operations over \verb+mpz_t+, we can easily
 see that its efficiency comes from its ability to take care of all ``corner
 cases'' appropriately.
@@ -620,7 +632,7 @@ It is a GPU's architecture which defines this behaviour.
 Therefore, the main idea to grasp here is that one cannot optimize operations on
 a thread-by-thread basis.
 
-\subsection{Our GPU memory representation}
+\subsection{Our big number representation}
 Our initial project idea was to work towards solving the 131-bit Certicom ECC
 challenge.
 The challenge is to compute ECC private keys from a given list of ECC public
@@ -628,7 +640,76 @@ keys and associated system parameters. This is the type of problem an adversary
 would face when attempting to defeat an elliptic curve cryptosystem.
 
 This field uses \emph{fixed}-precision modular arithmetic for computations,
-therefore not explicitly needing runtime-level multiple precision arithmetic.
+therefore it does not explicitly need dynamic runtime-level multiple precision
+arithmetic.
+This means that once a specific precision is chosen for the Certicom challenge,
+\emph{all} operations will be bounded by a certain size constraint.
+For example, supposing we choose to solve the 131-bit Certicom challenge, we
+will know in advance that integers are going to be at most 131 bits in length.
+With this information, we can implement algorithms which operate on this exact
+precision the most efficiently possible.
+Even if we were to have to represent a 2-bit integer, we would use 131 bits of
+storage in order to make sure the representation is consistent between all
+threads.
+Note that we only need to be able to represent integers consistently, as
+ECC cryptography does not use any floating point values.
+
+Unlike general multiple precision libraries like GMP, we decided not to use a
+sign and magnitude representation for our integers, since we have an upper bound
+on the precision of our operands.
+Thus, we decided to store our numbers in two's complement representation.
+The advantage of two's complement representation is that the fundamental
+arithmetic operations of addition, subtraction, and multiplication are identical
+to those for unsigned binary numbers (as long as the inputs are represented in
+the same number of bits).
+
+In order to take the most advantage of a device, it is useful to represent data
+in its primary data type, which consists of 32-bit fullwords for CUDA GPUs.
+We will store our numbers as arrays of these fullwords, so as to have the most
+compact notation possible.
+In order to store $X$-bits using 32-bit words, one would need at least
+$\lceil \frac{X}{32} \rceil$ words.
+For 131-bit numbers, this means we need 5 words to store each number.
+
+Figure~\ref{fig:big_endian_number_representation} shows a possible number
+representation for the 131-bit number
+\verb+0x00000004 ADBFB00E 372139F3 5E2503DD B65B9045+, assuming it is stored in
+an array named \verb+a+.
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.5]{figs/big_endian_number_representation}
+\caption{Most significant word first representation (MSW)}
+\label{fig:big_endian_number_representation}
+\end{figure}
+
+However, for convenience, we decided to store our numbers with their least
+significant word first, as all algorithms start from the least significant
+words and continue on from there.
+This would spare us the need to do constant index manipulations.
+Figure~\ref{fig:little_endian_number_representation} shows this alternative
+representation.
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.5]{figs/little_endian_number_representation}
+\caption{Least significant word first representation (LSW)}
+\label{fig:little_endian_number_representation}
+\end{figure}
+
+Note that, since we are using two's complement notation, a negative number would
+be represented as shown on Figure~\ref{fig:negative_number_representation}, with
+several leading \verb+1+s in its MSW.
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.5]{figs/negative_number_representation}
+\caption{Negative number representation}
+\label{fig:negative_number_representation}
+\end{figure}
+
+\subsection{Laying out operands for binary opeartors}
+
 
 %
 % --------------------------------------------------------------------------------
@@ -645,6 +726,7 @@ therefore not explicitly needing runtime-level multiple precision arithmetic.
 % https://developer.nvidia.com/cuda-faq
 % https://developer.nvidia.com/get-started-cuda-cc
 % http://gmplib.org/
+% http://en.wikipedia.org/wiki/Two%27s_complement
 %
 % Books:
 % ------

@@ -1,5 +1,6 @@
-DONE:
------
+Organization:
+-------------
+
 - introduction to GPUs
 - early GPGPU
 - introduction to cuda architecture:
@@ -9,9 +10,6 @@ DONE:
     - thread divergence
     - warps
     - memory coalescing
-
-PENDING:
---------
 
 - Explain why it took so long?
     - learning how to use CUDA from scratch with no prior experience
