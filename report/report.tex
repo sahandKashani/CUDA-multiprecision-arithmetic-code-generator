@@ -9,7 +9,7 @@
 
 \begin{document}
 
-\title{Implementing multiple-precision arithmetic on NVIDIA CUDA-enabled GPUs}
+\title{Implementing generic multiple precision arithmetic on GPUs}
 \author{Alexandre Carlessi \and Sahand Kashani-Akhavan}
 \date{\today}
 \maketitle
@@ -316,6 +316,7 @@ A representation of the CUDA program execution flow is shown in
 Figure~\ref{fig:cuda_program_execution_phases}.
 
 \section{CUDA thread organization}
+\label{sec:cuda_thread_organization}
 When a kernel is launched, a \emph{grid} of parallel threads are executed.
 Threads in a grid are organized into a two-level hierarchy, as shown in
 Figure~\ref{fig:cuda_thread_organization}.
@@ -543,14 +544,91 @@ shortest possible.
 
 \chapter{Implementation}
 \section{Data representation}
+\subsection{CPU vs GPU representations}
 Nowadays, fields such as cryptography, require the ability to perform
 computations on very large integers.
-On CPUs, efficient multiple-precision arithmetic libraries provide solutions
-these fields can use.
+In C, multiple precision arithmetic is not built into the language, therefore
+one must use external libraries to have the feature.
+Until now, one of the reference libraries has been the GNU Multiple Precision
+Arithmetic Library, more commonly called GMP.
+GMP is a free library for arbitrary precision arithmetic, operating on signed
+integers, rational numbers, and floating point numbers.
+There is no practical limit to the precision except the ones implied by the
+available memory in the machine GMP runs on.
+GMP is a reference, because it is carefully designed to be as fast as possible,
+both for small operands, and for big operands by using fullwords as the basic
+arithmetic type, fast algorithms, and highly optimized assembly code.
 
-On CUDA GPUs, the smallest allocatable memory size for integers is 32 bits, or 4
-bytes.
-Even if one would want to use a \
+GMP stores integers as arrays of machine words, under the type name of
+\verb+mpz_t+.
+Each \verb+mpz_t+ may be composed of a different number of machine words, in
+order to maintain maximum memory efficiency.
+By examining the source code of some operations over \verb+mpz_t+, we can easily
+see that its efficiency comes from its ability to take care of all ``corner
+cases'' appropriately.
+This is done by using a huge number of branches in order to steer the execution
+towards the most efficient way to perform the computation.
+For example, let's briefly examine the GMP multiplication code.
+The GMP multiplication code performs the following:
+
+\begin{enumerate}
+\item Checks if one operand is bigger than the other, switching operand pointers
+and sizes if it is the case.
+\item Checks if native long multiplication is supported by the processor.
+\item Checks if the bigger operand is less than 2 machine words, in which case
+it decides to perform the ``naive'' schoolbook multiplication instead of
+asymptotically better algorithms, such as the Karatsuba-Offman algorithm, or the
+Toom-Cook algorithm, since their overhead makes them less efficient at small
+operand sizes.
+This operation is one machine instruction if the processor supports long
+multiplication natively, otherwise multiple instructions are used.
+\item If the operands are not bounded by 2 machine words, then further tests are
+carried out so as to determine which multiplication algorithm should be used to
+compute the result more efficiently.
+\item Once the computation is performed, the result is returned.
+\end{enumerate}
+
+\hspace{0pt} \\
+Of course, several memory management stages are interleaved within the
+computations to maintain space efficiency.
+Many more tests take place in the code, but the most important ones are listed
+above.
+
+GMP has worked well until now, since it has been running on CPUs, which support
+very efficient sequential execution pipelines.
+However, if we were to use GMP directly on GPUs, program execution speed may be
+very disappointing.
+In section~\ref{sec:cuda_thread_organization}, we wrote about the SIMT execution
+model GPUs employ, and the importance for each thread to execute the same
+instruction.
+However, as seen previously, GMP code contains deepy nested branches, leading to
+high potential for divergent branches during execution.
+If one were to launch thousands of threads, each of which executes the GMP code
+for multiplication, in which each thread has a potential chance to follow a
+divergent branch, then performance would be disappointing.
+
+In order to support efficient arithmetic on GPUs, we need to guarantee that each
+thread follows the most divergent-free path possible.
+Indeed, GPUs are \emph{throughput}-oriented devices, whereas CPUs are
+\emph{latency}-oriented devices.
+CPUs can have highly optimized code which can decide how to compute \emph{each}
+single instance the most efficiently possible, whereas GPUs must provide more
+general algorithms which will compute \emph{all} threads parallely,
+independently of the fact that each individual thread \emph{could} have executed
+the computation in a more efficient way.
+It is a GPU's architecture which defines this behaviour.
+Therefore, the main idea to grasp here is that one cannot optimize operations on
+a thread-by-thread basis.
+
+\subsection{Our GPU memory representation}
+Our initial project idea was to work towards solving the 131-bit Certicom ECC
+challenge.
+The challenge is to compute ECC private keys from a given list of ECC public
+keys and associated system parameters. This is the type of problem an adversary
+would face when attempting to defeat an elliptic curve cryptosystem.
+
+This field uses \emph{fixed}-precision modular arithmetic for computations,
+therefore not explicitly needing runtime-level multiple precision arithmetic.
 
 %
 % --------------------------------------------------------------------------------
@@ -566,6 +644,7 @@ Even if one would want to use a \
 % http://en.wikipedia.org/wiki/CUDA
 % https://developer.nvidia.com/cuda-faq
 % https://developer.nvidia.com/get-started-cuda-cc
+% http://gmplib.org/
 %
 % Books:
 % ------
