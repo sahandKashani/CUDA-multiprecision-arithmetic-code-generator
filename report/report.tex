@@ -709,7 +709,13 @@ several leading \verb+1+s in its MSW.
 \end{figure}
 
 \subsection{Laying out operands for binary opeartors}
+Before we started working on implementing our operations, we sought to find out
+what would be the best way to store operands in memory for binary operations,
+such as for addition or subtraction.
 
+Suppose we want to perform many additions paralelly by spreding them over
+multiple threads.
+We would need to have 2 operands at our disposal.
 
 %
 % --------------------------------------------------------------------------------

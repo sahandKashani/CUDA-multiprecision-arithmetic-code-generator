@@ -21,9 +21,17 @@ void read_coalesced_bignums_from_file(const char* file_name, uint32_t* bignums, 
 
     for (uint32_t i = 0; i < word_count; i++)
     {
-        for (uint32_t j = 0; j < NUMBER_OF_BIGNUMS; j++)
+        for (uint32_t j = 0; j < NUMBER_OF_BIGNUMS_IN_FILES; j++)
         {
-            fscanf(file, "%x", &bignums[COAL_IDX(i, j)]);
+            if (j < NUMBER_OF_BIGNUMS)
+            {
+                fscanf(file, "%x", &bignums[COAL_IDX(i, j)]);
+            }
+            else
+            {
+                uint32_t dummy = 0;
+                fscanf(file, "%x", &dummy);
+            }
         }
         fprintf(file, "\n");
     }

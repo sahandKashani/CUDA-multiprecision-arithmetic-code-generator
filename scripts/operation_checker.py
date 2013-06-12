@@ -108,4 +108,4 @@ print("Checking operation results:")
 # modular_binary_operator_check(add_m_results_file_name, coalesced_a_file_name, coalesced_b_file_name, coalesced_m_file_name, "add_m", "+")
 # modular_binary_operator_check(sub_m_results_file_name, coalesced_a_file_name, coalesced_b_file_name, coalesced_m_file_name, "sub_m", "-")
 
-montgomery_reduction_check(montgomery_reduction_results_file_name, coalesced_T_mon_file_name, inverse_R_file_name, coalesced_m_file_name)
+# montgomery_reduction_check(montgomery_reduction_results_file_name, coalesced_T_mon_file_name, inverse_R_file_name, coalesced_m_file_name)

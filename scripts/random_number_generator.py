@@ -34,7 +34,7 @@ inverse_R = []
 m_prime = []
 
 print("Generating random numbers ... ", end = '')
-for i in range(number_of_bignums):
+for i in range(number_of_bignums_in_files):
     m.append(k_bit_rand_int(precision))
 for i in m:
     a_normal = k_bit_rand_int_less_than(i, precision)

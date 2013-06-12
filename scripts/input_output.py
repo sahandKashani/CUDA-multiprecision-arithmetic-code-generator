@@ -31,7 +31,7 @@ def write_numbers_to_file_coalesced(numbers, is_long_number, file_name):
 def read_numbers_from_file_coalesced(file_name):
     with open(file_name, 'r') as f:
         # coalesced version (numbers on a column)
-        hex_parts_coalesced = [line.split() for line in f]
+        hex_parts_coalesced = [line.split()[0:number_of_bignums] for line in f]
 
     # transpose values to get non-coalesced version (number is on a line)
     hex_parts_normal = zip(*hex_parts_coalesced)

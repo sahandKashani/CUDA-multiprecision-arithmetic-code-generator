@@ -1,5 +1,4 @@
 #include "benchmarks.h"
-#include "constants.h"
 #include <stdlib.h>
 
 int main(void)
@@ -10,7 +9,10 @@ int main(void)
     // mul_karatsuba_benchmark();
     // add_m_benchmark();
     // sub_m_benchmark();
-    montgomery_reduction_benchmark();
+    // montgomery_reduction_benchmark();
+
+    assembly_vs_C_addition_benchmark();
+    assembly_vs_C_modular_addition_benchmark();
 
     // for leak detection when using cuda-memcheck
     cudaDeviceReset();

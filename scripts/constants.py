@@ -3,8 +3,8 @@ import re
 
 # change anything you want here
 precision = 131
-threads_per_block = 2
-blocks_per_grid = 2
+threads_per_block = 32
+blocks_per_grid = 32
 coalesced_m_file_name = r'../data/coalesced_m.txt'
 coalesced_a_file_name = r'../data/coalesced_a.txt'
 coalesced_b_file_name = r'../data/coalesced_b.txt'
@@ -34,6 +34,7 @@ max_hex_length = max_bignum_number_of_words * hex_digits_per_word
 number_of_bignums = threads_per_block * blocks_per_grid
 file_name_operations_h = r'../src/operations.h'
 R = 2 ** precision
+number_of_bignums_in_files = 1024 * 1024
 
 # The number of words needed to hold "precision" bits MUST be the same as the
 # number of words needed to hold "precision + 1" bits. This is needed, because
@@ -52,6 +53,7 @@ with open('../src/bignum_types.h', 'w') as output_file:
 
 with open('../src/constants.h', 'r') as input_file:
     contents = [line for line in input_file]
+    contents = [re.sub(r"#define NUMBER_OF_BIGNUMS_IN_FILES \d+"                , r"#define NUMBER_OF_BIGNUMS_IN_FILES "              + str(number_of_bignums_in_files)              , line) for line in contents]
     contents = [re.sub(r"#define THREADS_PER_BLOCK \d+"                         , r"#define THREADS_PER_BLOCK "                       + str(threads_per_block)                       , line) for line in contents]
     contents = [re.sub(r"#define BLOCKS_PER_GRID \d+"                           , r"#define BLOCKS_PER_GRID "                         + str(blocks_per_grid)                         , line) for line in contents]
     contents = [re.sub(r"#define NUMBER_OF_BIGNUMS \d+"                         , r"#define NUMBER_OF_BIGNUMS "                       + str(number_of_bignums)                       , line) for line in contents]
