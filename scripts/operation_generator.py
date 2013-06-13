@@ -578,13 +578,23 @@ def montgomery_reduction_generic(indent):
     # }
     for i in range(min_bignum_number_of_words):
         asm.append('asm("mul.lo.u32 %0, %1, %2;" : "=r"(u_i[0]) : "r"(A[' + str(i) + ']), "r"(m_prime));\\')
+        # asm.append('printf("%d  %08x\\n", ' + str(i) + ', u_i[0]);\\')
         asm += mul_loc_generic(bits_per_word, precision, 'u_i', 'm_loc', 'u_i_m', 0, 0, 0, 0)
+        # asm.append("""for(uint32_t i = 0; i < 6; i++)\\
+        #            {\\
+        #                printf("%d  %08x", i, u_i_m[i]);\\
+        #            }\\""")
         asm += add_loc_generic(A_precision - i * bits_per_word, u_i_m_precision, 'A', 'u_i_m', 'A', i, 0, i, 0)
+        asm.append("""for(uint32_t i = 0; i < 10; i++)\\
+                   {\\
+                       printf("%d  %08x", i, u_i_m[9 - i]);\\
+                   }\\
+                   printf("\\n");\\""")
 
-    # A = A >> precision
-    complete_words_with_zeros_count = min_bignum_number_of_words
-    if min_bit_length != precision:
-        complete_words_with_zeros_count -= 1
+    # # A = A >> precision
+    # complete_words_with_zeros_count = min_bignum_number_of_words
+    # if min_bit_length != precision:
+    #     complete_words_with_zeros_count -= 1
 
     # extra_0_bit_count = precision - complete_words_with_zeros_count * bits_per_word
     # lo_mask = '0x' + hex((2**extra_0_bit_count) - 1)[2:].rjust(hex_digits_per_word, '0')
@@ -604,10 +614,13 @@ def montgomery_reduction_generic(indent):
     #     A = A - m
     # }
 
-    # c_loc = A
-    for i in range(min_bignum_number_of_words):
+    # # c_loc = A
+    # for i in range(min_bignum_number_of_words):
+    #     asm.append('asm("add.u32 %0, %1,  0;" : "=r"(c_loc[' + str(i) + ']) : "r"(A[' + str(i) + ']));\\')
+    #     # asm.append('asm("add.u32 %0, %1,  0;" : "=r"(c_loc[' + str(i) + ']) : "r"(A[' + str(i + complete_words_with_zeros_count) + ']));\\')
+
+    for i in range(A_word_count):
         asm.append('asm("add.u32 %0, %1,  0;" : "=r"(c_loc[' + str(i) + ']) : "r"(A[' + str(i) + ']));\\')
-        # asm.append('asm("add.u32 %0, %1,  0;" : "=r"(c_loc[' + str(i) + ']) : "r"(A[' + str(i + complete_words_with_zeros_count) + ']));\\')
 
     # replace all occurrences of a_loc, b_loc and c_loc by their appropriate
     # names, as provided by the user.
@@ -700,6 +713,12 @@ def mul_karatsuba_loc():
     asm.append('')
     return asm
 
+def mul_karatsuba_glo():
+    asm = mul_karatsuba_loc()
+    asm = [line.replace(r'mul_karatsuba_loc(c_loc, a_loc, b_loc)', r'mul_karatsuba_glo(c_glo, a_glo, b_glo, tid)') for line in asm]
+    asm = [re.sub(r'_loc\[(\d+)\]', r'_glo[COAL_IDX(\1, tid)]', line) for line in asm]
+    return asm
+
 # modular addition #############################################################
 def add_m_loc():
     # algorithm:
@@ -725,6 +744,12 @@ def add_m_loc():
     asm.append('}' + '\n')
     return asm
 
+def add_m_glo():
+    asm = add_m_loc()
+    asm = [line.replace(r'add_m_loc(c_loc, a_loc, b_loc, m_loc)', r'add_m_glo(c_glo, a_glo, b_glo, m_glo, tid)') for line in asm]
+    asm = [re.sub(r'_loc\[(\d+)\]', r'_glo[COAL_IDX(\1, tid)]', line) for line in asm]
+    return asm
+
 # modular subtraction ##########################################################
 def sub_m_loc():
     # algorithm:
@@ -748,6 +773,12 @@ def sub_m_loc():
     asm.append('}' + '\n')
     return asm
 
+def sub_m_glo():
+    asm = sub_m_loc()
+    asm = [line.replace(r'sub_m_loc(c_loc, a_loc, b_loc, m_loc)', r'sub_m_glo(c_glo, a_glo, b_glo, m_glo, tid)') for line in asm]
+    asm = [re.sub(r'_loc\[(\d+)\]', r'_glo[COAL_IDX(\1, tid)]', line) for line in asm]
+    return asm
+
 ################################################################################
 ################################# CODE GENERATOR ###############################
 ################################################################################
@@ -763,11 +794,16 @@ macros_to_print = [
 
                    mul_doc,
                    mul_loc,
-                   mul_karatsuba_loc,
                    mul_glo,
 
+                   mul_karatsuba_loc,
+                   mul_karatsuba_glo,
+
                    add_m_loc,
+                   add_m_glo,
+
                    sub_m_loc,
+                   sub_m_glo,
 
                    montgomery_reduction
                    ]

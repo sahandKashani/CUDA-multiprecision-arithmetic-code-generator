@@ -1,0 +1,162 @@
+======== NVPROF is profiling benchmarks...
+======== Command: benchmarks
+Reading coalesced bignums from file "../data/coalesced_a.txt" ... done
+Reading coalesced bignums from file "../data/coalesced_b.txt" ... done
+Benchmarking "add_loc" on GPU ... done
+Benchmarking "add_glo" on GPU ... done
+Writing coalesced bignums to   file "../data/add_results.txt" ... done
+Reading coalesced bignums from file "../data/coalesced_a.txt" ... done
+Reading coalesced bignums from file "../data/coalesced_b.txt" ... done
+Benchmarking "sub_loc" on GPU ... done
+Benchmarking "sub_glo" on GPU ... done
+Writing coalesced bignums to   file "../data/sub_results.txt" ... done
+Reading coalesced bignums from file "../data/coalesced_a.txt" ... done
+Reading coalesced bignums from file "../data/coalesced_b.txt" ... done
+Benchmarking "mul_loc" on GPU ... done
+Benchmarking "mul_glo" on GPU ... done
+Writing coalesced bignums to   file "../data/mul_results.txt" ... done
+Reading coalesced bignums from file "../data/coalesced_a.txt" ... done
+Reading coalesced bignums from file "../data/coalesced_b.txt" ... done
+Benchmarking "mul_karatsuba_loc" on GPU ... done
+Benchmarking "mul_karatsuba_glo" on GPU ... done
+Writing coalesced bignums to   file "../data/mul_karatsuba_results.txt" ... done
+Reading coalesced bignums from file "../data/coalesced_a.txt" ... done
+Reading coalesced bignums from file "../data/coalesced_b.txt" ... done
+Reading coalesced bignums from file "../data/coalesced_m.txt" ... done
+Benchmarking "add_m_loc" on GPU ... done
+Benchmarking "add_m_glo" on GPU ... done
+Writing coalesced bignums to   file "../data/add_m_results.txt" ... done
+Reading coalesced bignums from file "../data/coalesced_a.txt" ... done
+Reading coalesced bignums from file "../data/coalesced_b.txt" ... done
+Reading coalesced bignums from file "../data/coalesced_m.txt" ... done
+Benchmarking "sub_m_loc" on GPU ... done
+Benchmarking "sub_m_glo" on GPU ... done
+Writing coalesced bignums to   file "../data/sub_m_results.txt" ... done
+======== Profiling result:
+     Start  Duration           Grid Size     Block Size     Regs*    SSMem*    DSMem*      Size  Throughput    Device   Context    Stream  Name
+        us        us                                                      B         B        MB        GB/s                              
+  2.27e+04  452.0550                   -              -         -         -         -   83.89MB  185.57GB/s         0         1         2  [CUDA memset]
+  2.32e+04  450.9020                   -              -         -         -         -   83.89MB  186.04GB/s         0         1         2  [CUDA memset]
+  2.36e+04  450.4550                   -              -         -         -         -   83.89MB  186.23GB/s         0         1         2  [CUDA memset]
+  2.42e+04  2.64e+04                   -              -         -         -         -   83.89MB    3.18GB/s         0         1         2  [CUDA memcpy HtoD]
+  5.07e+04  2.63e+04                   -              -         -         -         -   83.89MB    3.19GB/s         0         1         2  [CUDA memcpy HtoD]
+  7.70e+04  2.55e+04                   -              -         -         -         -   83.89MB    3.29GB/s         0         1         2  [CUDA memcpy DtoH]
+  1.03e+05  453.3020                   -              -         -         -         -   83.89MB  185.06GB/s         0         1         2  [CUDA memset]
+  1.03e+05  452.1830                   -              -         -         -         -   83.89MB  185.51GB/s         0         1         2  [CUDA memset]
+  1.04e+05  452.2780                   -              -         -         -         -   83.89MB  185.47GB/s         0         1         2  [CUDA memset]
+  1.05e+05  454.3910                   -              -         -         -         -   83.89MB  184.61GB/s         0         1         2  [CUDA memset]
+  1.05e+05  453.2070                   -              -         -         -         -   83.89MB  185.09GB/s         0         1         2  [CUDA memset]
+  1.06e+05  452.6940                   -              -         -         -         -   83.89MB  185.30GB/s         0         1         2  [CUDA memset]
+  1.06e+05  2.63e+04                   -              -         -         -         -   83.89MB    3.18GB/s         0         1         2  [CUDA memcpy HtoD]
+  1.33e+05  2.63e+04                   -              -         -         -         -   83.89MB    3.19GB/s         0         1         2  [CUDA memcpy HtoD]
+  1.59e+05  2.52e+04                   -              -         -         -         -   83.89MB    3.33GB/s         0         1         2  [CUDA memcpy DtoH]
+  1.84e+05  453.4940                   -              -         -         -         -   83.89MB  184.98GB/s         0         1         2  [CUDA memset]
+  1.85e+05  452.5670                   -              -         -         -         -   83.89MB  185.36GB/s         0         1         2  [CUDA memset]
+  1.85e+05  452.9500                   -              -         -         -         -   83.89MB  185.20GB/s         0         1         2  [CUDA memset]
+  7.08e+06  453.8790                   -              -         -         -         -   83.89MB  184.82GB/s         0         1         2  [CUDA memset]
+  7.08e+06  452.7910                   -              -         -         -         -   83.89MB  185.26GB/s         0         1         2  [CUDA memset]
+  7.08e+06  452.3420                   -              -         -         -         -   83.89MB  185.45GB/s         0         1         2  [CUDA memset]
+  7.08e+06  2.62e+04                   -              -         -         -         -   83.89MB    3.20GB/s         0         1         2  [CUDA memcpy HtoD]
+  7.11e+06  2.63e+04                   -              -         -         -         -   83.89MB    3.19GB/s         0         1         2  [CUDA memcpy HtoD]
+  7.13e+06  2.55e+04                   -              -         -         -         -   83.89MB    3.29GB/s         0         1         2  [CUDA memcpy DtoH]
+  7.16e+06  451.3830                   -              -         -         -         -   83.89MB  185.84GB/s         0         1         2  [CUDA memset]
+  7.16e+06  450.0700                   -              -         -         -         -   83.89MB  186.38GB/s         0         1         2  [CUDA memset]
+  7.16e+06  450.1030                   -              -         -         -         -   83.89MB  186.37GB/s         0         1         2  [CUDA memset]
+  7.16e+06  453.8470                   -              -         -         -         -   83.89MB  184.83GB/s         0         1         2  [CUDA memset]
+  7.16e+06  452.4060                   -              -         -         -         -   83.89MB  185.42GB/s         0         1         2  [CUDA memset]
+  7.16e+06  452.4390                   -              -         -         -         -   83.89MB  185.41GB/s         0         1         2  [CUDA memset]
+  7.16e+06  2.63e+04                   -              -         -         -         -   83.89MB    3.19GB/s         0         1         2  [CUDA memcpy HtoD]
+  7.19e+06  2.63e+04                   -              -         -         -         -   83.89MB    3.19GB/s         0         1         2  [CUDA memcpy HtoD]
+  7.21e+06  2.52e+04                   -              -         -         -         -   83.89MB    3.33GB/s         0         1         2  [CUDA memcpy DtoH]
+  7.24e+06  453.8460                   -              -         -         -         -   83.89MB  184.83GB/s         0         1         2  [CUDA memset]
+  7.24e+06  452.9190                   -              -         -         -         -   83.89MB  185.21GB/s         0         1         2  [CUDA memset]
+  7.24e+06  452.5980                   -              -         -         -         -   83.89MB  185.34GB/s         0         1         2  [CUDA memset]
+  1.35e+07  454.3910                   -              -         -         -         -   83.89MB  184.61GB/s         0         1         2  [CUDA memset]
+  1.35e+07  453.0460                   -              -         -         -         -   83.89MB  185.16GB/s         0         1         2  [CUDA memset]
+  1.35e+07  813.9670                   -              -         -         -         -  150.99MB  185.50GB/s         0         1         2  [CUDA memset]
+  1.35e+07  2.65e+04                   -              -         -         -         -   83.89MB    3.16GB/s         0         1         2  [CUDA memcpy HtoD]
+  1.35e+07  2.64e+04                   -              -         -         -         -   83.89MB    3.18GB/s         0         1         2  [CUDA memcpy HtoD]
+  1.43e+07  5.25e+04                   -              -         -         -         -  150.99MB    2.87GB/s         0         1         2  [CUDA memcpy DtoH]
+  1.43e+07  451.2860                   -              -         -         -         -   83.89MB  185.88GB/s         0         1         2  [CUDA memset]
+  1.43e+07  450.1030                   -              -         -         -         -   83.89MB  186.37GB/s         0         1         2  [CUDA memset]
+  1.43e+07  811.9820                   -              -         -         -         -  150.99MB  185.96GB/s         0         1         2  [CUDA memset]
+  1.43e+07  453.4630                   -              -         -         -         -   83.89MB  184.99GB/s         0         1         2  [CUDA memset]
+  1.43e+07  452.3740                   -              -         -         -         -   83.89MB  185.44GB/s         0         1         2  [CUDA memset]
+  1.43e+07  813.1030                   -              -         -         -         -  150.99MB  185.70GB/s         0         1         2  [CUDA memset]
+  1.43e+07  2.64e+04                   -              -         -         -         -   83.89MB    3.17GB/s         0         1         2  [CUDA memcpy HtoD]
+  1.44e+07  2.63e+04                   -              -         -         -         -   83.89MB    3.19GB/s         0         1         2  [CUDA memcpy HtoD]
+  1.44e+07  4.54e+04                   -              -         -         -         -  150.99MB    3.33GB/s         0         1         2  [CUDA memcpy DtoH]
+  1.44e+07  453.7500                   -              -         -         -         -   83.89MB  184.87GB/s         0         1         2  [CUDA memset]
+  1.44e+07  452.7910                   -              -         -         -         -   83.89MB  185.26GB/s         0         1         2  [CUDA memset]
+  1.44e+07  812.7510                   -              -         -         -         -  150.99MB  185.78GB/s         0         1         2  [CUDA memset]
+  2.20e+07  453.6220                   -              -         -         -         -   83.89MB  184.93GB/s         0         1         2  [CUDA memset]
+  2.21e+07  450.2950                   -              -         -         -         -   83.89MB  186.29GB/s         0         1         2  [CUDA memset]
+  2.21e+07  815.7260                   -              -         -         -         -  150.99MB  185.10GB/s         0         1         2  [CUDA memset]
+  2.21e+07  2.66e+04                   -              -         -         -         -   83.89MB    3.16GB/s         0         1         2  [CUDA memcpy HtoD]
+  2.21e+07  2.64e+04                   -              -         -         -         -   83.89MB    3.18GB/s         0         1         2  [CUDA memcpy HtoD]
+  2.28e+07  4.59e+04                   -              -         -         -         -  150.99MB    3.29GB/s         0         1         2  [CUDA memcpy DtoH]
+  2.29e+07  453.5580                   -              -         -         -         -   83.89MB  184.95GB/s         0         1         2  [CUDA memset]
+  2.29e+07  452.2470                   -              -         -         -         -   83.89MB  185.49GB/s         0         1         2  [CUDA memset]
+  2.29e+07  815.6950                   -              -         -         -         -  150.99MB  185.11GB/s         0         1         2  [CUDA memset]
+  2.29e+07  453.5910                   -              -         -         -         -   83.89MB  184.94GB/s         0         1         2  [CUDA memset]
+  2.29e+07  452.4390                   -              -         -         -         -   83.89MB  185.41GB/s         0         1         2  [CUDA memset]
+  2.29e+07  812.7190                   -              -         -         -         -  150.99MB  185.79GB/s         0         1         2  [CUDA memset]
+  2.29e+07  2.64e+04                   -              -         -         -         -   83.89MB    3.18GB/s         0         1         2  [CUDA memcpy HtoD]
+  2.29e+07  2.63e+04                   -              -         -         -         -   83.89MB    3.19GB/s         0         1         2  [CUDA memcpy HtoD]
+  2.29e+07  4.54e+04                   -              -         -         -         -  150.99MB    3.33GB/s         0         1         2  [CUDA memcpy DtoH]
+  2.30e+07  453.8150                   -              -         -         -         -   83.89MB  184.85GB/s         0         1         2  [CUDA memset]
+  2.30e+07  452.6300                   -              -         -         -         -   83.89MB  185.33GB/s         0         1         2  [CUDA memset]
+  2.30e+07  815.3750                   -              -         -         -         -  150.99MB  185.18GB/s         0         1         2  [CUDA memset]
+  3.40e+07  454.1990                   -              -         -         -         -   83.89MB  184.69GB/s         0         1         2  [CUDA memset]
+  3.40e+07  452.6300                   -              -         -         -         -   83.89MB  185.33GB/s         0         1         2  [CUDA memset]
+  3.40e+07  451.9270                   -              -         -         -         -   83.89MB  185.62GB/s         0         1         2  [CUDA memset]
+  3.40e+07  450.9660                   -              -         -         -         -   83.89MB  186.01GB/s         0         1         2  [CUDA memset]
+  3.40e+07  2.64e+04                   -              -         -         -         -   83.89MB    3.18GB/s         0         1         2  [CUDA memcpy HtoD]
+  3.41e+07  2.63e+04                   -              -         -         -         -   83.89MB    3.19GB/s         0         1         2  [CUDA memcpy HtoD]
+  3.41e+07  2.63e+04                   -              -         -         -         -   83.89MB    3.19GB/s         0         1         2  [CUDA memcpy HtoD]
+  3.41e+07  2.56e+04                   -              -         -         -         -   83.89MB    3.27GB/s         0         1         2  [CUDA memcpy DtoH]
+  3.41e+07  454.0390                   -              -         -         -         -   83.89MB  184.76GB/s         0         1         2  [CUDA memset]
+  3.41e+07  452.5340                   -              -         -         -         -   83.89MB  185.37GB/s         0         1         2  [CUDA memset]
+  3.41e+07  452.6950                   -              -         -         -         -   83.89MB  185.30GB/s         0         1         2  [CUDA memset]
+  3.41e+07  452.8220                   -              -         -         -         -   83.89MB  185.25GB/s         0         1         2  [CUDA memset]
+  3.41e+07  454.4220                   -              -         -         -         -   83.89MB  184.60GB/s         0         1         2  [CUDA memset]
+  3.41e+07  452.6950                   -              -         -         -         -   83.89MB  185.30GB/s         0         1         2  [CUDA memset]
+  3.41e+07  452.7900                   -              -         -         -         -   83.89MB  185.26GB/s         0         1         2  [CUDA memset]
+  3.41e+07  452.4070                   -              -         -         -         -   83.89MB  185.42GB/s         0         1         2  [CUDA memset]
+  3.41e+07  2.63e+04                   -              -         -         -         -   83.89MB    3.18GB/s         0         1         2  [CUDA memcpy HtoD]
+  3.42e+07  2.63e+04                   -              -         -         -         -   83.89MB    3.19GB/s         0         1         2  [CUDA memcpy HtoD]
+  3.42e+07  2.63e+04                   -              -         -         -         -   83.89MB    3.19GB/s         0         1         2  [CUDA memcpy HtoD]
+  3.42e+07  2.52e+04                   -              -         -         -         -   83.89MB    3.33GB/s         0         1         2  [CUDA memcpy DtoH]
+  3.42e+07  453.8780                   -              -         -         -         -   83.89MB  184.82GB/s         0         1         2  [CUDA memset]
+  3.42e+07  452.5980                   -              -         -         -         -   83.89MB  185.34GB/s         0         1         2  [CUDA memset]
+  3.42e+07  450.0390                   -              -         -         -         -   83.89MB  186.40GB/s         0         1         2  [CUDA memset]
+  3.42e+07  450.1980                   -              -         -         -         -   83.89MB  186.33GB/s         0         1         2  [CUDA memset]
+  4.37e+07  451.6070                   -              -         -         -         -   83.89MB  185.75GB/s         0         1         2  [CUDA memset]
+  4.37e+07  450.7740                   -              -         -         -         -   83.89MB  186.09GB/s         0         1         2  [CUDA memset]
+  4.37e+07  451.6710                   -              -         -         -         -   83.89MB  185.72GB/s         0         1         2  [CUDA memset]
+  4.37e+07  451.0620                   -              -         -         -         -   83.89MB  185.97GB/s         0         1         2  [CUDA memset]
+  4.37e+07  2.63e+04                   -              -         -         -         -   83.89MB    3.19GB/s         0         1         2  [CUDA memcpy HtoD]
+  4.37e+07  2.63e+04                   -              -         -         -         -   83.89MB    3.19GB/s         0         1         2  [CUDA memcpy HtoD]
+  4.37e+07  2.63e+04                   -              -         -         -         -   83.89MB    3.19GB/s         0         1         2  [CUDA memcpy HtoD]
+  4.38e+07  2.58e+04                   -              -         -         -         -   83.89MB    3.26GB/s         0         1         2  [CUDA memcpy DtoH]
+  4.38e+07  453.4950                   -              -         -         -         -   83.89MB  184.98GB/s         0         1         2  [CUDA memset]
+  4.38e+07  452.9500                   -              -         -         -         -   83.89MB  185.20GB/s         0         1         2  [CUDA memset]
+  4.38e+07  452.7910                   -              -         -         -         -   83.89MB  185.26GB/s         0         1         2  [CUDA memset]
+  4.38e+07  452.8540                   -              -         -         -         -   83.89MB  185.24GB/s         0         1         2  [CUDA memset]
+  4.38e+07  454.2300                   -              -         -         -         -   83.89MB  184.68GB/s         0         1         2  [CUDA memset]
+  4.38e+07  452.3430                   -              -         -         -         -   83.89MB  185.45GB/s         0         1         2  [CUDA memset]
+  4.38e+07  452.6630                   -              -         -         -         -   83.89MB  185.32GB/s         0         1         2  [CUDA memset]
+  4.38e+07  452.7580                   -              -         -         -         -   83.89MB  185.28GB/s         0         1         2  [CUDA memset]
+  4.38e+07  2.63e+04                   -              -         -         -         -   83.89MB    3.19GB/s         0         1         2  [CUDA memcpy HtoD]
+  4.38e+07  2.62e+04                   -              -         -         -         -   83.89MB    3.20GB/s         0         1         2  [CUDA memcpy HtoD]
+  4.38e+07  2.63e+04                   -              -         -         -         -   83.89MB    3.19GB/s         0         1         2  [CUDA memcpy HtoD]
+  4.39e+07  2.52e+04                   -              -         -         -         -   83.89MB    3.33GB/s         0         1         2  [CUDA memcpy DtoH]
+  4.39e+07  453.9110                   -              -         -         -         -   83.89MB  184.81GB/s         0         1         2  [CUDA memset]
+  4.39e+07  452.5980                   -              -         -         -         -   83.89MB  185.34GB/s         0         1         2  [CUDA memset]
+  4.39e+07  449.9750                   -              -         -         -         -   83.89MB  186.42GB/s         0         1         2  [CUDA memset]
+  4.39e+07  452.7260                   -              -         -         -         -   83.89MB  185.29GB/s         0         1         2  [CUDA memset]
+
+Regs: Number of registers used per CUDA thread.
+SSMem: Static shared memory allocated per CUDA block.
+DSMem: Dynamic shared memory allocated per CUDA block.
+Checking operation results:
