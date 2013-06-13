@@ -497,11 +497,11 @@ def mul_karatsuba_loc_generic(op_precision, op1_name, op2_name, res_name, op1_sh
 
         # Example of overlap addition if precision = 131-bits
         #
-        #                                   | c0[5] | c0[4] | c0[3] | c0[2] | c0[1] | c0[0] |   =>   c0
-        # + | c1[6] | c1[5] | c1[4] | c1[3] | c1[2] | c1[1] | c1[0] |                           =>   c1
-        # +         | c2[2] | c2[1] | c2[0] |                                                   =>   c2
+        #                                                   | c0[3] | c0[2] | c0[1] | c0[0] | => c0
+        # +                         | c1[4] | c1[3] | c1[2] | c1[1] | c1[0] |                 => c1
+        # +         | c2[4] | c2[3] | c2[2] | c2[1] | c2[0] |                                 => c2
         # -----------------------------------------------------------------------------------
-        #   | re[9] | re[8] | re[7] | re[6] | re[5] | re[4] | re[3] | re[2] | re[1] | re[0] |   =>   result
+        #   | re[9] | re[8] | re[7] | re[6] | re[5] | re[4] | re[3] | re[2] | re[1] | re[0] | => result
 
         # Note: It is possible that re[9] will not be calculated if we are sure
         # that the result of the multiplication will never need that storage
