@@ -3,8 +3,8 @@ import re
 
 # change anything you want here
 precision = 131
-threads_per_block = 32
-blocks_per_grid = 32
+threads_per_block = 1
+blocks_per_grid = 1
 coalesced_m_file_name = r'../data/coalesced_m.txt'
 coalesced_a_file_name = r'../data/coalesced_a.txt'
 coalesced_b_file_name = r'../data/coalesced_b.txt'
@@ -34,7 +34,7 @@ max_hex_length = max_bignum_number_of_words * hex_digits_per_word
 number_of_bignums = threads_per_block * blocks_per_grid
 file_name_operations_h = r'../src/operations.h'
 R = 2 ** precision
-number_of_bignums_in_files = 1024 * 1024
+number_of_bignums_in_files = 2048 * 2048
 
 # The number of words needed to hold "precision" bits MUST be the same as the
 # number of words needed to hold "precision + 1" bits. This is needed, because

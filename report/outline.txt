@@ -78,3 +78,5 @@ Organization:
       with graphs.
     - compare fermi vs kepler performance, and "try" to explain it, even though
       not quite sure how to do this.
+
+graphs:
