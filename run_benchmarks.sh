@@ -5,6 +5,7 @@ if [ "$#" -eq 2 ] && [ "$1" -eq 20 ] || [ "$1" -eq 30 ] && [ "$2" = "ns" ] || [ 
     for blocks in 1 2 4 8 16 32 64 128 256 512 1024
     do
         for threads in 1 2 4 8 16 32 64 128 256 512 1024
+        do
             for bits in 109 131 163
             do
                 perl -i -pe "s/precision = \d+/precision = $bits/g" constants.py
