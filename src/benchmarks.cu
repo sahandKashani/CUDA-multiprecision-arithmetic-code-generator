@@ -509,8 +509,6 @@ __global__ void montgomery_reduction_loc_kernel(uint32_t* dev_c, uint32_t* dev_T
     m_prime = dev_m_prime[COAL_IDX(0, tid)];
 
     // 10 iterations
-    uint32_t A[10] = {0,0,0,0,0,0,0,0,0,0};
-    montgomery_reduction(A, T, m, m_prime);
     // montgomery_reduction(c, T, m, m_prime);
     // montgomery_reduction(c, T, m, m_prime);
     // montgomery_reduction(c, T, m, m_prime);
@@ -520,12 +518,7 @@ __global__ void montgomery_reduction_loc_kernel(uint32_t* dev_c, uint32_t* dev_T
     // montgomery_reduction(c, T, m, m_prime);
     // montgomery_reduction(c, T, m, m_prime);
     // montgomery_reduction(c, T, m, m_prime);
-
-    // for (uint32_t i = 0; i < 10; i++)
-    // {
-    //     printf("%08x ", A[9-i]);
-    // }
-    // printf("\n");
+    // montgomery_reduction(c, T, m, m_prime);
 
     for (uint32_t i = 0; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
     {

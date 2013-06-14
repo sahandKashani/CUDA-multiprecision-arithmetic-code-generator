@@ -571,6 +571,12 @@ def montgomery_reduction_generic(indent):
     asm.append('uint32_t u_i_m[' + str(u_i_m_word_count) + '] = ' + str([0] * u_i_m_word_count).replace('[', '{').replace(']', '}') + ';\\')
     asm.append('uint32_t u_i[1] = {0};\\')
 
+    # asm.append("""for(uint32_t i = 0; i < 10; i++)\\
+    #            {\\
+    #                printf("%08x ", A[10 - i - 1]);\\
+    #            }\\
+    #            printf("\\n");\\""")
+
     # for (i = 0, i < min_bignum_number_of_words, i++)
     # {
     #     u_i = a_i * m_prime mod 2^32
@@ -578,49 +584,73 @@ def montgomery_reduction_generic(indent):
     # }
     for i in range(min_bignum_number_of_words):
         asm.append('asm("mul.lo.u32 %0, %1, %2;" : "=r"(u_i[0]) : "r"(A[' + str(i) + ']), "r"(m_prime));\\')
-        # asm.append('printf("%d  %08x\\n", ' + str(i) + ', u_i[0]);\\')
+        # asm.append('printf("%08x\\n", u_i[0]);\\')
         asm += mul_loc_generic(bits_per_word, precision, 'u_i', 'm_loc', 'u_i_m', 0, 0, 0, 0)
         # asm.append("""for(uint32_t i = 0; i < 6; i++)\\
         #            {\\
-        #                printf("%d  %08x", i, u_i_m[i]);\\
+        #                printf("%08x", u_i_m[6 - i - 1]);\\
         #            }\\""")
         asm += add_loc_generic(A_precision - i * bits_per_word, u_i_m_precision, 'A', 'u_i_m', 'A', i, 0, i, 0)
-        asm.append("""for(uint32_t i = 0; i < 10; i++)\\
-                   {\\
-                       printf("%d  %08x", i, u_i_m[9 - i]);\\
-                   }\\
-                   printf("\\n");\\""")
+        # asm.append("""for(uint32_t i = 0; i < 10; i++)\\
+        #            {\\
+        #                printf("%08x ", A[10 - i - 1]);\\
+        #            }\\
+        #            printf("\\n");\\""")
 
-    # # A = A >> precision
-    # complete_words_with_zeros_count = min_bignum_number_of_words
-    # if min_bit_length != precision:
-    #     complete_words_with_zeros_count -= 1
+    # A = A >> precision
+    complete_words_with_zeros_count = min_bignum_number_of_words
+    if min_bit_length != precision:
+        complete_words_with_zeros_count -= 1
 
-    # extra_0_bit_count = precision - complete_words_with_zeros_count * bits_per_word
-    # lo_mask = '0x' + hex((2**extra_0_bit_count) - 1)[2:].rjust(hex_digits_per_word, '0')
-    # hi_mask = '0x' + hex((2**bits_per_word - 1) - int(lo_mask, 16))[2:].rjust(hex_digits_per_word, '0')
+    extra_0_bit_count = precision - complete_words_with_zeros_count * bits_per_word
+    lo_mask = '0x' + hex((2**extra_0_bit_count) - 1)[2:].rjust(hex_digits_per_word, '0')
+    hi_mask = '0x' + hex((2**bits_per_word - 1) - int(lo_mask, 16))[2:].rjust(hex_digits_per_word, '0')
 
-    # asm.append('uint32_t upper = 0;\\')
+    asm.append('uint32_t upper = 0;\\')
 
-    # for i in range(complete_words_with_zeros_count, complete_words_with_zeros_count + min_bignum_number_of_words):
-    #     asm.append('asm("and.b32 %0, %0, ' + hi_mask + ';" : "+r"(A[' + str(i) + ']) : );\\')
-    #     asm.append('asm("shr.b32 %0, %0, ' + str(extra_0_bit_count) + ';" : "+r"(A[' + str(i) + ']) : );\\')
-    #     asm.append('asm("and.b32 %0, %1, ' + lo_mask + ';" : "=r"(upper) : "r"(A[' + str(i + 1) + ']));\\')
-    #     asm.append('asm("shl.b32 %0, %0, ' + str(bits_per_word - extra_0_bit_count) + ';" : "+r"(upper) : );\\')
-    #     asm.append('asm("or.b32  %0, %0, %1;" : "+r"(A[' + str(i) + ']) : "r"(upper));\\')
+    # asm.append("""for(uint32_t i = 0; i < 10; i++)\\
+    #                {\\
+    #                    printf("%08x ", A[10 - i - 1]);\\
+    #                }\\
+    #                printf("\\n");\\""")
+
+    for i in range(complete_words_with_zeros_count, complete_words_with_zeros_count + min_bignum_number_of_words + 1):
+        asm.append('asm("and.b32 %0, %0, ' + hi_mask + ';" : "+r"(A[' + str(i) + ']) : );\\')
+        asm.append('asm("shr.b32 %0, %0, ' + str(extra_0_bit_count) + ';" : "+r"(A[' + str(i) + ']) : );\\')
+        # the very last word does not have any word after it to have to get an
+        # "upper" part
+        if i != complete_words_with_zeros_count + min_bignum_number_of_words:
+            asm.append('asm("and.b32 %0, %1, ' + lo_mask + ';" : "=r"(upper) : "r"(A[' + str(i + 1) + ']));\\')
+            asm.append('asm("shl.b32 %0, %0, ' + str(bits_per_word - extra_0_bit_count) + ';" : "+r"(upper) : );\\')
+            asm.append('asm("or.b32  %0, %0, %1;" : "+r"(A[' + str(i) + ']) : "r"(upper));\\')
+
+    # asm.append("""for(uint32_t i = 0; i < 10; i++)\\
+    #            {\\
+    #                printf("%08x ", A[10 - i - 1]);\\
+    #            }\\
+    #            printf("\\n");\\""")
+
+    # asm.append('}' + '\n')
+    # return asm
 
     # if A >= m
     # {
     #     A = A - m
     # }
+    # algorithm:
+    #   A = A - m
+    #   mask = 0 - borrow = mask - mask - borrow
+    #   mask = mask & m
+    #   A = A + mask
+    asm.append('uint32_t mask[' + str(A_word_count) + '] = ' + str([0] * A_word_count).replace('[', '{').replace(']', '}') + ';\\')
+    asm += sub_cc_loc_generic(A_precision, precision, 'A', 'm_loc', 'A', 0, 0, 0, 0)
+    asm += subc_loc_generic(A_precision, A_precision, 'mask', 'mask', 'mask', 0, 0, 0, 0)
+    asm += and_loc_generic(A_precision, precision, 'mask', 'm_loc', 'mask', 0, 0, 0, 0)
+    asm += add_loc_generic(A_precision, A_precision, 'A', 'mask', 'A', 0, 0, 0, 0)
 
-    # # c_loc = A
-    # for i in range(min_bignum_number_of_words):
-    #     asm.append('asm("add.u32 %0, %1,  0;" : "=r"(c_loc[' + str(i) + ']) : "r"(A[' + str(i) + ']));\\')
-    #     # asm.append('asm("add.u32 %0, %1,  0;" : "=r"(c_loc[' + str(i) + ']) : "r"(A[' + str(i + complete_words_with_zeros_count) + ']));\\')
-
-    for i in range(A_word_count):
-        asm.append('asm("add.u32 %0, %1,  0;" : "=r"(c_loc[' + str(i) + ']) : "r"(A[' + str(i) + ']));\\')
+    # c_loc = A
+    for i in range(min_bignum_number_of_words):
+        asm.append('asm("add.u32 %0, %1,  0;" : "=r"(c_loc[' + str(i) + ']) : "r"(A[' + str(i + complete_words_with_zeros_count) + ']));\\')
 
     # replace all occurrences of a_loc, b_loc and c_loc by their appropriate
     # names, as provided by the user.
