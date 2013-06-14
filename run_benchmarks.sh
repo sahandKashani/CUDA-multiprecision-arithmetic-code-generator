@@ -5,9 +5,9 @@ if [ "$#" -eq 2 ] && [ "$1" -eq 20 ] || [ "$1" -eq 30 ] && [ "$2" = "ns" ] || [ 
 
     architecture=""
     if [ "$1" -eq 20 ]; then
-        "$architecture"='fermi'
+        architecture="fermi"
     else
-        "$architecture"='kepler'
+        architecture="kepler"
     fi
 
     echo "$architecture"
