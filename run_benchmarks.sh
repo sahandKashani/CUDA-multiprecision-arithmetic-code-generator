@@ -22,7 +22,7 @@ if [ "$#" -eq 2 ] && [ "$1" -eq 20 ] || [ "$1" -eq 30 ] && [ "$2" = "ns" ] || [ 
                 python3 constants.py
                 python3 operation_generator.py
                 ./nvcc_compile.sh "$1"
-                ./nvcc_run.sh "$2" > benchmarks/"$bits"-bit/"$blocks"_"$threads".txt
+                ./nvcc_run.sh "$2" > "benchmarks/""$bits""-bit/""$blocks""_""$threads"".txt"
             done
         done
     done
