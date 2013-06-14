@@ -11,7 +11,7 @@ void add_m_benchmark();
 void sub_m_benchmark();
 void montgomery_reduction_benchmark();
 
-// void assembly_vs_C_addition_benchmark();
-// void assembly_vs_C_modular_addition_benchmark();
+void assembly_vs_C_addition_benchmark();
+void assembly_vs_C_modular_addition_benchmark();
 
 #endif
