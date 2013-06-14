@@ -11,8 +11,8 @@ int main(void)
     sub_m_benchmark();
     // montgomery_reduction_benchmark();
 
-    // assembly_vs_C_addition_benchmark();
-    // assembly_vs_C_modular_addition_benchmark();
+    assembly_vs_C_addition_benchmark();
+    assembly_vs_C_modular_addition_benchmark();
 
     // for leak detection when using cuda-memcheck
     cudaDeviceReset();
