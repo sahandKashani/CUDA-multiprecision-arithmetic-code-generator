@@ -3,12 +3,12 @@
 if [ "$#" -eq 2 ] && [ "$1" -eq 20 ] || [ "$1" -eq 30 ] && [ "$2" = "ns" ] || [ "$2" = "us" ] || [ "$2" = "ms" ] || [ "$2" = "s" ]; then
     cd scripts/
 
-    # architecture=""
-    # if [ "$1" -eq 20 ]; then
-    #     architecture="fermi"
-    # else
-    #     architecture="kepler"
-    # fi
+    architecture=""
+    if [ "$1" -eq 20 ]; then
+        architecture="fermi"
+    else
+        architecture="kepler"
+    fi
 
     for blocks in 1 2 4 8 16 32 64 128 256 512 1024
     do
@@ -22,7 +22,7 @@ if [ "$#" -eq 2 ] && [ "$1" -eq 20 ] || [ "$1" -eq 30 ] && [ "$2" = "ns" ] || [ 
                 python3 constants.py
                 python3 operation_generator.py
                 ./nvcc_compile.sh "$1"
-                ./nvcc_run.sh "$2" > "benchmarks/""$bits""-bit/""$blocks""_""$threads"".txt"
+                ./nvcc_run.sh "$2" > benchmarks/"$architecture"/"$bits"-bit/"$blocks"_"$threads".txt
             done
         done
     done
