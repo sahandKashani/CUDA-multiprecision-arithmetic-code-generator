@@ -1,6 +1,5 @@
 from constants import *
 import math
-import gmpy2
 import re
 
 # ATTENTION: all "_generic()" functions do NOT create macros. They just paste
