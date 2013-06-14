@@ -4,8 +4,8 @@
 #include "constants.h"
 #include <stdint.h>
 
-#define MIN_BIGNUM_NUMBER_OF_WORDS 6
-#define MAX_BIGNUM_NUMBER_OF_WORDS 11
+#define MIN_BIGNUM_NUMBER_OF_WORDS 8
+#define MAX_BIGNUM_NUMBER_OF_WORDS 15
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////// BIGNUM /////////////////////////////////////

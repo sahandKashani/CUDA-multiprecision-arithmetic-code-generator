@@ -2,11 +2,21 @@
 
 if [ "$#" -eq 2 ] && [ "$1" -eq 20 ] || [ "$1" -eq 30 ] && [ "$2" = "ns" ] || [ "$2" = "us" ] || [ "$2" = "ms" ] || [ "$2" = "s" ]; then
     cd scripts/
+
+    architecture=""
+    if [ "$2" -eq 20 ]; then
+        "$architecture"="fermi"
+    else
+        "$architecture"="kepler"
+    fi
+
+    echo "$architecture"
+
     for blocks in 1 2 4 8 16 32 64 128 256 512 1024
     do
         for threads in 1 2 4 8 16 32 64 128 256 512 1024
         do
-            for bits in 109 131 163
+            for bits in 109 131 163 191 239
             do
                 perl -i -pe "s/precision = \d+/precision = $bits/g" constants.py
                 perl -i -pe "s/threads_per_block = \d+/threads_per_block = $threads/g" constants.py
@@ -14,7 +24,7 @@ if [ "$#" -eq 2 ] && [ "$1" -eq 20 ] || [ "$1" -eq 30 ] && [ "$2" = "ns" ] || [ 
                 python3 constants.py
                 python3 operation_generator.py
                 ./nvcc_compile.sh $1
-                ./nvcc_run.sh $2
+                ./nvcc_run.sh $2 > data/"$bits"-bit/"$blocks""_""$threads"".txt"
             done
         done
     done
