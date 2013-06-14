@@ -4,7 +4,7 @@ if [ "$#" -eq 2 ] && [ "$1" -eq 20 ] || [ "$1" -eq 30 ] && [ "$2" = "ns" ] || [ 
     cd scripts/
 
     architecture=""
-    if [ "$2" -eq 20 ]; then
+    if [ "$1" -eq 20 ]; then
         "$architecture"="fermi"
     else
         "$architecture"="kepler"
