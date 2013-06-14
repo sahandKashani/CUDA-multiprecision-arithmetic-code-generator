@@ -509,7 +509,7 @@ __global__ void montgomery_reduction_loc_kernel(uint32_t* dev_c, uint32_t* dev_T
     m_prime = dev_m_prime[COAL_IDX(0, tid)];
 
     // 10 iterations
-    // montgomery_reduction(c, T, m, m_prime);
+    montgomery_reduction(c, T, m, m_prime);
     // montgomery_reduction(c, T, m, m_prime);
     // montgomery_reduction(c, T, m, m_prime);
     // montgomery_reduction(c, T, m, m_prime);
