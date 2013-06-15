@@ -5,7 +5,58 @@
 \usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage[hypcap]{caption}
-\usepackage{listing}
+\usepackage{listings}
+\usepackage{color}
+
+% \lstset{
+% language=C++,                  % choose the language of the code
+% basicstyle=\footnotesize,      % the size of the fonts that are used for the code
+% numbers=left,                  % where to put the line-numbers
+% numberstyle=\footnotesize,     % the size of the fonts that are used for the line-numbers
+% stepnumber=1,                  % the step between two line-numbers. If it is 1 each line will be numbered
+% numbersep=5pt,                 % how far the line-numbers are from the code
+% backgroundcolor=\color{white}, % choose the background color. You must add \usepackage{color}
+% showspaces=false,              % show spaces adding particular underscores
+% showstringspaces=false,        % underline spaces within strings
+% showtabs=false,                % show tabs within strings adding particular underscores
+% frame=single,                  % adds a frame around the code
+% tabsize=4,                     % sets default tabsize to 4 spaces
+% captionpos=b,                  % sets the caption-position to bottom
+% breaklines=true,               % sets automatic line breaking
+% breakatwhitespace=false,       % sets if automatic breaks should only happen at whitespace
+% escapeinside={\%*}{*)}         % if you want to add a comment within your code
+% }
+
+\definecolor{mystringcolor}{RGB}{80,80,80}
+\definecolor{mykeywordcolor}{RGB}{127,0,85}
+
+\lstset{
+backgroundcolor=\color{white},          % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}
+basicstyle=\footnotesize,               % the size of the fonts that are used for the code
+breakatwhitespace=false,                % sets if automatic breaks should only happen at whitespace
+breaklines=true,                        % sets automatic line breaking
+captionpos=b,                           % sets the caption-position to bottom
+commentstyle=\color{green},             % comment style
+deletekeywords={...},                   % if you want to delete keywords from the given language
+escapeinside={\%*}{*)},                 % if you want to add LaTeX within your code
+extendedchars=true,                     % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
+frame=single,                           % adds a frame around the code
+keepspaces=true,                        % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+keywordstyle=\color{mykeywordcolor},    % keyword style
+language=C++,                           % the language of the code
+morekeywords={*,...},                   % if you want to add more keywords to the set
+numbers=left,                           % where to put the line-numbers; possible values are (none, left, right)
+numbersep=8pt,                          % how far the line-numbers are from the code
+numberstyle=\footnotesize\color{black}, % the style that is used for the line-numbers
+rulecolor=\color{black},                % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+showspaces=false,                       % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+showstringspaces=false,                 % underline spaces within strings only
+showtabs=false,                         % show tabs within strings adding particular underscores
+stepnumber=1,                           % the step between two line-numbers. If it's 1, each line will be numbered
+stringstyle=\color{mystringcolor},      % string literal style
+tabsize=4,                              % sets default tabsize to 2 spaces
+% title=\caption                          % show the filename of files included with \lstinputlisting; also try caption instead of title
+}
 
 \begin{document}
 
@@ -175,19 +226,21 @@ vector.
 Assume we have the following 2 vectors already pre-filled with their respective
 data:
 
-\begin{verbatim}
+\lstset{caption={Vector definitions}}
+\begin{lstlisting}
   int a[N];
   int b[N];
-\end{verbatim}
+\end{lstlisting}
 
 The CPU code to perform this vector addition would look like this:
 
-\begin{verbatim}
+\lstset{caption={Vector addition}}
+\begin{lstlisting}
   for (int i = 0; i < N; i += 1)
   {
       a[i] = a[i] + b[i];
   }
-\end{verbatim}
+\end{lstlisting}
 
 Note that the CPU will have to loop over all indices of the 2 arrays, and add
 each element one by one in a sequential way.
@@ -437,7 +490,8 @@ Suppose 4 threads are trying to read a \verb+4x4+ matrix \verb+m[4][4]+:
 
 \hspace{0pt} \\ \\
 Normal CPU code for accessing such a matrix would ressemble the following:
-\begin{verbatim}
+\lstset{caption={Accessing matrix elements on a CPU}}
+\begin{lstlisting}
   for (int i = 0; i < 4; i++)
   {
       for (int j = 0; j < 4; j++)
@@ -445,17 +499,18 @@ Normal CPU code for accessing such a matrix would ressemble the following:
           m[i][j] = ... ;
       }
   }
-\end{verbatim}
+\end{lstlisting}
 
 \hspace{0pt} \\
 If we use 4 GPU threads, we get the following code:
 
-\begin{verbatim}
+\lstset{caption={Accessing matrix elements on a GPU (non-coalesced version)}}
+\begin{lstlisting}
   for (int j = 0; j < 4; j++)
   {
       m[threadIdx.x][j] = ... ;
   }
-\end{verbatim}
+\end{lstlisting}
 
 \hspace{0pt} \\
 This matrix is stored in memory as a continuous 1D array of data, and accessing
@@ -485,12 +540,13 @@ What we would want to have, is reads of the following form:
 The code corresponding to the memory access pattern in
 Figure~\ref{fig:4x4_matrix_coalesced_memory_access_no_transpose} is:
 
-\begin{verbatim}
+\lstset{caption={Accessing matrix elements on a GPU (coalesced version)}}
+\begin{lstlisting}
   for (int j = 0; j < 4; j++)
   {
       matrix[j][threadIdx.x] = ... ;
   }
-\end{verbatim}
+\end{lstlisting}
 
 \hspace{0pt} \\
 But then, each thread would no longer be accessing the element it initially
@@ -708,14 +764,139 @@ several leading \verb+1+s in its MSW.
 \label{fig:negative_number_representation}
 \end{figure}
 
-\subsection{Laying out operands for binary opeartors}
-Before we started working on implementing our operations, we sought to find out
-what would be the best way to store operands in memory for binary operations,
-such as for addition or subtraction.
+\section{Operations}
+\subsection{Assembly vs. C}
+In order to implement arithmetic over multiple words, one needs be able to
+perform carry propagation.
+For example, in order to add two 5-word bignums \verb+a+ and \verb+b+, each word
+in \verb+a+ must be added to the corresponding word in \verb+b+, yielding a
+result, and a potential carry bit.
+In turn, this carry bit must be propagated to the next addition involving the
+next word of both \verb+a+, and \verb+b+.
 
-Suppose we want to perform many additions paralelly by spreding them over
-multiple threads.
-We would need to have 2 operands at our disposal.
+Let's consider the simple addition algorithm over two 63-bit numbers, \verb+a+
+and \verb+b+.
+What one would normally do is to start by computing \verb!c[0] = a[0] + b[0]!,
+yielding a potential carry bit.
+Next, we compute \verb!c[1] = a[1] + b[1] + carry!.
+Note that in this case, no carry bit can be created from the computation of
+\verb+c[1]+, since \verb+a+ and \verb+b+ are 63-bit words, and we know that the
+result of an addition between a $N$-bit number, and a $M$ number holds on at
+most $max(N, M)+1$ bits, which is 64 bits here, and is thus fully
+representable on two 32-bit words.
+
+In C, we do not have access to processor carry flags.
+Nevertheless, it is possible to know if a carry was generated by a simple trick.
+When a carry flag is generated, it means that the result of an operation is too
+big to hold on 32-bits.
+This flag can only be generated, if, prior to the operation, there was a binary
+\verb+1+ in the leading bit of at least one of the 2 operands, such that the
+addition of this leading binary \verb+1+ with a potential other \verb+1+ in the
+computation causes the result to overflow.
+An illustration is provided in Figure~\ref{fig:addition_overflow_illustration}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.7]{figs/addition_overflow_illustration}
+\caption{Overflow illustration on hexadecimal numbers}
+\label{fig:addition_overflow_illustration}
+\end{figure}
+
+The trick to notice here is that if there were no overflow, then the lower
+32-bits of the result would be \emph{bigger} that the lower 32-bits of the
+the biggest of the 2 operands.
+However, if an overflow occurred, then the lower 32-bits of the result is
+\emph{smaller} than the lower 32-bits of the the biggest of the 2 operands.
+Therefore, for our 63-bit addition example, in order to get carry flags in C for
+the computation of \verb!c[1] = a[1] + b[1] + carry!, one would beforehand
+compute \verb!carry = (c[0] < max(a[0], b[0]))!.
+
+This is relatively simple for a basic addition algorithm, but starts getting
+complicated when trying to do more complex computations.
+Luckily, CUDA GPUs expose a low-level Parallel Thread Execution (PTX) virtual
+machine and instruction set architecture which allows one to program in
+pseudo-assembly language.
+PTX assembly supports a large set of operations, such as \verb+add+,
+\verb+sub+, \verb+mul+, and \verb+mad+, but in addition, at the time of
+this writing, it supports 6 extended-precision integer arithmetic instructions
+(organized into 3 categories), which are listed below.
+
+\begin{enumerate}
+\item \verb+add.cc+ (addition with carry-out), \verb+addc+ (addition with
+carry-in)
+\item \verb+sub.cc+ (subtraction with borrow-out), \verb+subc+ (subtraction with
+borrow-in)
+\item \verb+mad.cc+ (multiply-add with carry-out), \verb+madc+ (multiply-add
+with carry-in)
+\end{enumerate}
+
+The special aspect of these instructions is that they reference an implicitly
+specified condition code register having a single carry flag bit, which can hold
+carry-in, carry-out, borrow-in, or borrow-out flags.
+Another important fact is that the condition code is \emph{not} preserved across
+calls, and is only intended for use in straight-line code sequences for
+computing extended-precision integer addition, subtraction, and multiplication.
+PTX can be written in C programs as inline assembly, thus allowing one to write
+kernel sections involving normal arithmetic in C, and writing the
+extended-precision parts in PTX.
+
+As an example, in order to calculate the extended-precision addition of two
+131-bit numbers \verb+a+ and \verb+b+, and store the result in \verb+c+, one
+would use the following inline PTX code (remember that \verb+a+, \verb+b+, and
+\verb+c+ are 5-word arrays):
+
+\lstset{caption={5-word hand unrolled addition in PTX},
+        label={lst:5_word_hand_unrolled_addition_in_PTX}}
+\begin{lstlisting}
+asm("add.cc.u32  %0, %1, %2;" : "=r"(c[0]) : "r"(a[0]), "r"(b[0]));
+asm("addc.cc.u32 %0, %1, %2;" : "=r"(c[1]) : "r"(a[1]), "r"(b[1]));
+asm("addc.cc.u32 %0, %1, %2;" : "=r"(c[2]) : "r"(a[2]), "r"(b[2]));
+asm("addc.cc.u32 %0, %1, %2;" : "=r"(c[3]) : "r"(a[3]), "r"(b[3]));
+asm("addc.u32    %0, %1, %2;" : "=r"(c[4]) : "r"(a[4]), "r"(b[4]));
+\end{lstlisting}
+
+In the above addition code, notice that the assembly instructions are identical
+for the middle section, as the same operation is taking place.
+One would be tempted to write the code in a loop instead, such as the following:
+
+\lstset{caption={5-word loop-oriented addition}, label={}}
+\begin{lstlisting}
+asm("add.cc.u32  %0, %1, %2;" : "=r"(c[0]) : "r"(a[0]), "r"(b[0]));
+for (uint32_t i = 0; i < 4; i++)
+{
+    asm("addc.cc.u32 %0, %1, %2;" :
+        "=r"(c[i]) : "r"(a[i]), "r"(b[i]));
+}
+asm("addc.u32    %0, %1, %2;" : "=r"(c[4]) : "r"(a[4]), "r"(b[4]));
+\end{lstlisting}
+
+The problem with this code is that its result is unpredicatable, since
+\emph{carry flags are not preseved across calls}, and the loop structure created
+in C around the assembly will \emph{sometimes} make us lose the carry bit.
+We thought a potential solution to this problem would be to make the compiler
+unroll the loop (since we know the number of loop iterations) with the
+\verb+#pragma unroll+ directive, as doing so would give us straight-line
+assembly code, therefore preseving the carry bits.
+
+\lstset{caption={Compiler unrolled 5-word loop-oriented addition}}
+\begin{lstlisting}
+asm("add.cc.u32  %0, %1, %2;" : "=r"(c[0]) : "r"(a[0]), "r"(b[0]));
+for (uint32_t i = 0; i < 4; i++)
+{
+    #pragma unroll
+    asm("addc.cc.u32 %0, %1, %2;" :
+        "=r"(c[i]) : "r"(a[i]), "r"(b[i]));
+}
+asm("addc.u32    %0, %1, %2;" : "=r"(c[4]) : "r"(a[4]), "r"(b[4]));
+\end{lstlisting}
+
+However, through a lot of tests, we found out that this approach does not
+guarantee that the carry is preserved either.
+The only solution which works well with inline assembly is that the code be
+fully hand-unrolled, such as in
+Listing~\ref{lst:5_word_hand_unrolled_addition_in_PTX}.
+
+
 
 %
 % --------------------------------------------------------------------------------
