@@ -8,19 +8,25 @@ generate () {
   mkdir "$working_directory"
 
   cd "$working_directory"
-  extract 'Regs*'
-  extract 'Duration'
+  for bits in 109 131 163 191 239; do
+    mkdir "$bits"-bit
+    cd "$bits"-bit
+    extract 'Regs*' "$bits"
+    extract 'Duration' "$bits"
+    cd ..
+  done
   cd ..
 }
 
 extract () {
-  local field="$1";
+  local field="$1"
+  local bits="$2"
 
   rm -rf "$field"
   mkdir "$field"
 
   cd "$field"
-  ./../../extract.pl "$field" ../../"$architecture"/*.txt
+  ./../../../extract.pl "$field" ../../../"$architecture"/"$bits"-bit/*.txt
   cd ..
 }
 
