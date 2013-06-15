@@ -3,7 +3,7 @@ use strict;
 
 # Global Data ==================================================================
 my $file_name = 'data';
-my @function_names = ('add_loc_kernel', 'add_glo_kernel', 'sub_loc_kernel', 'sub_glo_kernel', 'mul_loc_kernel', 'mul_glo_kernel', 'mul_karatsuba_loc_kernel', 'mul_karatsuba_glo_kernel', 'add_m_loc_kernel', 'add_m_glo_kernel', 'sub_m_loc_kernel', 'sub_m_glo_kernel');
+my @function_names = ('add_loc_kernel', 'add_glo_kernel', 'sub_loc_kernel', 'sub_glo_kernel', 'mul_loc_kernel', 'mul_glo_kernel', 'mul_karatsuba_loc_kernel', 'mul_karatsuba_glo_kernel', 'add_m_loc_kernel', 'add_m_glo_kernel', 'sub_m_loc_kernel', 'sub_m_glo_kernel', 'add_loc_assembly', 'add_loc_C');
 my %index_map = (
   'Start' => 1,
   'Duration' => 2,
