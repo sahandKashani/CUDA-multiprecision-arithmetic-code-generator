@@ -1,0 +1,198 @@
+======== NVPROF is profiling benchmarks...
+======== Command: benchmarks
+Reading coalesced bignums from file "../data/109-bit/coalesced_a.txt" ... done
+Reading coalesced bignums from file "../data/109-bit/coalesced_b.txt" ... done
+Benchmarking "add_loc" on GPU ... done
+Benchmarking "add_glo" on GPU ... done
+Writing coalesced bignums to   file "../data/109-bit/add_results.txt" ... done
+Reading coalesced bignums from file "../data/109-bit/coalesced_a.txt" ... done
+Reading coalesced bignums from file "../data/109-bit/coalesced_b.txt" ... done
+Benchmarking "sub_loc" on GPU ... done
+Benchmarking "sub_glo" on GPU ... done
+Writing coalesced bignums to   file "../data/109-bit/sub_results.txt" ... done
+Reading coalesced bignums from file "../data/109-bit/coalesced_a.txt" ... done
+Reading coalesced bignums from file "../data/109-bit/coalesced_b.txt" ... done
+Benchmarking "mul_loc" on GPU ... done
+Benchmarking "mul_glo" on GPU ... done
+Writing coalesced bignums to   file "../data/109-bit/mul_results.txt" ... done
+Reading coalesced bignums from file "../data/109-bit/coalesced_a.txt" ... done
+Reading coalesced bignums from file "../data/109-bit/coalesced_b.txt" ... done
+Benchmarking "mul_karatsuba_loc" on GPU ... done
+Benchmarking "mul_karatsuba_glo" on GPU ... done
+Writing coalesced bignums to   file "../data/109-bit/mul_karatsuba_results.txt" ... done
+Reading coalesced bignums from file "../data/109-bit/coalesced_a.txt" ... done
+Reading coalesced bignums from file "../data/109-bit/coalesced_b.txt" ... done
+Reading coalesced bignums from file "../data/109-bit/coalesced_m.txt" ... done
+Benchmarking "add_m_loc" on GPU ... done
+Benchmarking "add_m_glo" on GPU ... done
+Writing coalesced bignums to   file "../data/109-bit/add_m_results.txt" ... done
+Reading coalesced bignums from file "../data/109-bit/coalesced_a.txt" ... done
+Reading coalesced bignums from file "../data/109-bit/coalesced_b.txt" ... done
+Reading coalesced bignums from file "../data/109-bit/coalesced_m.txt" ... done
+Benchmarking "sub_m_loc" on GPU ... done
+Benchmarking "sub_m_glo" on GPU ... done
+Writing coalesced bignums to   file "../data/109-bit/sub_m_results.txt" ... done
+Reading coalesced bignums from file "../data/109-bit/coalesced_a.txt" ... done
+Reading coalesced bignums from file "../data/109-bit/coalesced_b.txt" ... done
+Benchmarking "add_loc_assembly" on GPU ... done
+Benchmarking "add_loc_C" on GPU ... done
+Writing coalesced bignums to   file "../data/109-bit/add_results.txt" ... done
+======== Profiling result:
+     Start  Duration           Grid Size     Block Size     Regs*    SSMem*    DSMem*      Size  Throughput    Device   Context    Stream  Name
+        us        us                                                      B         B        MB        GB/s                              
+  2.86e+05  18.46400                   -              -         -         -         -    2.10MB  113.58GB/s         0         1         2  [CUDA memset]
+  2.86e+05  17.40800                   -              -         -         -         -    2.10MB  120.47GB/s         0         1         2  [CUDA memset]
+  2.86e+05  17.40700                   -              -         -         -         -    2.10MB  120.48GB/s         0         1         2  [CUDA memset]
+  2.86e+05  372.1910                   -              -         -         -         -    2.10MB    5.63GB/s         0         1         2  [CUDA memcpy HtoD]
+  2.87e+05  351.5190                   -              -         -         -         -    2.10MB    5.97GB/s         0         1         2  [CUDA memcpy HtoD]
+  2.88e+05  43.00800           (128 1 1)     (1024 1 1)        16        0B        0B         -           -         0         1         2  add_loc_kernel(unsigned int*, unsigned int*, unsigned int*)
+  2.88e+05  322.6870                   -              -         -         -         -    2.10MB    6.50GB/s         0         1         2  [CUDA memcpy DtoH]
+  2.89e+05  18.52800                   -              -         -         -         -    2.10MB  113.19GB/s         0         1         2  [CUDA memset]
+  2.89e+05  17.40800                   -              -         -         -         -    2.10MB  120.47GB/s         0         1         2  [CUDA memset]
+  2.89e+05  17.40800                   -              -         -         -         -    2.10MB  120.47GB/s         0         1         2  [CUDA memset]
+  2.90e+05  18.56000                   -              -         -         -         -    2.10MB  112.99GB/s         0         1         2  [CUDA memset]
+  2.90e+05  17.56800                   -              -         -         -         -    2.10MB  119.37GB/s         0         1         2  [CUDA memset]
+  2.90e+05  17.50400                   -              -         -         -         -    2.10MB  119.81GB/s         0         1         2  [CUDA memset]
+  2.90e+05  357.3430                   -              -         -         -         -    2.10MB    5.87GB/s         0         1         2  [CUDA memcpy HtoD]
+  2.91e+05  353.1510                   -              -         -         -         -    2.10MB    5.94GB/s         0         1         2  [CUDA memcpy HtoD]
+  2.91e+05  377.3430           (128 1 1)     (1024 1 1)        12        0B        0B         -           -         0         1         2  add_glo_kernel(unsigned int*, unsigned int*, unsigned int*)
+  2.92e+05  367.4550                   -              -         -         -         -    2.10MB    5.71GB/s         0         1         2  [CUDA memcpy DtoH]
+  2.93e+05  18.52800                   -              -         -         -         -    2.10MB  113.19GB/s         0         1         2  [CUDA memset]
+  2.93e+05  17.40800                   -              -         -         -         -    2.10MB  120.47GB/s         0         1         2  [CUDA memset]
+  2.93e+05  17.44000                   -              -         -         -         -    2.10MB  120.25GB/s         0         1         2  [CUDA memset]
+  1.28e+06  18.56000                   -              -         -         -         -    2.10MB  112.99GB/s         0         1         2  [CUDA memset]
+  1.28e+06  17.47200                   -              -         -         -         -    2.10MB  120.03GB/s         0         1         2  [CUDA memset]
+  1.28e+06  17.44000                   -              -         -         -         -    2.10MB  120.25GB/s         0         1         2  [CUDA memset]
+  1.28e+06  523.7100                   -              -         -         -         -    2.10MB    4.00GB/s         0         1         2  [CUDA memcpy HtoD]
+  1.28e+06  500.8310                   -              -         -         -         -    2.10MB    4.19GB/s         0         1         2  [CUDA memcpy HtoD]
+  1.28e+06  42.30400           (128 1 1)     (1024 1 1)        16        0B        0B         -           -         0         1         2  sub_loc_kernel(unsigned int*, unsigned int*, unsigned int*)
+  1.28e+06  332.4470                   -              -         -         -         -    2.10MB    6.31GB/s         0         1         2  [CUDA memcpy DtoH]
+  1.28e+06  17.69600                   -              -         -         -         -    2.10MB  118.51GB/s         0         1         2  [CUDA memset]
+  1.28e+06  17.44000                   -              -         -         -         -    2.10MB  120.25GB/s         0         1         2  [CUDA memset]
+  1.28e+06  17.47200                   -              -         -         -         -    2.10MB  120.03GB/s         0         1         2  [CUDA memset]
+  1.29e+06  18.43200                   -              -         -         -         -    2.10MB  113.78GB/s         0         1         2  [CUDA memset]
+  1.29e+06  17.40800                   -              -         -         -         -    2.10MB  120.47GB/s         0         1         2  [CUDA memset]
+  1.29e+06  17.47200                   -              -         -         -         -    2.10MB  120.03GB/s         0         1         2  [CUDA memset]
+  1.29e+06  451.3910                   -              -         -         -         -    2.10MB    4.65GB/s         0         1         2  [CUDA memcpy HtoD]
+  1.29e+06  468.4150                   -              -         -         -         -    2.10MB    4.48GB/s         0         1         2  [CUDA memcpy HtoD]
+  1.29e+06  378.6550           (128 1 1)     (1024 1 1)        12        0B        0B         -           -         0         1         2  sub_glo_kernel(unsigned int*, unsigned int*, unsigned int*)
+  1.29e+06  429.1180                   -              -         -         -         -    2.10MB    4.89GB/s         0         1         2  [CUDA memcpy DtoH]
+  1.29e+06  17.72800                   -              -         -         -         -    2.10MB  118.30GB/s         0         1         2  [CUDA memset]
+  1.29e+06  17.47200                   -              -         -         -         -    2.10MB  120.03GB/s         0         1         2  [CUDA memset]
+  1.29e+06  17.40700                   -              -         -         -         -    2.10MB  120.48GB/s         0         1         2  [CUDA memset]
+  2.22e+06  18.56000                   -              -         -         -         -    2.10MB  112.99GB/s         0         1         2  [CUDA memset]
+  2.22e+06  17.40800                   -              -         -         -         -    2.10MB  120.47GB/s         0         1         2  [CUDA memset]
+  2.22e+06  28.35200                   -              -         -         -         -    3.67MB  129.44GB/s         0         1         2  [CUDA memset]
+  2.22e+06  443.4230                   -              -         -         -         -    2.10MB    4.73GB/s         0         1         2  [CUDA memcpy HtoD]
+  2.22e+06  430.0470                   -              -         -         -         -    2.10MB    4.88GB/s         0         1         2  [CUDA memcpy HtoD]
+  2.22e+06  52.09600           (128 1 1)     (1024 1 1)        21        0B        0B         -           -         0         1         2  mul_loc_kernel(unsigned int*, unsigned int*, unsigned int*)
+  2.22e+06  1.18e+03                   -              -         -         -         -    3.67MB    3.11GB/s         0         1         2  [CUDA memcpy DtoH]
+  2.22e+06  17.76000                   -              -         -         -         -    2.10MB  118.08GB/s         0         1         2  [CUDA memset]
+  2.22e+06  17.47100                   -              -         -         -         -    2.10MB  120.04GB/s         0         1         2  [CUDA memset]
+  2.22e+06  28.32000                   -              -         -         -         -    3.67MB  129.59GB/s         0         1         2  [CUDA memset]
+  2.22e+06  17.53600                   -              -         -         -         -    2.10MB  119.59GB/s         0         1         2  [CUDA memset]
+  2.22e+06  17.47200                   -              -         -         -         -    2.10MB  120.03GB/s         0         1         2  [CUDA memset]
+  2.22e+06  28.35200                   -              -         -         -         -    3.67MB  129.44GB/s         0         1         2  [CUDA memset]
+  2.22e+06  432.7350                   -              -         -         -         -    2.10MB    4.85GB/s         0         1         2  [CUDA memcpy HtoD]
+  2.22e+06  432.4150                   -              -         -         -         -    2.10MB    4.85GB/s         0         1         2  [CUDA memcpy HtoD]
+  2.22e+06  1.41e+03           (128 1 1)     (1024 1 1)        13        0B        0B         -           -         0         1         2  mul_glo_kernel(unsigned int*, unsigned int*, unsigned int*)
+  2.22e+06  963.8370                   -              -         -         -         -    3.67MB    3.81GB/s         0         1         2  [CUDA memcpy DtoH]
+  2.22e+06  17.72700                   -              -         -         -         -    2.10MB  118.30GB/s         0         1         2  [CUDA memset]
+  2.22e+06  17.44000                   -              -         -         -         -    2.10MB  120.25GB/s         0         1         2  [CUDA memset]
+  2.22e+06  28.35200                   -              -         -         -         -    3.67MB  129.44GB/s         0         1         2  [CUDA memset]
+  3.19e+06  18.46400                   -              -         -         -         -    2.10MB  113.58GB/s         0         1         2  [CUDA memset]
+  3.19e+06  17.44000                   -              -         -         -         -    2.10MB  120.25GB/s         0         1         2  [CUDA memset]
+  3.19e+06  28.41600                   -              -         -         -         -    3.67MB  129.15GB/s         0         1         2  [CUDA memset]
+  3.19e+06  407.7750                   -              -         -         -         -    2.10MB    5.14GB/s         0         1         2  [CUDA memcpy HtoD]
+  3.19e+06  402.2070                   -              -         -         -         -    2.10MB    5.21GB/s         0         1         2  [CUDA memcpy HtoD]
+  3.20e+06  51.61600           (128 1 1)     (1024 1 1)        27        0B        0B         -           -         0         1         2  mul_karatsuba_loc_kernel(unsigned int*, unsigned int*, unsigned int*)
+  3.20e+06  982.5570                   -              -         -         -         -    3.67MB    3.74GB/s         0         1         2  [CUDA memcpy DtoH]
+  3.20e+06  17.69600                   -              -         -         -         -    2.10MB  118.51GB/s         0         1         2  [CUDA memset]
+  3.20e+06  17.47200                   -              -         -         -         -    2.10MB  120.03GB/s         0         1         2  [CUDA memset]
+  3.20e+06  28.41600                   -              -         -         -         -    3.67MB  129.15GB/s         0         1         2  [CUDA memset]
+  3.20e+06  17.50400                   -              -         -         -         -    2.10MB  119.81GB/s         0         1         2  [CUDA memset]
+  3.20e+06  17.40800                   -              -         -         -         -    2.10MB  120.47GB/s         0         1         2  [CUDA memset]
+  3.20e+06  28.35200                   -              -         -         -         -    3.67MB  129.44GB/s         0         1         2  [CUDA memset]
+  3.20e+06  418.3990                   -              -         -         -         -    2.10MB    5.01GB/s         0         1         2  [CUDA memcpy HtoD]
+  3.20e+06  404.7030                   -              -         -         -         -    2.10MB    5.18GB/s         0         1         2  [CUDA memcpy HtoD]
+  3.20e+06  506.3980           (128 1 1)     (1024 1 1)        30        0B        0B         -           -         0         1         2  mul_karatsuba_glo_kernel(unsigned int*, unsigned int*, unsigned int*)
+  3.20e+06  779.6780                   -              -         -         -         -    3.67MB    4.71GB/s         0         1         2  [CUDA memcpy DtoH]
+  3.20e+06  17.69600                   -              -         -         -         -    2.10MB  118.51GB/s         0         1         2  [CUDA memset]
+  3.20e+06  17.40800                   -              -         -         -         -    2.10MB  120.47GB/s         0         1         2  [CUDA memset]
+  3.20e+06  28.35200                   -              -         -         -         -    3.67MB  129.44GB/s         0         1         2  [CUDA memset]
+  4.61e+06  18.52800                   -              -         -         -         -    2.10MB  113.19GB/s         0         1         2  [CUDA memset]
+  4.61e+06  17.37600                   -              -         -         -         -    2.10MB  120.69GB/s         0         1         2  [CUDA memset]
+  4.61e+06  17.44000                   -              -         -         -         -    2.10MB  120.25GB/s         0         1         2  [CUDA memset]
+  4.61e+06  17.40800                   -              -         -         -         -    2.10MB  120.47GB/s         0         1         2  [CUDA memset]
+  4.61e+06  398.3340                   -              -         -         -         -    2.10MB    5.26GB/s         0         1         2  [CUDA memcpy HtoD]
+  4.61e+06  392.7030                   -              -         -         -         -    2.10MB    5.34GB/s         0         1         2  [CUDA memcpy HtoD]
+  4.61e+06  403.8070                   -              -         -         -         -    2.10MB    5.19GB/s         0         1         2  [CUDA memcpy HtoD]
+  4.61e+06  58.01600           (128 1 1)     (1024 1 1)        18        0B        0B         -           -         0         1         2  add_m_loc_kernel(unsigned int*, unsigned int*, unsigned int*, unsigned int*)
+  4.61e+06  377.0230                   -              -         -         -         -    2.10MB    5.56GB/s         0         1         2  [CUDA memcpy DtoH]
+  4.61e+06  17.72800                   -              -         -         -         -    2.10MB  118.30GB/s         0         1         2  [CUDA memset]
+  4.61e+06  17.40800                   -              -         -         -         -    2.10MB  120.47GB/s         0         1         2  [CUDA memset]
+  4.61e+06  17.40800                   -              -         -         -         -    2.10MB  120.47GB/s         0         1         2  [CUDA memset]
+  4.61e+06  17.40800                   -              -         -         -         -    2.10MB  120.47GB/s         0         1         2  [CUDA memset]
+  4.61e+06  17.56800                   -              -         -         -         -    2.10MB  119.37GB/s         0         1         2  [CUDA memset]
+  4.61e+06  17.37600                   -              -         -         -         -    2.10MB  120.69GB/s         0         1         2  [CUDA memset]
+  4.61e+06  17.40800                   -              -         -         -         -    2.10MB  120.47GB/s         0         1         2  [CUDA memset]
+  4.61e+06  17.40800                   -              -         -         -         -    2.10MB  120.47GB/s         0         1         2  [CUDA memset]
+  4.61e+06  408.0940                   -              -         -         -         -    2.10MB    5.14GB/s         0         1         2  [CUDA memcpy HtoD]
+  4.61e+06  424.0620                   -              -         -         -         -    2.10MB    4.95GB/s         0         1         2  [CUDA memcpy HtoD]
+  4.62e+06  413.7900                   -              -         -         -         -    2.10MB    5.07GB/s         0         1         2  [CUDA memcpy HtoD]
+  4.62e+06  794.1740           (128 1 1)     (1024 1 1)        21        0B        0B         -           -         0         1         2  add_m_glo_kernel(unsigned int*, unsigned int*, unsigned int*, unsigned int*)
+  4.62e+06  460.3830                   -              -         -         -         -    2.10MB    4.56GB/s         0         1         2  [CUDA memcpy DtoH]
+  4.62e+06  17.95200                   -              -         -         -         -    2.10MB  116.82GB/s         0         1         2  [CUDA memset]
+  4.62e+06  17.40800                   -              -         -         -         -    2.10MB  120.47GB/s         0         1         2  [CUDA memset]
+  4.62e+06  17.37600                   -              -         -         -         -    2.10MB  120.69GB/s         0         1         2  [CUDA memset]
+  4.62e+06  17.40800                   -              -         -         -         -    2.10MB  120.47GB/s         0         1         2  [CUDA memset]
+  6.00e+06  18.62400                   -              -         -         -         -    2.10MB  112.60GB/s         0         1         2  [CUDA memset]
+  6.00e+06  17.47200                   -              -         -         -         -    2.10MB  120.03GB/s         0         1         2  [CUDA memset]
+  6.00e+06  18.01600                   -              -         -         -         -    2.10MB  116.40GB/s         0         1         2  [CUDA memset]
+  6.00e+06  17.56800                   -              -         -         -         -    2.10MB  119.37GB/s         0         1         2  [CUDA memset]
+  6.00e+06  579.8700                   -              -         -         -         -    2.10MB    3.62GB/s         0         1         2  [CUDA memcpy HtoD]
+  6.00e+06  597.9180                   -              -         -         -         -    2.10MB    3.51GB/s         0         1         2  [CUDA memcpy HtoD]
+  6.00e+06  637.8860                   -              -         -         -         -    2.10MB    3.29GB/s         0         1         2  [CUDA memcpy HtoD]
+  6.00e+06  56.86400           (128 1 1)     (1024 1 1)        16        0B        0B         -           -         0         1         2  sub_m_loc_kernel(unsigned int*, unsigned int*, unsigned int*, unsigned int*)
+  6.00e+06  402.6540                   -              -         -         -         -    2.10MB    5.21GB/s         0         1         2  [CUDA memcpy DtoH]
+  6.00e+06  18.62400                   -              -         -         -         -    2.10MB  112.60GB/s         0         1         2  [CUDA memset]
+  6.00e+06  17.50400                   -              -         -         -         -    2.10MB  119.81GB/s         0         1         2  [CUDA memset]
+  6.00e+06  17.47200                   -              -         -         -         -    2.10MB  120.03GB/s         0         1         2  [CUDA memset]
+  6.00e+06  17.44000                   -              -         -         -         -    2.10MB  120.25GB/s         0         1         2  [CUDA memset]
+  6.00e+06  18.52800                   -              -         -         -         -    2.10MB  113.19GB/s         0         1         2  [CUDA memset]
+  6.00e+06  17.53600                   -              -         -         -         -    2.10MB  119.59GB/s         0         1         2  [CUDA memset]
+  6.00e+06  17.60000                   -              -         -         -         -    2.10MB  119.16GB/s         0         1         2  [CUDA memset]
+  6.00e+06  17.47200                   -              -         -         -         -    2.10MB  120.03GB/s         0         1         2  [CUDA memset]
+  6.00e+06  561.2460                   -              -         -         -         -    2.10MB    3.74GB/s         0         1         2  [CUDA memcpy HtoD]
+  6.00e+06  614.2060                   -              -         -         -         -    2.10MB    3.41GB/s         0         1         2  [CUDA memcpy HtoD]
+  6.00e+06  644.5420                   -              -         -         -         -    2.10MB    3.25GB/s         0         1         2  [CUDA memcpy HtoD]
+  6.00e+06  618.4300           (128 1 1)     (1024 1 1)        21        0B        0B         -           -         0         1         2  sub_m_glo_kernel(unsigned int*, unsigned int*, unsigned int*, unsigned int*)
+  6.01e+06  422.0470                   -              -         -         -         -    2.10MB    4.97GB/s         0         1         2  [CUDA memcpy DtoH]
+  6.01e+06  18.49500                   -              -         -         -         -    2.10MB  113.39GB/s         0         1         2  [CUDA memset]
+  6.01e+06  17.44000                   -              -         -         -         -    2.10MB  120.25GB/s         0         1         2  [CUDA memset]
+  6.01e+06  17.66400                   -              -         -         -         -    2.10MB  118.72GB/s         0         1         2  [CUDA memset]
+  6.01e+06  17.56800                   -              -         -         -         -    2.10MB  119.37GB/s         0         1         2  [CUDA memset]
+  6.95e+06  18.46400                   -              -         -         -         -    2.10MB  113.58GB/s         0         1         2  [CUDA memset]
+  6.95e+06  17.44000                   -              -         -         -         -    2.10MB  120.25GB/s         0         1         2  [CUDA memset]
+  6.95e+06  17.72800                   -              -         -         -         -    2.10MB  118.30GB/s         0         1         2  [CUDA memset]
+  6.95e+06  398.3350                   -              -         -         -         -    2.10MB    5.26GB/s         0         1         2  [CUDA memcpy HtoD]
+  6.95e+06  395.5190                   -              -         -         -         -    2.10MB    5.30GB/s         0         1         2  [CUDA memcpy HtoD]
+  6.95e+06  42.91200           (128 1 1)     (1024 1 1)        16        0B        0B         -           -         0         1         2  add_loc_assembly_kernel(unsigned int*, unsigned int*, unsigned int*)
+  6.95e+06  363.8390                   -              -         -         -         -    2.10MB    5.76GB/s         0         1         2  [CUDA memcpy DtoH]
+  6.95e+06  17.69600                   -              -         -         -         -    2.10MB  118.51GB/s         0         1         2  [CUDA memset]
+  6.95e+06  17.47200                   -              -         -         -         -    2.10MB  120.03GB/s         0         1         2  [CUDA memset]
+  6.95e+06  17.50400                   -              -         -         -         -    2.10MB  119.81GB/s         0         1         2  [CUDA memset]
+  6.95e+06  17.50400                   -              -         -         -         -    2.10MB  119.81GB/s         0         1         2  [CUDA memset]
+  6.95e+06  17.40800                   -              -         -         -         -    2.10MB  120.47GB/s         0         1         2  [CUDA memset]
+  6.95e+06  17.40800                   -              -         -         -         -    2.10MB  120.47GB/s         0         1         2  [CUDA memset]
+  6.95e+06  394.8790                   -              -         -         -         -    2.10MB    5.31GB/s         0         1         2  [CUDA memcpy HtoD]
+  6.95e+06  388.3510                   -              -         -         -         -    2.10MB    5.40GB/s         0         1         2  [CUDA memcpy HtoD]
+  6.95e+06  43.16800           (128 1 1)     (1024 1 1)        17        0B        0B         -           -         0         1         2  add_loc_C_kernel(unsigned int*, unsigned int*, unsigned int*)
+  6.95e+06  355.8390                   -              -         -         -         -    2.10MB    5.89GB/s         0         1         2  [CUDA memcpy DtoH]
+  6.95e+06  17.88800                   -              -         -         -         -    2.10MB  117.24GB/s         0         1         2  [CUDA memset]
+  6.95e+06  17.44000                   -              -         -         -         -    2.10MB  120.25GB/s         0         1         2  [CUDA memset]
+  6.95e+06  17.40800                   -              -         -         -         -    2.10MB  120.47GB/s         0         1         2  [CUDA memset]
+
+Regs: Number of registers used per CUDA thread.
+SSMem: Static shared memory allocated per CUDA block.
+DSMem: Dynamic shared memory allocated per CUDA block.
