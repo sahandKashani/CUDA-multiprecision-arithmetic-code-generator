@@ -760,7 +760,7 @@ Each operand file was generated for 5 different precisions:
 
 Throughout this document, all benchmarks consist of performing 10 consecutive
 executions of each operation.
-The amount of random numbers used in the benchmark depends on the total number
+The amount of random numbers used in the benchmark depends on the total numbers
 of threads spawned by the kernel launch configurations, and is equal to
 $gridsize*blocksize$.
 For example, if we choose to launch a kernel with 1 block and 1 thread, then
@@ -1068,12 +1068,13 @@ An example of such a variable is \verb+min_bignum_number_of_words+.
 import math
 
 precision = 239
-threads_per_block = 1
-blocks_per_grid = 1
 bits_per_word = 32
+blocks_per_grid = 1
+threads_per_block = 1
+file_name_operations_h = r'../src/operations.h'
+number_of_bignums = threads_per_block * blocks_per_grid
 min_bignum_number_of_words = math.ceil(precision/bits_per_word)
 max_bignum_number_of_words = math.ceil((2*precision)/bits_per_word)
-file_name_operations_h = r'../src/operations.h'
 
 assert min_bignum_number_of_words == math.ceil((precision+1)/bits_per_word)
 \end{lstlisting}
@@ -1101,6 +1102,8 @@ of words that a bignum needs for its representation.
 This value is used for storage requirements of the result a multiplication
 yields.
 No bignum will ever use more storage place than this value.
+\item[\Q{number_of_bignums}] This field represents the total number of threads
+that are being launched.
 \item[\Q{file_name_operations_h}] This field tells the script which file it
 should generate all the functions to.
 \end{description}
@@ -1143,14 +1146,91 @@ This file generates random numbers of the precision specified by
 The \verb+src+ folder contains the following files:
 
 \begin{description}
-\item[\Q{benchmarks.cu}]
-This file contains all our kernels, with which we launch our operations.
+\item[\Q{constants.h}]
+This file is the central control point for the C part.
+It contains some of the fields that were defined by \verb+constants.py+, which
+are needed in order to know where to write results to, how much memory needs to
+be allocated, \ldots
+The important fields are listed below:
+
+\begin{description}
+\item[\Q{THREADS_PER_BLOCK}] Equivalent to \verb+threads_per_block+ in
+\verb+constants.py+.
+\item[\Q{BLOCKS_PER_GRID}] Equivalent to \verb+blocks_per_grid+ in
+\verb+constants.py+.
+\item[\Q{NUMBER_OF_BIGNUMS}] Equivalent to \verb+number_of_bignums+ in
+\verb+constants.py+.
+\end{description}
 
 \item[\Q{bignum_types.h}]
-\item[\Q{constants.h}]
+This file contains the definitions \verb+MIN_BIGNUM_NUMBER_OF_WORDS+, and
+\verb+MAX_BIGNUM_NUMBER_OF_WORDS+, which are respectively equivalent to
+\verb+min_bignum_number_of_words+ and \verb+max_bignum_number_of_words+ defined
+in \verb+constants.py+.
+It also defines 2 important macros needed in order to know where a given bignum
+is located in memory.
+These macros are \verb+IDX(i, j, is_long_number)+ and \verb+COAL_IDX(i, j)+, and
+are explained below:
+
+\lstset{language=C++, label={}, caption={bignum\_types.h}}
+\begin{lstlisting}
+#define IDX(i, j, is_long_number) (((i) * ((is_long_number) ? (MAX_BIGNUM_NUMBER_OF_WORDS) : (MIN_BIGNUM_NUMBER_OF_WORDS))) + (j))
+#define COAL_IDX(i, j) (((i) * (NUMBER_OF_BIGNUMS)) + (j))
+\end{lstlisting}
+
+\begin{description}
+\item[\Q{IDX(i, j, is_long_number)}] This macro allows one to select bignums
+from a \emph{non}-coalesced array.
+Input \verb+i+ must satisfy
+\verb+0 <= i < NUMBER_OF_BIGNUMS+, and chooses which bignum one wants to select.
+Input \verb+is_long_number+ specifies if the bignums represented in the array
+are bignums that are represented on \verb+MIN_BIGNUM_NUMBER_OF_WORDS+ words,
+or \verb+MAX_BIGNUM_NUMBER_OF_WORDS+ words.
+One needs to know if the data is a multiplication result, or just normal
+bignums.
+Input \verb+j+ must satisfy
+\verb+0 <= j < MIN_BIGNUM_NUMBER_OF_WORDS+ or
+\verb+0 <= j < MAX_BIGNUM_NUMBER_OF_WORDS+, depending on the value of
+\verb+is_long_number+.
+Input \verb+j+ allows one to select a particular word of a bignum.
+
+\item[\Q{COAL_IDX(i, j)}] This macro allows one to select bignums from a
+\emph{coalesced} array.
+Input \verb+i+ must satisfy \verb+0 <= i < MIN_BIGNUM_NUMBER_OF_WORDS+, or
+\verb+0 <= i < MAX_BIGNUM_NUMBER_OF_WORDS+, depending if the array is containing
+multiplication results, or normal bignums.
+Input \verb+j+ must satisfy \verb+0 <= j <= NUMBER_OF_BIGNUMS+.
+Input \verb+i+ selects which element of a bignum must be accessed, and input
+\verb+j+ selects which thread's bignum must be accessed.
+Normally, one would use this in kernels when accessing coalesced global memory,
+by looping over index \verb+i+, and using \verb+threadIdx.x+ as the value in
+\verb+j+.
+\end{description}
+
+\item[\Q{benchmarks.cu}]
+This file contains all our kernels, with which we launch our operation
+benchmarks.
+A benchmark consists of computing 10 instances of each operation one after the
+other.
+Every kernel reads its operands from the files \verb+random_number_generator.py+
+created, performs the operation, then writes the results back to a file in
+coalesced form for verification.
+Each operation has 2 kernels, one that only uses coalesced global memory reads
+for the 10 instances, and another which reads the operands to some local memory
+before performing the operations.
+This will be used so we can compare the latency difference between the 2
+approaches.
+
 \item[\Q{input_output.cpp}]
+Contains functions to read coalesced bignum arrays from files, and to write
+coalesced bignum arrays to files.
+
 \item[\Q{main.cu}]
+Selects which benchmarks have to be run.
+
 \item[\Q{operations.h}]
+Contains all the generated operations that have been created by
+\verb+operation_generator.py+.
 \end{description}
 
 \section{Operations}

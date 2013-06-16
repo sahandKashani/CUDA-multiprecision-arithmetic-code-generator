@@ -56,8 +56,8 @@
 // above, the following macro returns the index of the "j"th element of the
 // "i"th bignum from a 1D array of size N * H (N and H defined as below).
 
-// 0 < i < N = NUMBER_OF_BIGNUMS
-// 0 < j < H = MIN_BIGNUM_NUMBER_OF_WORDS or MAX_BIGNUM_NUMBER_OF_WORDS
+// 0 <= i < N = NUMBER_OF_BIGNUMS
+// 0 <= j < H = MIN_BIGNUM_NUMBER_OF_WORDS or MAX_BIGNUM_NUMBER_OF_WORDS
 #define IDX(i, j, is_long_number) (((i) * ((is_long_number) ? (MAX_BIGNUM_NUMBER_OF_WORDS) : (MIN_BIGNUM_NUMBER_OF_WORDS))) + (j))
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -93,8 +93,8 @@
 // the following macro returns the index of the "i"th element of the "j"th
 // bignum from a 1D array of size N * H (N and H defined as below).
 
-// 0 < i < H = MIN_BIGNUM_NUMBER_OF_WORDS or MAX_BIGNUM_NUMBER_OF_WORDS
-// 0 < j < N = NUMBER_OF_BIGNUMS
+// 0 <= i < H = MIN_BIGNUM_NUMBER_OF_WORDS or MAX_BIGNUM_NUMBER_OF_WORDS
+// 0 <= j < N = NUMBER_OF_BIGNUMS
 #define COAL_IDX(i, j) (((i) * (NUMBER_OF_BIGNUMS)) + (j))
 
 #endif
