@@ -1528,15 +1528,92 @@ asm("subc.u32    %0, %1, %2;" : "=r"(c[4]) : "r"(a[4]), "r"(b[4]));
 \end{figure}
 
 The algorithm we used for modular addition supposes that the 2 operands are
-smaller than the modulus.
+smaller than the modulus, and is not guaranteed to work if any of the operands
+do not satisfy this condition.
+If we have the following condition, \verb+0 <= a, b < m+, where \verb+a+,
+and \verb+b+ are operands, and \verb+m+ is the modulus, then we know that
+\verb!a + b < 2*m!.
+Therefore, if the addition yielded a number bigger than \verb+m+, a single
+subtraction by \verb+m+ would give us back the modular addition's result.
 
-% \subsection{Modular Subtraction}
-% \begin{figure}[h]
-% \centering
-% \includegraphics[width=\linewidth]{figs/modular_subtraction}
-% \caption{Modular subtraction algorithm}
-% \label{fig:modular_subtraction}
-% \end{figure}
+Normally, a simple conditional subtraction would be used to perform the modular
+addition, as shown in
+Listing~\ref{lst:conditional_subtraction_modular_addition}.
+Note that we use a simple 1-word bignum as an illustration.
+
+\lstset{language=C++,
+        label={lst:conditional_subtraction_modular_addition},
+        caption={Conditional subtraction in modular addition}}
+\begin{lstlisting}
+uint32_t a = ...;
+uint32_t b = ...;
+uint64_t c = a + b;
+
+if (c > m)
+{
+    c -= m;
+}
+
+return (uint32_t) c;
+\end{lstlisting}
+
+However, this method introduces a conditional statement that may cause some
+thread divergence.
+We stated earlier why we wanted to avoid thread divergence at all costs,
+therefore we decided to implement the conditional subtraction differently.
+
+The algorithm we used is the following:
+\lstset{language=C++,
+        label={lst:branchless_modular_addition_algorithm},
+        caption={Branch-less modular addition algorithm}}
+\begin{lstlisting}
+c = a + b
+c = c - m
+mask = 0 - borrow
+mask = mask & m
+c = c + mask
+\end{lstlisting}
+
+The key part to notice is on lines 2-3.
+By subtracting \verb+m+ from \verb+c+, if the result were to be negative, then
+a borrow bit would be emitted.
+Subtracting the borrow bit from \verb+0+ would yield a number that only contains
+binary \verb+1+s.
+One can then use this number as a mask to know if the modulus should be added
+back to the result.
+Note that if no borrow bit was emitted, then the subtraction on line 2 yielded a
+positive number, and the mask would be 0, and no modulus would be added back to
+the result.
+
+An illustration is shown in Figure~\ref{fig:modular_addition}.
+
+\subsection{Modular Subtraction}
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{figs/modular_subtraction}
+\caption{Modular subtraction algorithm}
+\label{fig:modular_subtraction}
+\end{figure}
+
+Modular subtraction is analogous to its addition counterpart.
+The only difference is that the first operation is a subtraction instead of
+an addition, and that one doesn't need to subtract the modulus from the result
+of the first operation.
+
+The algorithm is shown in
+Listing~\ref{lst:branchless_modular_subtraction_algorithm}, and an illustration
+is shown in Figure~\ref{fig:modular_subtraction}.
+
+\lstset{language=C++,
+        label={lst:branchless_modular_subtraction_algorithm},
+        caption={Branch-less modular subtraction algorithm}}
+\begin{lstlisting}
+c = a - b
+mask = 0 - borrow
+mask = mask & m
+c = c + mask
+\end{lstlisting}
+
 
 % \subsection{Multiplication}
 % \begin{figure}[h]
