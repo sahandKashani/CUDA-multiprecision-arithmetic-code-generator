@@ -8,6 +8,7 @@
 \usepackage{listings}
 \usepackage{color}
 \usepackage[Q=yes]{examplep}
+\usepackage{subcaption}
 
 \definecolor{mystringcolor}{RGB}{0,0,0}
 \definecolor{mycommentcolor}{rgb}{0,0.4,0}
@@ -1405,6 +1406,14 @@ correctly in the printed source code.
 This field can be ignored.
 \end{description}
 
+Note: Each assembly instruction which is printed by the code generator is in a
+separate statement.
+This is due to the fact that assembly statements are limited to 30 registers,
+but since our scripts work for higher precisions, it is possible that some
+functions would require more than that limit.
+Placing each assembly intruction in a separate statement is a way to avoid this
+problem.
+
 \subsection{Local vs. Global macros}
 For each macro, we implemented 2 different versions which have identical code,
 but which differ in their memory access patterns.
@@ -1587,6 +1596,31 @@ the result.
 
 An illustration is shown in Figure~\ref{fig:modular_addition}.
 
+The Python code to generate this macro is short, and is shown below. It uses all
+some of our \verb+_generic_+ functions.
+
+\lstset{language=Python,
+        label={},
+        caption={Modular addition macro generation function}}
+\begin{lstlisting}
+def add_m_loc():
+    indent = 1
+
+    asm = []
+    asm.append('#define add_m_loc(c_loc, a_loc, b_loc, m_loc)\\')
+    asm.append('{\\')
+    asm.append(" " * 4 * indent + 'uint32_t mask[' + str(min_bignum_number_of_words) + '] = ' + str([0] * min_bignum_number_of_words).replace('[', '{').replace(']', '}') + ';\\')
+
+    asm += add_loc_generic(precision, precision, 'a_loc', 'b_loc', 'c_loc', 0, 0, 0, indent)
+    asm += sub_cc_loc_generic(precision, precision, 'c_loc', 'm_loc', 'c_loc', 0, 0, 0, indent)
+    asm += subc_loc_generic(precision, precision, 'mask', 'mask', 'mask', 0, 0, 0, indent)
+    asm += and_loc_generic(precision, precision, 'mask', 'm_loc', 'mask', 0, 0, 0, indent)
+    asm += add_loc_generic(precision, precision, 'c_loc', 'mask', 'c_loc', 0, 0, 0, indent)
+
+    asm.append('}' + '\n')
+    return asm
+\end{lstlisting}
+
 \subsection{Modular Subtraction}
 \begin{figure}[h]
 \centering
@@ -1614,22 +1648,162 @@ mask = mask & m
 c = c + mask
 \end{lstlisting}
 
+\subsection{Multiplication}
+We will now study how to adapt the schoolbook multiplication algorithm for
+GPUs.
+\begin{figure}
+        \centering
+        \begin{subfigure}[h]{0.5\textwidth}
+                \centering
+                \includegraphics[width=\textwidth]{figs/multiplication}
+                \caption{Schoolbook ordering}
+                \label{fig:schoolbook_multiplication_ordering}
+        \end{subfigure}%
+        ~ %add desired spacing between images, e. g. ~, \quad, \qquad etc.
+          %(or a blank line to force the subfigure onto a new line)
+        \begin{subfigure}[h]{0.5\textwidth}
+                \centering
+                \includegraphics[width=\textwidth]{figs/multiplication_order_for_carry_propagation}
+                \caption{Ordering for carry propagation}
+                \label{fig:gpu_multiplication_ordering}
+        \end{subfigure}
+        \caption{Multiplication ordering}\label{fig:multiplication_ordering}
+\end{figure}
 
-% \subsection{Multiplication}
-% \begin{figure}[h]
-% \centering
-% \includegraphics[scale=0.5]{figs/multiplication}
-% \caption{Multiplication algorithm}
-% \label{fig:multiplication}
-% \end{figure}
+In primary school, we learned to perform long multiplications by using a
+an iterative algorithm, as shown in
+Figure~\ref{fig:schoolbook_multiplication_ordering}.
+The approach here is to accumulate the result of every sub-multiplication before
+passing on towards the next one.
+At first, we were implementing the schoolbook multiplication ordering mostly in
+C, with assembly for the parts that needed to access the carry bit.
+We kept losing carries with this ordering, so we decided to reorder the
+multiplications as shown on Figure~\ref{fig:gpu_multiplication_ordering}.
 
-% \subsection{Karatsuba Multiplication}
-% \begin{figure}[h]
-% \centering
-% \includegraphics[width=\linewidth]{figs/karatsuba_multiplication}
-% \caption{Karatsuba multiplication algorithm}
-% \label{fig:karatsuba_multiplication}
-% \end{figure}
+This new ordering allowed us to fully calculate the result of one of the
+result's indices, before passing on to the next one.
+The only difficulty here was to accumulate multiple carries from one column to
+the next.
+To solve this, we used a single register as our carry holder, and accumulated
+the partial carries to it after each multiplication.
+Once the column had been added together, the carry register, which potentially
+contained multiple accumulated carries, is added to the result of the next
+column as its initial value, then the calculation of that column continued just
+as the previous one.
+
+This ordering was done by pre-calculating all tuples of data indices such that
+their sum gave the specific result's index.
+
+Note, there is a little optimization that avoids the calculation of the final
+result index if it is not needed.
+For example, the multiplication of two 131-bit numbers yields, at most, a
+262-bit integer.
+However, 262-bit integers are representable on 9 words, instead of
+$2*5 = 10$ words.
+Therefore, the final index of the multiplication does not need to be performed.
+
+\subsection{Karatsuba Multiplication}
+Unlike all the other macros we implemented, the Karatsuba mutliplication macro
+only works on 2 operands of the \emph{same} precision.
+
+Schoolbook multiplication is asymptotically of $n^2$ complexity.
+More theoretically efficient algorithms based off the divide-and-conquer
+paradigm exist, such as the Karatsuba multiplication algorithm.
+
+The idea behind Karatsuba's algorithm is to compute the product of two large
+numbers using three multiplications of smaller numbers, each with about half as
+many digits as the initial operands, plus some additions and digit shifts.~\footnote{\url{http://en.wikipedia.org/wiki/Karatsuba_algorithm}}
+
+Karatsuba's algorithm is as follows:
+\begin{enumerate}
+\item Take 2 operands $x$ and $y$ represented as $N$-digit strings in some base
+$B$.
+For any positive integer $M < N$, one can represent $x$ and $y$ alternatively as
+follows:
+\begin{itemize}
+\item $x = x_1 B^M + x_0$
+\item $y = y_1 B^M + y_0$
+\end{itemize}
+\item The product $xy$ can then be obtained by
+$z_2 B^{2M} + z_1 B^{M} + z_0$, where
+\begin{itemize}
+\item $z_0 = x_0 y_0$
+\item $z_2 = x_1 y_1$
+\item $z_1 = (x_1 + x_0) (y_1 + y_0) - z_0 - z_2$
+\end{itemize}
+\end{enumerate}
+
+Karatsuba's algorithm can be used recursively to attaign a complexity of
+$n^{1.585}$, however, because of difficulties performing so in assembly, we
+decided to only implement a 1-level recursive algorithm.
+The algorithm states that the operands be divided in 2 equal, or one-off
+parts, however, since our machine operates on full-words, we decided to split
+the operands at word boundaries.
+
+We decided to split the operands by keeping the potentially smaller of the 2
+parts on the least significant words, as shown on
+Figure~\ref{fig:karatsuba_operand_cut}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.8]{figs/karatsuba_operand_cut}
+\caption{Karatsuba operand decomposition for 131-bit operands}
+\label{fig:karatsuba_operand_cut}
+\end{figure}
+
+The reason we perform a smaller cut on the least significant words arose when we
+were initially trying to implement the recursive karatsuba algorithm.
+When we had chosen the most significant words to be the bigger part of the
+decomposition, we were entering an infinite loop in our operation generation
+script.
+The solution we found was to just choose the other part of the bignum as the
+smaller part.
+
+The computation of $z_0$ and $z_2$ is straightforward, as we just have to use
+the \verb+mul_loc_generic()+ function we implemented previously.
+Note that $z_0$ is the result of the multiplication of 2 full-precision
+operands, and has to perform all multiplication steps, however, $z_2$'s operands
+are not full-precision numbers, and it is possible that their multiplication
+would not need to perform one step, as shown on
+Figure~\ref{fig:karatsuba_second_level_optimizations}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.8]{figs/karatsuba_second_level_optimizations}
+\caption{Karatsuba multiplication optimizations when computing $x_1 y_1$, and $x_0 + x_1$ for 131-bit operands}
+\label{fig:karatsuba_second_level_optimizations}
+\end{figure}
+
+The Karatsuba algorithm is the only place in the code where we use
+\verb+add_loc_exact_generic()+, instead of \verb+add_loc_generic()+.
+This is shown on the left part of Figure~\ref{fig:karatsuba_second_level_optimizations}.
+Indeed, this generic karatsuba function works for any operand precision, and
+sometimes, it is possible that the result of the addition in $x_0 + x_1$ or
+$y_0 + y_1$ will not hold on the same precision as the operands.
+We then would need the exact value of this addition, which is what the
+\verb+add_loc_exact_generic()+ function provides us with.
+
+The Karatsuba algorithm is slower than the classical multiplication algorithm
+when $x_0 + x_1$ or $y_0 + y_1$ require an additional word.
+For example, if we wanted to use the Karatsuba algorithm to multiply two 128-bit
+numbers, we will see that $x_0 + x_1$ will need an additional word for storage,
+therefore the multiplication $(x_0 + x_1) * (y_0 + y_1)$ would need to perform a
+multiplication of 2 3-word numbers, instead of 2-word numbers, and the number
+of multiplication instructions that would be executed as extra would make the
+algorithm slower.
+
+Computing $z_1$ is easily done with \verb+add_loc_generic()+, and the final
+shifted addition of $z_2 B^{2M} + z_1 B^{M} + z_0$ can be obtained through
+the use of the shift indices of the function.
+An illustration is shown on Figure~\ref{fig:shift_addition_karatsuba_final},
+along with a potential optimization for 131-bit operands.
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.8]{figs/shift_addition_karatsuba_final}
+\caption{Shifted addition (final step of Karatsuba algorithm)}
+\label{fig:shift_addition_karatsuba_final}
+\end{figure}
 
 %
 % --------------------------------------------------------------------------------
