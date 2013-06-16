@@ -11,6 +11,7 @@
 \usepackage{color}
 \usepackage[Q=yes]{examplep}
 \usepackage{subcaption}
+\usepackage{pdfpages}
 
 \newcommand{\mytitle}{Implementing generic multiple precision arithmetic on GPUs}
 
@@ -52,10 +53,13 @@ tabsize=4,                              % sets default tabsize to 2 spaces
 
 \begin{document}
 
-\title{\mytitle}
+\title{Implementing generic multiple-precision arithmetic on CUDA GPUs}
 \author{Alexandre Carlessi \and Sahand Kashani-Akhavan}
 \date{\today}
-\maketitle
+% \maketitle
+
+\includepdf[pages={1}, landscape=false, angle=0]{figs/title_page.pdf}
+
 
 \tableofcontents
 
@@ -112,7 +116,9 @@ functions that were pre-defined in hardware.
 
 With the introduction of the NVIDA GeForce
 3\footnote{\url{http://www.nvidia.com/page/geforce3.html}} in 2001, GPUs added
-programmable shading to their capabilities, which allowed developers to define
+programmable shading to their capabilities.
+A programmable shader is one of a GPU's processing elements which programmers can access and for which they can write custom code.
+This allows developers to define
 their own straight-line shading programs to perform custom effects on the GPU.
 Bypassing the fixed-function rendering pipeline opened the door towards many
 future graphics novelties, such as cel shading, mip mapping, shadow volumes,
@@ -1814,6 +1820,8 @@ along with a potential optimization for 131-bit operands.
 \caption{Shifted addition (final step of Karatsuba algorithm)}
 \label{fig:shift_addition_karatsuba_final}
 \end{figure}
+
+\section{Benchmarks}
 
 %
 % --------------------------------------------------------------------------------

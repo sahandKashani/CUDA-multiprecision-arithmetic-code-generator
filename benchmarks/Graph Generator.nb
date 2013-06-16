@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[     13046,        326]
-NotebookOptionsPosition[     12674,        310]
-NotebookOutlinePosition[     13011,        325]
-CellTagsIndexPosition[     12968,        322]
+NotebookDataLength[     14406,        364]
+NotebookOptionsPosition[     13994,        347]
+NotebookOutlinePosition[     14330,        362]
+CellTagsIndexPosition[     14287,        359]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -267,7 +267,47 @@ Cell[BoxData[{
     RowBox[{"{", 
      RowBox[{
      "\"\<blocks per grid\>\"", ",", "\"\<threads per block\>\"", ",", 
-      "\"\<us\>\""}], "}"}]}]}], "]"}]}], "Input"],
+      "\"\<us\>\""}], "}"}]}]}], "]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"a", "=", 
+   RowBox[{"multiPrecisionOperationGraph", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"\"\<add_loc_C\>\"", ",", "\"\<add_loc_assembly\>\""}], "}"}], 
+     ",", 
+     RowBox[{"{", "kepler", "}"}], ",", 
+     RowBox[{"{", "131", "}"}], ",", "register", ",", "True"}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{"Show", "[", 
+  RowBox[{"a", ",", 
+   RowBox[{"PlotLabel", "\[Rule]", 
+    RowBox[{"{", 
+     RowBox[{"\"\<add_loc_C\>\"", ",", "\"\<add_loc_assembly\>\""}], "}"}]}], 
+   ",", 
+   RowBox[{"ViewPoint", "\[Rule]", 
+    RowBox[{"{", 
+     RowBox[{"2.3316825699216075", ",", 
+      RowBox[{"-", "2.184876991754642"}], ",", "1.1133592969140536"}], 
+     "}"}]}], ",", 
+   RowBox[{"ImageSize", "\[Rule]", 
+    RowBox[{"{", 
+     RowBox[{"816.", ",", "662."}], "}"}]}], ",", 
+   RowBox[{"AxesLabel", "\[Rule]", 
+    RowBox[{"{", 
+     RowBox[{
+     "\"\<blocks per grid\>\"", ",", "\"\<threads per block\>\"", ",", 
+      "\"\<registers\>\""}], "}"}]}], ",", " ", 
+   RowBox[{"PlotRange", "\[Rule]", 
+    RowBox[{"{", 
+     RowBox[{"Automatic", ",", "Automatic", ",", 
+      RowBox[{"{", 
+       RowBox[{"16", ",", "19"}], "}"}]}], "}"}]}]}], "]"}]}], "Input",
+ CellChangeTimes->{{3.58039965797082*^9, 3.5803996581196823`*^9}}],
+
+Cell[BoxData[
+ RowBox[{"\[IndentingNewLine]", "\[IndentingNewLine]", "\[IndentingNewLine]", 
+  "\[IndentingNewLine]"}]], "Input",
+ CellChangeTimes->{{3.580399678224766*^9, 3.58039967856673*^9}}],
 
 Cell[BoxData[{
  RowBox[{
@@ -303,13 +343,10 @@ Cell[BoxData[{
     RowBox[{"{", 
      RowBox[{"Automatic", ",", "Automatic", ",", 
       RowBox[{"{", 
-       RowBox[{"16", ",", "19"}], "}"}]}], "}"}]}]}], "]"}]}], "Input",
- CellChangeTimes->{{3.5803484814398127`*^9, 3.5803484825461807`*^9}, {
-  3.58034920355085*^9, 3.580349205007243*^9}, {3.580349237878854*^9, 
-  3.5803493051431828`*^9}}]
+       RowBox[{"16", ",", "19"}], "}"}]}], "}"}]}]}], "]"}]}], "Input"]
 },
-WindowSize->{1515, 963},
-WindowMargins->{{48, Automatic}, {9, Automatic}},
+WindowSize->{1231, 776},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
 FrontEndVersion->"9.0 for Linux x86 (64-bit) (November 20, 2012)",
 StyleDefinitions->"Default.nb"
 ]
@@ -324,10 +361,11 @@ CellTagsIndex->{}
 *)
 (*NotebookFileOutline
 Notebook[{
-Cell[557, 20, 9680, 218, 913, "Input",
+Cell[557, 20, 9680, 218, 935, "Input",
  CellGroupingRules->{GroupTogetherGrouping, 10000.}],
-Cell[10240, 240, 1032, 29, 77, "Input"],
-Cell[11275, 271, 1395, 37, 77, "Input"]
+Cell[10240, 240, 2324, 64, 187, "Input"],
+Cell[12567, 306, 194, 3, 121, "Input"],
+Cell[12764, 311, 1226, 34, 99, "Input"]
 }
 ]
 *)
