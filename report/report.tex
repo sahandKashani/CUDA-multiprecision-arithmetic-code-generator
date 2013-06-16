@@ -1,7 +1,9 @@
-\documentclass[10pt, a4paper]{report}
+\documentclass[12pt, a4paper]{report}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[english]{babel}
+\usepackage{fancyhdr}
+\usepackage[left=3cm,top=3cm,right=3cm,bottom=3cm]{geometry}
 \usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage[hypcap]{caption}
@@ -9,6 +11,13 @@
 \usepackage{color}
 \usepackage[Q=yes]{examplep}
 \usepackage{subcaption}
+
+\newcommand{\mytitle}{Implementing generic multiple precision arithmetic on GPUs}
+
+\pagestyle{fancy}
+\lhead{\mytitle}
+\chead{}
+\rhead{\today}
 
 \definecolor{mystringcolor}{RGB}{0,0,0}
 \definecolor{mycommentcolor}{rgb}{0,0.4,0}
@@ -43,7 +52,7 @@ tabsize=4,                              % sets default tabsize to 2 spaces
 
 \begin{document}
 
-\title{Implementing generic multiple precision arithmetic on GPUs}
+\title{\mytitle}
 \author{Alexandre Carlessi \and Sahand Kashani-Akhavan}
 \date{\today}
 \maketitle
@@ -101,9 +110,10 @@ The first GPUs had a fixed-function rendering pipeline, and could not be used
 for anything other than common geometry transformations and pixel-shading
 functions that were pre-defined in hardware.
 
-With the introduction of the NVIDA GeForce 3 in 2001, GPUs added programmable
-shading to their capabilities, which allowed developers to define their own
-straight-line shading programs to perform custom effects on the GPU.
+With the introduction of the NVIDA GeForce
+3\footnote{\url{http://www.nvidia.com/page/geforce3.html}} in 2001, GPUs added
+programmable shading to their capabilities, which allowed developers to define
+their own straight-line shading programs to perform custom effects on the GPU.
 Bypassing the fixed-function rendering pipeline opened the door towards many
 future graphics novelties, such as cel shading, mip mapping, shadow volumes,
 oversampling, interpolation, bump mapping, and many others.
@@ -125,7 +135,7 @@ parallely, such as to each pixel of the screen, or to every vertex of a 3D
 geometric model.
 
 GPUs had different processing units for each type of shader, but with its
-introduction in 2006, the NVIDIA~GeForce~8800~GTX merged the separate
+introduction in 2006, the NVIDIA~GeForce~8800~GTX\footnote{\url{http://www.nvidia.fr/page/geforce_8800.html}} merged the separate
 programmable graphics stages to an array of unified processors, which allowed
 dynamic partitioning of the computing elements to the different shaders, thus
 attaining better load balancing.
@@ -160,7 +170,7 @@ Such a consideration is possible since GPUs support a functionally complete set
 of operations on arbitrary bits, and can thus compute any value.
 
 At the time, programmers could only interface with GPUs through graphics APIs
-such as OpenGL or DirectX.
+such as OpenGL\footnote{\url{http://www.opengl.org/}} or DirectX\footnote{\url{http://en.wikipedia.org/wiki/DirectX}}.
 However, APIs had been designed to only support features required in graphics.
 To access the GPU's computational resources, programmers had to map their
 problem into graphics operations so the computations could be launched through
@@ -306,7 +316,7 @@ computational oriented languages were created.
 
 \chapter{NVIDIA CUDA}
 The Compute Unified Device Architecture, more commonly known under the name
-CUDA, is a parallel computing platform and programming model developed by
+CUDA\footnote{\url{http://www.nvidia.com/object/cuda_home_new.html}}, is a parallel computing platform and programming model developed by
 NVIDIA in 2006, and implemented by the GPUs they produce.
 
 CUDA was designed for GPGPU programming, as developers can compile C code for
@@ -378,7 +388,7 @@ identifier.
 Once a kernel is launched, the CUDA runtime generates the corresponding grid of
 threads, which are then assigned to execution resources on a block-by-block
 basis.
-To have some numbers, NVIDIA's Fermi (compute capability 2.0) and Kepler
+To have some numbers, NVIDIA's Fermi\footnote{\url{http://www.nvidia.com/object/fermi-architecture.html}} (compute capability 2.0) and Kepler\footnote{\url{http://www.nvidia.com/object/nvidia-kepler.html}}
 (compute capability 3.0) architectures can have a maximum of 1024 threads
 concurrently running in a block.
 
@@ -599,7 +609,7 @@ computations on very large integers.
 In C, multiple precision arithmetic is not built into the language, therefore
 one must use external libraries to have the feature.
 Until now, one of the reference libraries has been the GNU Multiple Precision
-Arithmetic Library, more commonly called GMP.
+Arithmetic Library, more commonly called GMP\footnote{\url{http://gmplib.org/}}.
 GMP is a free library for arbitrary precision arithmetic, operating on signed
 integers, rational numbers, and floating point numbers.
 There is no practical limit to the precision except the ones implied by the
@@ -683,7 +693,7 @@ a thread-by-thread basis.
 
 \subsection{Our bignum representation}
 Our initial project idea was to work towards solving the 131-bit Certicom ECC
-challenge.
+challenge\footnote{\url{http://www.certicom.com/index.php/the-certicom-ecc-challenge}}.
 The challenge is to compute ECC private keys from a given list of ECC public
 keys and associated system parameters. This is the type of problem an adversary
 would face when attempting to defeat an elliptic curve cryptosystem.
@@ -853,7 +863,7 @@ for (uint32_t i = 1; i < N; i++)
 \end{lstlisting}
 
 \subsubsection{Assembly}
-CUDA GPUs expose a low-level Parallel Thread Execution (PTX) virtual
+CUDA GPUs expose a low-level Parallel Thread Execution (PTX)\footnote{\url{http://en.wikipedia.org/wiki/Parallel_Thread_Execution}} virtual
 machine and instruction set architecture which allows one to program in
 pseudo-assembly language.
 PTX assembly supports a large set of operations, such as \verb+add+, \verb+sub+,
