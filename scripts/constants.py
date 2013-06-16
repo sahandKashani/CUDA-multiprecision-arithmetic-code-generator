@@ -38,7 +38,7 @@ number_of_bignums_in_files = 1024 * 1024
 
 # The number of words needed to hold "precision" bits MUST be the same as the
 # number of words needed to hold "precision + 1" bits. This is needed, because
-# the addition of two n-bit numbers can give a (n + 1)-bit number, an our
+# the addition of two n-bit numbers can give a (n + 1)-bit number, and our
 # algorithms go by the principle that this (n + 1)-bit number is representable
 # on the same number of bits as the n-bit number.
 assert min_bignum_number_of_words == math.ceil((precision + 1) / bits_per_word)

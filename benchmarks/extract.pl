@@ -43,7 +43,6 @@ sub agglomerate_data {
 sub assemble_data {
   my $function_name = $_[0];
   my $field_to_extract = $_[1];
-  my @extracted_information;
 
   open RESULTS, "> $function_name";
   open DATA, "< $file_name";
@@ -61,13 +60,12 @@ sub assemble_data {
       $block_size =~ s/\)//;
       my @block_size = split /\s/, $block_size;
 
-      $extracted_information[$grid_size_limit * log2($grid_size[0]) + log2($block_size[0])] = $line_fields[$index_map{$field_to_extract}];
+      my $extracted_field = $line_fields[$index_map{$field_to_extract}];
+
+      print RESULTS "$grid_size[0] $block_size[0] $extracted_field\n";
     }
   }
   close DATA;
-  foreach (@extracted_information) {
-    print RESULTS "$_\n" if (defined);
-  }
   close RESULTS;
 }
 
