@@ -10,6 +10,7 @@
 \usepackage[Q=yes]{examplep}
 
 \definecolor{mystringcolor}{RGB}{0,0,0}
+\definecolor{mycommentcolor}{rgb}{0,0.4,0}
 \definecolor{mykeywordcolor}{RGB}{127,0,85}
 \lstset{
 backgroundcolor=\color{white},          % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}
@@ -17,7 +18,7 @@ basicstyle=\ttfamily\footnotesize,      % the size of the fonts that are used fo
 breakatwhitespace=false,                % sets if automatic breaks should only happen at whitespace
 breaklines=true,                        % sets automatic line breaking
 captionpos=b,                           % sets the caption-position to bottom
-commentstyle=\color{green},             % comment style
+commentstyle=\color{mycommentcolor},    % comment style
 deletekeywords={...},                   % if you want to delete keywords from the given language
 escapeinside={\%*}{*)},                 % if you want to add LaTeX within your code
 extendedchars=true,                     % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
@@ -207,7 +208,9 @@ vector.
 Assume we have the following 2 vectors already pre-filled with their respective
 data:
 
-\lstset{caption={Vector definitions}}
+\lstset{language=C++,
+        label={},
+        caption={Vector definitions}}
 \begin{lstlisting}
   int a[N];
   int b[N];
@@ -215,7 +218,9 @@ data:
 
 The CPU code to perform this vector addition would look like this:
 
-\lstset{caption={Vector addition}}
+\lstset{language=C++,
+        label={},
+        caption={Vector addition}}
 \begin{lstlisting}
   for (int i = 0; i < N; i += 1)
   {
@@ -471,7 +476,9 @@ Suppose 4 threads are trying to read a \verb+4x4+ matrix \verb+m[4][4]+:
 
 \hspace{0pt} \\ \\
 Normal CPU code for accessing such a matrix would ressemble the following:
-\lstset{caption={Accessing matrix elements on a CPU}}
+\lstset{language=C++,
+        label={},
+        caption={Accessing matrix elements on a CPU}}
 \begin{lstlisting}
   for (int i = 0; i < 4; i++)
   {
@@ -485,7 +492,9 @@ Normal CPU code for accessing such a matrix would ressemble the following:
 \hspace{0pt} \\
 If we use 4 GPU threads, we get the following code:
 
-\lstset{caption={Accessing matrix elements on a GPU (non-coalesced version)}}
+\lstset{language=C++,
+        label={},
+        caption={Accessing matrix elements on a GPU (non-coalesced version)}}
 \begin{lstlisting}
   for (int j = 0; j < 4; j++)
   {
@@ -521,7 +530,9 @@ What we would want to have, is reads of the following form:
 The code corresponding to the memory access pattern in
 Figure~\ref{fig:4x4_matrix_coalesced_memory_access_no_transpose} is:
 
-\lstset{caption={Accessing matrix elements on a GPU (coalesced version)}}
+\lstset{language=C++,
+        label={},
+        caption={Accessing matrix elements on a GPU (non-coalesced version)}}
 \begin{lstlisting}
   for (int j = 0; j < 4; j++)
   {
@@ -829,8 +840,9 @@ would compute \verb!carry = (c[i] < max(a[i], b[i]))!, then use it for the
 Listing~\ref{lst:N_word_addition_in_C} shows the carry propagation technique for
 $N$-word additions.
 
-\lstset{caption={$N$-word addition in C},
-        label={lst:N_word_addition_in_C}}
+\lstset{language=C++,
+        label={lst:N_word_addition_in_C},
+        caption={$N$-word addition in C}}
 \begin{lstlisting}
 c[0] = a[0] + b[0];
 for (uint32_t i = 1; i < N; i++)
@@ -872,8 +884,9 @@ As an example, in order to calculate the extended-precision addition of two
 would use the following inline PTX code (remember that \verb+a+, \verb+b+, and
 \verb+c+ are 5-word arrays):
 
-\lstset{caption={5-word hand unrolled addition in PTX},
-        label={lst:5_word_hand_unrolled_addition_in_PTX}}
+\lstset{language=C++,
+        label={lst:5_word_hand_unrolled_addition_in_PTX},
+        caption={5-word hand unrolled addition in PTX}}
 \begin{lstlisting}
 asm("add.cc.u32  %0, %1, %2;" : "=r"(c[0]) : "r"(a[0]), "r"(b[0]));
 asm("addc.cc.u32 %0, %1, %2;" : "=r"(c[1]) : "r"(a[1]), "r"(b[1]));
@@ -886,7 +899,9 @@ In the above addition code, notice that the assembly instructions are identical
 for the middle section, as the same operation is taking place.
 One would be tempted to write the code in a loop instead, such as the following:
 
-\lstset{caption={5-word loop-oriented addition}, label={}}
+\lstset{language=C++,
+        label={},
+        caption={5-word loop-oriented addition}}
 \begin{lstlisting}
 asm("add.cc.u32  %0, %1, %2;" : "=r"(c[0]) : "r"(a[0]), "r"(b[0]));
 for (uint32_t i = 1; i < 4; i++)
@@ -905,7 +920,9 @@ compiler unroll the loop (since we know the number of loop iterations) with the
 \verb+#pragma unroll+ directive, as doing so would give us straight-line
 assembly code, therefore preseving the carry bit.
 
-\lstset{caption={Compiler unrolled 5-word loop-oriented addition}}
+\lstset{language=C++,
+        label={},
+        caption={Compiler unrolled 5-word loop-oriented addition}}
 \begin{lstlisting}
 asm("add.cc.u32  %0, %1, %2;" : "=r"(c[0]) : "r"(a[0]), "r"(b[0]));
 #pragma unroll
@@ -1061,9 +1078,9 @@ constants.py modifies all C files such that they contain all the up-to-date
 values it contains.
 An example of such a variable is \verb+min_bignum_number_of_words+.
 
-\lstset{language=Python}
-\lstset{caption={Important constants in constants.py},
-        label={lst:constants.py_important_fields}}
+\lstset{language=Python,
+        label={lst:constants.py_important_fields},
+        caption={Important constants in constants.py}}
 \begin{lstlisting}
 import math
 
@@ -1172,7 +1189,9 @@ is located in memory.
 These macros are \verb+IDX(i, j, is_long_number)+ and \verb+COAL_IDX(i, j)+, and
 are explained below:
 
-\lstset{language=C++, label={}, caption={bignum\_types.h}}
+\lstset{language=C++,
+        label={},
+        caption={bignum\_types.h}}
 \begin{lstlisting}
 #define IDX(i, j, is_long_number) (((i) * ((is_long_number) ? (MAX_BIGNUM_NUMBER_OF_WORDS) : (MIN_BIGNUM_NUMBER_OF_WORDS))) + (j))
 #define COAL_IDX(i, j) (((i) * (NUMBER_OF_BIGNUMS)) + (j))
@@ -1234,12 +1253,306 @@ Contains all the generated operations that have been created by
 \end{description}
 
 \section{Operations}
+All the code fragments that are showed next are extracts from the
+\verb+operation_generator.py+ file.
+
+\subsection{Output precision}
+First of all, let's define some functions we will often be calling to find out
+more about precision and storage questions.
+
+The number of words needed to store a number of \verb+precision+ bits is defined
+as:
+
+\lstset{language=Python,
+        label={},
+        caption={}}
+\begin{lstlisting}
+def number_of_words_needed_for_precision(precision):
+    return math.ceil(precision / bits_per_word)
+\end{lstlisting}
+
+The precision of the result of an addition is always 1 bit bigger than the
+precision of the biggest operand.
+
+\lstset{language=Python,
+        label={},
+        caption={}}
+\begin{lstlisting}
+def add_res_precision(op1_precision, op2_precision):
+    res_precision = max(op1_precision, op2_precision) + 1
+    return res_precision
+\end{lstlisting}
+
+The precision of the result of a multiplication is the sum of the precisions of
+its operands.
+However, this does \emph{not} hold if one of the operands has a precision of 1
+bit, as the maximum value that is representable on one bit is the number 1, and
+the multiplication of a number by 1 gives a result that holds on the original
+precision.
+
+\lstset{language=Python,
+        label={},
+        caption={}}
+\begin{lstlisting}
+def mul_res_precision(op1_precision, op2_precision):
+    res_precision = op1_precision + op2_precision
+
+    # res_precision = op1_precision + op2_precision does not hold if one of the
+    # operands has precision 1. In that case, you need to reduce the precision
+    # of the result by 1 bit.
+    if (op1_precision == 1) or (op2_precision == 1):
+        res_precision -= 1
+
+    return res_precision
+\end{lstlisting}
+
+\subsection{Generic function interfaces and outputs}
+The ultimate goal of the operator generation script is to create macros which
+the C programs can later use. These macros will be defined somewhat like the
+following:
+
+\lstset{language=C++,
+        label={lst:heading_of_the_local_addition_macro},
+        caption={Heading of the local addition macro}}
+\begin{lstlisting}
+#define add_loc(c_loc, a_loc, b_loc)\
+{\
+    // code of the operation referencing a_loc, b_loc, and c_loc
+}
+\end{lstlisting}
+
+There are 2 types of functions in \verb+operator_generator.py+.
+
+The first type sets up macro headings, one of which is shown in
+Listing~\ref{lst:heading_of_the_local_addition_macro}.
+These functions are named after the macro they will export to the C code.
+For example, the function that exports the macro named \verb+add_loc+ will also
+be called \verb+add_loc+.
+An important note is that these functions do \emph{not} create the contents of
+the macro, but \emph{only} the heading.
+
+The second type of functions sets up the code of the macro, and always have the
+word \verb+_generic_+ in their name.
+Note that these functions do not know the name of their operands, so they must
+be provided to the function.
+
+An example of the first type of function is the \verb+add_loc()+ function, shown
+in Listing~\ref{lst:macro_generator}, and an example of the second type of
+function is the \verb+add_loc_exact_generic()+ function, shown in
+Listing~\ref{lst:later}
+
+To define these macros, we use code like the following:
+\lstset{language=Python,
+        label={lst:macro_generator},
+        caption={Macro generator}}
+\begin{lstlisting}
+def add_loc():
+    indent = 1
+
+    asm = []
+    asm.append('#define add_loc(c_loc, a_loc, b_loc)\\')
+    asm.append('{\\')
+    asm += add_loc_generic(precision, precision, 'a_loc', 'b_loc', 'c_loc', 0, 0, 0, indent)
+    asm.append('}' + '\n')
+    return asm
+\end{lstlisting}
+
+The code shown in Listing~\ref{lst:macro_generator} defines an empty list called
+\verb+asm+, to which it will then append a string representing \emph{each} line
+that will appear in the final macro.
+This list of lines is later printed to a file.
+This code sets up the macro's interface, along with the names of the operands
+and results that will be exposed to the C programs.
+
+The \verb+_generic_+ functions have an interface that ressembles the following:
+\lstset{language=Python,
+        label={},
+        caption={}}
+\begin{lstlisting}
+def add_loc_exact_generic(op1_precision, op2_precision, op1_name,
+                          op2_name, res_name, op1_shift, op2_shift,
+                          res_shift, indent = 0):
+\end{lstlisting}
+
+Let's explain what these fields mean:
+\begin{description}
+\item[\Q{op1_precision, op2_precision}] Precisions of the first and second
+operands. The precision of the result is normally calculated inside the
+function.
+\item[\Q{op1_name, op2_name, res_name}] Name of the first and second operands,
+as well as the name of the result.
+Remember that the \verb+_generic_+ functions do \emph{not} know the names of
+their operands, therefore we need these fields to know how to label the data
+that will be used in the generated code.
+We decided to do this so we could call the same \verb+_generic_+ function
+multiple times with different data.
+\item[\Q{op1_shift, op2_shift, res_shift}] Index in the array named by
+\verb+op1_name+, \verb+op2_name+, and \verb+res_name+ which the
+algorithm should consider as the least significant word.
+For example, if we have a bignum that holds on 5 words, but wish to add the
+last 3 of its words with another 3-word number, then we would set its
+\verb+_shift+ index to 2, and the 3-word bignum's \verb+_shift+ index to 0.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{figs/addition_with_shift_index}
+\caption{Addition with shift index}
+\label{fig:addition_with_shift_index}
+\end{figure}
+
+\item[\Q{indent}] Used for recursive algorithms in order to indent them
+correctly in the printed source code.
+This field can be ignored.
+\end{description}
+
+\subsection{Local vs. Global macros}
+For each macro, we implemented 2 different versions which have identical code,
+but which differ in their memory access patterns.
+Each macro has a \verb+_loc_+ version, and a \verb+_glo_+ version.
+The \verb+_loc_+ version expects its operands to be local vectors, whereas
+the \verb+_glo_+ version expects its operands to be in global memory.
+Note that the \verb+_glo_+ version needs to have the thread id of the bignum it
+is to access.
+
+\lstset{language=C++,
+        label={},
+        caption={5-word global memory addition}}
+\begin{lstlisting}
+#define add_glo(c_glo, a_glo, b_glo, tid)\
+{\
+    asm("add.cc.u32  %0, %1, %2;" : "=r"(c_glo[COAL_IDX(0, tid)]) : "r"(a_glo[COAL_IDX(0, tid)]), "r"(b_glo[COAL_IDX(0, tid)]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_glo[COAL_IDX(1, tid)]) : "r"(a_glo[COAL_IDX(1, tid)]), "r"(b_glo[COAL_IDX(1, tid)]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_glo[COAL_IDX(2, tid)]) : "r"(a_glo[COAL_IDX(2, tid)]), "r"(b_glo[COAL_IDX(2, tid)]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_glo[COAL_IDX(3, tid)]) : "r"(a_glo[COAL_IDX(3, tid)]), "r"(b_glo[COAL_IDX(3, tid)]));\
+    asm("addc.u32    %0, %1, %2;" : "=r"(c_glo[COAL_IDX(4, tid)]) : "r"(a_glo[COAL_IDX(4, tid)]), "r"(b_glo[COAL_IDX(4, tid)]));\
+}
+\end{lstlisting}
+
+\lstset{language=C++,
+        label={},
+        caption={5-word local memory addition}}
+\begin{lstlisting}
+#define add_loc(c_loc, a_loc, b_loc)\
+{\
+    asm("add.cc.u32  %0, %1, %2;" : "=r"(c_loc[0]) : "r"(a_loc[0]), "r"(b_loc[0]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[1]) : "r"(a_loc[1]), "r"(b_loc[1]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[2]) : "r"(a_loc[2]), "r"(b_loc[2]));\
+    asm("addc.cc.u32 %0, %1, %2;" : "=r"(c_loc[3]) : "r"(a_loc[3]), "r"(b_loc[3]));\
+    asm("addc.u32    %0, %1, %2;" : "=r"(c_loc[4]) : "r"(a_loc[4]), "r"(b_loc[4]));\
+}
+\end{lstlisting}
+
 \subsection{Addition}
+The general algorithm for performing addition can be seen in
+Figure~\ref{fig:addition}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{figs/addition}
+\caption{Addition algorithm}
+\label{fig:addition}
+\end{figure}
+
+The following algorithm concerns the \verb+add_loc_generic()+ (in yellow on
+Figure~\ref{fig:addition}, and \verb+add_loc_exact_generic()+ (yellow part of
+Figure~\ref{fig:addition}, potentially with the additional red part) functions.
+\verb+add_loc_generic()+ returns a result that holds on the same precision as
+the \emph{biggest} of its 2 operands, similar to how hardware adders work.
+In contrast, \verb+add_loc_exact_generic()+ returns the actual exact answer of
+the addition. The only difference between these 2 functions is the upper bound
+used in their internal loops. \verb+add_loc_generic()+ makes use of the number
+of words its biggest operand uses, whereas \verb+add_loc_exact_generic()+ uses
+the output of \verb+add_res_precision()+ to calculate the number of words it
+should loop until.
+Note that \verb+add_loc_exact_generic()+ is only used in the implementation of
+the Karatsuba algorithm.
+
+The addition algorithm starts by finding out which of the 2 operands needs less
+words in its representation.
+If the operands use the same number of words for their representatoin, then the
+basic ripple carry addition is performed, and code such as the one in
+Listing~\ref{lst:5_word_hand_unrolled_addition_in_PTX} is outputted.
+However, if the operands do not have an identical word count, then the function
+performs the normal addition algorithm until the smaller bignum has no more
+words left, after which case it modifies the assembly instructions and replaces
+the smaller bignum's placeholder with \verb+0+.
+
+Listing~\ref{lst:addition_5-word_3-word} shows the code that would be generated
+for the addition between a 5-word and a 3-word bignum.
+
+\lstset{language=C++,
+        label={lst:addition_5-word_3-word},
+        caption={Addition between 5-word and 3-word bignums}}
+\begin{lstlisting}
+asm("add.cc.u32  %0, %1, %2;" : "=r"(c[0]) : "r"(a[0]), "r"(b[0]));
+asm("addc.cc.u32 %0, %1, %2;" : "=r"(c[1]) : "r"(a[1]), "r"(b[1]));
+asm("addc.cc.u32 %0, %1, %2;" : "=r"(c[2]) : "r"(a[2]), "r"(b[2]));
+asm("addc.cc.u32 %0, %1,  0;" : "=r"(c[3]) : "r"(a[3]));
+asm("addc.u32    %0, %1,  0;" : "=r"(c[4]) : "r"(a[4]));
+\end{lstlisting}
+
 \subsection{Subtraction}
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{figs/subtraction}
+\caption{Subtraction algorithm}
+\label{fig:subtraction}
+\end{figure}
+
+The subtraction functions, \verb+sub_loc_generic()+ and
+\verb+sub_loc_exact_generic()+, work exactly as their addition counterparts
+work, but they use the \verb+sub+ instruction as opposed to the \verb+add+
+instruction.
+Actually, these functions are implemented by taking the code that is generated
+by \verb+add_loc_generic()+ and \verb+add_loc_exact_generic()+, and by replacing
+all instances of the \verb+add+ instruction by \verb+sub+.
+An example is shown below:
+
+\lstset{language=C++,
+        label={},
+        caption={5-word subtraction}}
+\begin{lstlisting}
+asm("sub.cc.u32  %0, %1, %2;" : "=r"(c[0]) : "r"(a[0]), "r"(b[0]));
+asm("subc.cc.u32 %0, %1, %2;" : "=r"(c[1]) : "r"(a[1]), "r"(b[1]));
+asm("subc.cc.u32 %0, %1, %2;" : "=r"(c[2]) : "r"(a[2]), "r"(b[2]));
+asm("subc.cc.u32 %0, %1, %2;" : "=r"(c[3]) : "r"(a[3]), "r"(b[3]));
+asm("subc.u32    %0, %1, %2;" : "=r"(c[4]) : "r"(a[4]), "r"(b[4]));
+\end{lstlisting}
+
 \subsection{Modular Addition}
-\subsection{Modular Subtraction}
-\subsection{Multiplication}
-\subsection{Karatsuba Multiplication}
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{figs/modular_addition}
+\caption{Modular addition algorithm}
+\label{fig:modular_addition}
+\end{figure}
+
+The algorithm we used for modular addition supposes that the 2 operands are
+smaller than the modulus.
+
+% \subsection{Modular Subtraction}
+% \begin{figure}[h]
+% \centering
+% \includegraphics[width=\linewidth]{figs/modular_subtraction}
+% \caption{Modular subtraction algorithm}
+% \label{fig:modular_subtraction}
+% \end{figure}
+
+% \subsection{Multiplication}
+% \begin{figure}[h]
+% \centering
+% \includegraphics[scale=0.5]{figs/multiplication}
+% \caption{Multiplication algorithm}
+% \label{fig:multiplication}
+% \end{figure}
+
+% \subsection{Karatsuba Multiplication}
+% \begin{figure}[h]
+% \centering
+% \includegraphics[width=\linewidth]{figs/karatsuba_multiplication}
+% \caption{Karatsuba multiplication algorithm}
+% \label{fig:karatsuba_multiplication}
+% \end{figure}
 
 %
 % --------------------------------------------------------------------------------

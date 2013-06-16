@@ -808,6 +808,10 @@ def sub_m_glo():
     asm = [re.sub(r'_loc\[(\d+)\]', r'_glo[COAL_IDX(\1, tid)]', line) for line in asm]
     return asm
 
+def report_dummy():
+    asm = add_glo_generic(131, 131, 'a_loc', 'b_loc', 'c_loc', 0, 0, 0, 0);
+    return asm;
+
 ################################################################################
 ################################# CODE GENERATOR ###############################
 ################################################################################
@@ -834,7 +838,9 @@ macros_to_print = [
                    sub_m_loc,
                    sub_m_glo,
 
-                   montgomery_reduction
+                   montgomery_reduction,
+
+                   report_dummy
                    ]
 
 all_lines = []
