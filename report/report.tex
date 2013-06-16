@@ -146,7 +146,7 @@ programmable graphics stages to an array of unified processors, which allowed
 dynamic partitioning of the computing elements to the different shaders, thus
 attaining better load balancing.
 
-The unified processor array of the GeForce~8800~GTX is shown on
+The unified processor array of the GeForce~8800~GTX\footnote{\url{http://www.clubic.com/article-61974-8-nvidia-g80-geforce-8800-gts-gtx.html}} is shown on
 Figure~\ref{fig:unified_programmable_processor_array_of_the_GeForce_8800_GTX_graphics_pipeline}.
 This unified design made GPUs architecturally closer to CPUs.
 
@@ -444,12 +444,11 @@ device, and data has to be transferred to the allocated memory.
 Similarly, after kernel completion, device results must be transferred back from
 device memory to host memory.
 CUDA devices expose several different memories to developers, some of which are
-shown on Figure~\ref{fig:cuda_memory_hierarchy}.
-Note that for simplicity, texture memory is not shown.
+shown on Figure~\ref{fig:cuda_memory_hierarchy}\footnote{\url{http://lenam701.blogspot.ch/2012/02/nvidia-cuda-my-experience-with-high.html}}.
 
 \begin{figure}[h]
 \centering
-\includegraphics[scale=0.25]{figs/cuda_memory_hierarchy}
+\includegraphics[scale=0.35]{figs/cuda_memory_hierarchy}
 \caption{CUDA memory hierarchy}
 \label{fig:cuda_memory_hierarchy}
 \end{figure}
@@ -1822,6 +1821,7 @@ along with a potential optimization for 131-bit operands.
 \end{figure}
 
 \section{Benchmarks}
+
 
 %
 % --------------------------------------------------------------------------------
