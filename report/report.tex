@@ -7,13 +7,13 @@
 \usepackage[hypcap]{caption}
 \usepackage{listings}
 \usepackage{color}
+\usepackage[Q=yes]{examplep}
 
 \definecolor{mystringcolor}{RGB}{0,0,0}
 \definecolor{mykeywordcolor}{RGB}{127,0,85}
-
 \lstset{
 backgroundcolor=\color{white},          % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}
-basicstyle=\footnotesize,               % the size of the fonts that are used for the code
+basicstyle=\ttfamily\footnotesize,      % the size of the fonts that are used for the code
 breakatwhitespace=false,                % sets if automatic breaks should only happen at whitespace
 breaklines=true,                        % sets automatic line breaking
 captionpos=b,                           % sets the caption-position to bottom
@@ -923,7 +923,8 @@ The only solution which works well with inline assembly is that the code be
 fully hand-unrolled, such as in
 Listing~\ref{lst:5_word_hand_unrolled_addition_in_PTX}.
 
-\subsubsection{Why we chose asssembly over C}
+\subsubsection{Why we chose assembly over C}
+\label{sec:why_we_chose_assembly_over_c}
 This project was initially about implementing multiple precision arithmetic in
 order to be able to implement Pollard's Rho algorithm, and to study the effect
 of warp occupation on performance.
@@ -967,7 +968,8 @@ What would be best is if one could have precision-specific code at compile time,
 so that each thread would only be executing straight-line code, and would not
 have any branches to decide upon.
 It is possible to do this with the C preprocessor, however there are some
-other things we would like to do that are not possible with the preprocessor.
+other things we would like to do that are not possible with the preprocessor,
+such as code loops \ldots
 
 The solution we came up with was to use a form of metaprogramming by having
 pre-compilation scripts which would, in function of the precision provided,
@@ -1014,13 +1016,25 @@ our assembly, sometimes leading to less register usage.
 The performance difference between the C and assembly implementations are
 negligeable.
 We performed a simple benchmark to estimate the difference in execution speed,
-and here are the results for different grid and block sizes:
+and the results for different grid and block sizes are shown in
+Figure~\ref{fig:assembly_vs_c_loc_kepler_131_duration}.
 
 \begin{figure}[h]
 \centering
-\includegraphics[scale=0.4]{figs/assembly_vs_c_kepler_131}
-\caption{C vs. assembly 131-bit addition kernel execution time}
-\label{fig:assembly_vs_c_kepler_131}
+\includegraphics[scale=0.4]{figs/assembly_vs_c_loc_kepler_131_duration}
+\caption{C vs. assembly 131-bit addition kernel execution time (local vectors)}
+\label{fig:assembly_vs_c_loc_kepler_131_duration}
+\end{figure}
+
+As one can see, the difference between the 2 versions is negligable.
+Figure~\ref{fig:assembly_vs_c_loc_kepler_131_registers} shows the difference in
+register usage between the 2 versions.
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.4]{figs/assembly_vs_c_loc_kepler_131_registers}
+\caption{C vs. assembly 131-bit addition kernel register usage (local vectors)}
+\label{fig:assembly_vs_c_loc_kepler_131_registers}
 \end{figure}
 
 \item C code would be more portable than our assembly statements.
@@ -1028,7 +1042,116 @@ It would also be safer to use, and much easier to debug (this project made us
 learn this the hard way.)
 \end{itemize}
 
-\section{File Structure}
+\section{Project File Structure}
+There are 2 main folders in our project, the \verb+scripts+ folder, which
+contains all our python scripts, and the \verb+src+ folder, which contains all
+the C code for actual testing on the GPUs.
+
+\subsection{Scripts folder}
+The \verb+script+ folder contains the following files:
+
+\begin{description}
+\item[\Q{constants.py}]
+This is the central control point for the whole project, as it contains all the
+constants used in the project, and influences the code that is generated.
+An extract of the most important constants is given in
+Listing~\ref{lst:constants.py_important_fields}, along with a short explanation.
+Some of the constants defined in this file are needed by the C code, therefore
+constants.py modifies all C files such that they contain all the up-to-date
+values it contains.
+An example of such a variable is \verb+min_bignum_number_of_words+.
+
+\lstset{language=Python}
+\lstset{caption={Important constants in constants.py},
+        label={lst:constants.py_important_fields}}
+\begin{lstlisting}
+import math
+
+precision = 239
+threads_per_block = 1
+blocks_per_grid = 1
+bits_per_word = 32
+min_bignum_number_of_words = math.ceil(precision/bits_per_word)
+max_bignum_number_of_words = math.ceil((2*precision)/bits_per_word)
+file_name_operations_h = r'../src/operations.h'
+
+assert min_bignum_number_of_words == math.ceil((precision+1)/bits_per_word)
+\end{lstlisting}
+
+\begin{description}
+\item[\Q{precision}] Precision the generated operations should support.
+Any value is supported here, except all multiples of 32, for reasons specified
+in section~\ref{sec:why_we_chose_assembly_over_c}.
+This condition is asserted at the end of the file.
+\item[\Q{threads_per_block}] Number of threads contained in a grid block.
+Supported values are anything from 1 up to 1024, as our code failed to compile
+for thread ranges that were any larger.
+\item[\Q{blocks_per_grid}] Number of blocks contained in a grid.
+Supported values are anything from 1 up to 1024, as our code failed to compile
+for block ranges that were any larger.
+\item[\Q{bits_per_word}] Primary data type of the device.
+This field is useful if GPUs were to move from their current  32-bit primary
+data type to a higher precision one.
+It causes all the code generation algorithms to adapt accordingly.
+\item[\Q{min_bignum_number_of_words}] This field represents the minimum number
+of words that a bignum needs for its representation.
+No bignum will ever use less storage place than this value.
+\item[\Q{max_bignum_number_of_words}] This field represents the maximum number
+of words that a bignum needs for its representation.
+This value is used for storage requirements of the result a multiplication
+yields.
+No bignum will ever use more storage place than this value.
+\item[\Q{file_name_operations_h}] This field tells the script which file it
+should generate all the functions to.
+\end{description}
+
+\item[\Q{conversions.py}]
+This file handles the conversions of numbers from Python's internal
+unlimited-precision integer arithmetic to our GPU's number representation, which
+is 2's complement notation.
+The functions in this file are mostly used to verify that the results of our GPU
+operations are correct.
+Integers are kept as Python's basic signed integers, however, all binary and
+hexadecimal values are kept as strings, as we have to transform them into two's
+complement form.
+Signed integers are converted to two's complement by getting their binary string
+in signed and magnitude form.
+If it is a positive number, then it is simply returned.
+Otherwise, we apply the following forumla to get the representation of the
+negative version of the number's absolute value (let's call it $B$):
+$-B = \bar{B} + 1$.
+
+\item[\Q{input_output.py}]
+This file defines functions for writing bignums to a file in coalesced form, as
+well as functions for reading coalesced bignums from a file, and reconstructing
+their integer value from the two's complement representation.
+
+\item[\Q{operation_checker.py}]
+This file verifies if the bignums the GPU computed are correct.
+
+\item[\Q{operation_generator.py}]
+This is the main file of the project which generates our functions.
+Note that the generated \emph{macros} are put in the file defined by
+\verb+file_name_operations_h+ in \verb+constants.py+.
+
+\item[\Q{random_number_generator.py}]
+This file generates random numbers of the precision specified by
+\verb+precision+ in \verb+constants.py+.
+\end{description}
+
+\subsection{Src folder}
+The \verb+src+ folder contains the following files:
+
+\begin{description}
+\item[\Q{benchmarks.cu}]
+This file contains all our kernels, with which we launch our operations.
+
+\item[\Q{bignum_types.h}]
+\item[\Q{constants.h}]
+\item[\Q{input_output.cpp}]
+\item[\Q{main.cu}]
+\item[\Q{operations.h}]
+\end{description}
 
 \section{Operations}
 \subsection{Addition}
