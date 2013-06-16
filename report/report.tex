@@ -669,7 +669,7 @@ It is a GPU's architecture which defines this behaviour.
 Therefore, the main idea to grasp here is that one cannot optimize operations on
 a thread-by-thread basis.
 
-\subsection{Our big number representation}
+\subsection{Our bignum representation}
 Our initial project idea was to work towards solving the 131-bit Certicom ECC
 challenge.
 The challenge is to compute ECC private keys from a given list of ECC public
@@ -788,8 +788,7 @@ which one gives the best results:
 \item 64 blocks of 1 thread
 \end{itemize}
 
-\section{Operations}
-\subsection{Assembly vs. C}
+\section{Assembly vs. C}
 In order to implement arithmetic over multiple words, one needs be able to
 perform carry propagation.
 For example, in order to add two 5-word bignums \verb+a+ and \verb+b+, each word
@@ -1014,13 +1013,30 @@ comes to optimizations, as it can more aggressively tune C code compared to
 our assembly, sometimes leading to less register usage.
 The performance difference between the C and assembly implementations are
 negligeable.
-We performed a simple benchmark to see the difference
+We performed a simple benchmark to estimate the difference in execution speed,
+and here are the results for different grid and block sizes:
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.4]{figs/assembly_vs_c_kepler_131}
+\caption{C vs. assembly 131-bit addition kernel execution time}
+\label{fig:assembly_vs_c_kepler_131}
+\end{figure}
+
 \item C code would be more portable than our assembly statements.
 It would also be safer to use, and much easier to debug (this project made us
 learn this the hard way.)
 \end{itemize}
 
-\subsection{Scripts and sources}
+\section{File Structure}
+
+\section{Operations}
+\subsection{Addition}
+\subsection{Subtraction}
+\subsection{Modular Addition}
+\subsection{Modular Subtraction}
+\subsection{Multiplication}
+\subsection{Karatsuba Multiplication}
 
 %
 % --------------------------------------------------------------------------------
