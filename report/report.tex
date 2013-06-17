@@ -2016,27 +2016,20 @@ We can see that it is better to have less blocks, but where warps are fully occu
 \end{figure}
 
 \chapter{Conclusion}
-This project was very challenging.
-First of all, we had to learn how GPU programming worked in general.
-Then, we had to study CUDA, and its hardware, along with its constraints.
+This project was very challenging, as it was our first step in the domain of GPU programming.
+At first, we spent a lot of time trying to read about how GPUs were structured, and to grasp their
+programming model.
+We then took our first steps in GPU implementations with CUDA.
 
-Since the initial task at hand was to implement Pollard's Rho algorithm through the use of
-GPUs, we spent a lot of time trying to understand the math involved.
-It turned out that it was much more complicated than what we had initially expected.
-
-Nevertheless, we started to implement some basics of arithmetic that would be used
-by Pollard's Rho algorithm.
-But since we wanted to do generic operations, it took us much more time that expected.
-
-This project taught us how to do the basics of GPU programming. We now know how to
+We learned how to do the basics of GPU programming. We now know how to
 transform a sequential algorithm to a parallel one.
+We also learned the importance of having good tools for work, as we lost a lot of
+time when trying to implement this ourselves.
 
-Since we had nostructure with which to work, we had to create a complete infrastructure to
-support our tests and benchmarks.
-
-We had a rough start, since we started to implement everything in C, then had to move towards
-assembly, and then towards assembly generation scripts in Python.
-The main reason we did these switches was because of all our carry issues.
+We had a rough start, since we started to implement everything in C, but ran into problems.
+We then realized it was more convenient for us to use assembly for accessing carries.
+Since we now wanted to implement fully generic arithmetic, we went with the idea
+to write scripts which would generate generic assembly code for our instructions.
 
 We have learned, perhaps in a hard way, that it may not be worth all the effort to
 produce all the code in assembly, as our benchmarks showed that C code had neglectable
