@@ -26,7 +26,7 @@
 \definecolor{mykeywordcolor}{RGB}{127,0,85}
 \lstset{
 backgroundcolor=\color{white},          % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}
-basicstyle=\ttfamily\footnotesize,      % the size of the fonts that are used for the code
+basicstyle=\ttfamily\scriptsize ,      % the size of the fonts that are used for the code
 breakatwhitespace=false,                % sets if automatic breaks should only happen at whitespace
 breaklines=true,                        % sets automatic line breaking
 captionpos=b,                           % sets the caption-position to bottom
@@ -41,7 +41,7 @@ language=C++,                           % the language of the code
 morekeywords={*,...},                   % if you want to add more keywords to the set
 numbers=left,                           % where to put the line-numbers; possible values are (none, left, right)
 numbersep=8pt,                          % how far the line-numbers are from the code
-numberstyle=\footnotesize\color{black}, % the style that is used for the line-numbers
+numberstyle=\scriptsize\color{black}, % the style that is used for the line-numbers
 rulecolor=\color{black},                % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
 showspaces=false,                       % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
 showstringspaces=false,                 % underline spaces within strings only
@@ -61,8 +61,9 @@ tabsize=4,                              % sets default tabsize to 2 spaces
 
 \includepdf[pages={1}, landscape=false, angle=0]{figs/title_page.pdf}
 
-
 \tableofcontents
+
+\begin{sloppypar}
 
 \chapter{Introduction}
 \section{Background}
@@ -1467,6 +1468,8 @@ the \verb+_glo_+ version expects its operands to be in global memory.
 Note that the \verb+_glo_+ version needs to have the thread id of the bignum it
 is to access.
 
+\clearpage
+
 \lstset{language=C++,
         label={},
         caption={5-word global memory addition}}
@@ -1958,7 +1961,6 @@ once a column was finished being calculated.
 
 We believe the compiler is trying to optimize out some instructions, but it mistreating
 our algorithm.
-
 To work around this problem, we had to resort to unrolling loops in C as well, which means that if you want to run
 1000 iterations of the multiplication algorithm, you have to paste the invokation of the macro
 1000 time.
@@ -2073,5 +2075,7 @@ performance differences compared to assembly, in addition to being easier to wri
 \item{Montgomery Multiplication (Duncan A. Buell)}
 \item{Supporting Extended Precision on Graphics Processors (Mian Lu, Bingsheng He, and Qiong Luo)}
 \end{itemize}
+
+\end{sloppypar}
 
 \end{document}
