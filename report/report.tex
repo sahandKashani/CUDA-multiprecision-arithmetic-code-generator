@@ -12,6 +12,7 @@
 \usepackage[Q=yes]{examplep}
 \usepackage{subcaption}
 \usepackage{pdfpages}
+\usepackage[toc,page]{appendix}
 
 \newcommand{\mytitle}{Implementing generic multiple precision arithmetic on GPUs}
 
@@ -1075,6 +1076,32 @@ It would also be safer to use, and much easier to debug (this project made us
 learn this the hard way.)
 \end{itemize}
 
+\section{Interleaved vs normal operand layout}
+Since we are working with binary operators, we tried to find out if some alternative
+memory layout would be beneficial to reduce global memory latency.
+
+We tried 2 memory layouts, the first having operands interleaved, whereas the
+second had separate arrays for each operand.
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=1.0]{figs/interleaved_bignum_array_layout}
+\caption{Interleaved bignum array layout}
+\label{fig:interleaved_bignum_array_layout}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=1.0]{figs/bignum_array_layout}
+\caption{Normal bignum array layout}
+\label{fig:bignum_array_layout}
+\end{figure}
+
+We found that having the operands in 2 different memory locations was better.
+We initially though the interleaved technique was going to be better, as the GPU could
+read both operands with one global memory read, however, when compiling to PTX, we
+see that there are actually 2 separate load instructions performed.
+
 \section{Project File Structure}
 There are 2 main folders in our project, the \verb+scripts+ folder, which
 contains all our python scripts, and the \verb+src+ folder, which contains all
@@ -1820,7 +1847,120 @@ along with a potential optimization for 131-bit operands.
 \label{fig:shift_addition_karatsuba_final}
 \end{figure}
 
+\section{Montgomery Reduction}
+We spent some time trying to implement Montgomery reduction by following the
+algorithm defined in the Handbook of Applied Cryptography.
+From what we understood, we were able to implement the shifted additions before the
+right-shift operation.
+We belive that the right-shift is only possible to perform if the least significant bits of
+the bignum are all zero, otherwise we would lose information from the shift.
+Until the right shift, we do obtain some value with only 0s in it (on the least
+significant bits).
+We even checked that the shifting operation is performing its work correctly, and
+it was the case.
+
+However, our operation tester kept telling us that the operation was false.
+From there, we have 2 options:
+\begin{itemize}
+\item Our implementation of the Montgomery reduction is wrong, and is not computing
+what we expect it to compute, however, we have debugged this code line-by-line,
+and it seems it is executing exactly what we intended it to do.
+
+\item The second option is that we have misunderstood how Montgomery reductions
+actually work, and are therefore not providing operands which satisfy its conditions.
+\end{itemize}
+
+We belive that we are in the case of the second option.
+
 \section{Benchmarks}
+\subsection*{Local vs. Global}
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.3]{figs/add_loc_vs_add_glo_kepler_131_duration}
+\caption{add\_loc\ vs add\_glo performance for 239-bit operands}
+\label{fig:shift_addition_karatsuba_final}
+\end{figure}
+
+\subsection*{Schoolbook multiplication vs. Karatsuba multiplication}
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.3]{figs/mul_loc_vs_karatsuba_loc_kepler_131_duration}
+\caption{mul\_loc\ vs mul\_karatsuba\_loc performance for 131-bit operands}
+\label{fig:shift_addition_karatsuba_final}
+\end{figure}
+
+\section{Wierd Experiences}
+\subsection{Erroneus compiler optimization}
+When we wanted to launch some benchmarks, we tried to launch an operation for a
+large number of iterations.
+We though basically adding a \verb+for+ loop around our macro, along with a big
+counter would suffice to launch the benchmarks for multiple iterations.
+This worked well for addition and subtraction, however, once we tried it for
+the multiplication macros, we started getting wrong results.
+
+We spent quite some time trying to debug the multiplication code, and after a while
+compiled the code to PTX, and realized that some of our assembly instructions were
+\emph{not} being put in the final PTX.
+The instructions in this case were the ones that reset the carry counter back to 0
+once a column was finished being calculated.
+
+We believe the compiler is trying to optimize out some instructions, but it mistreating
+our algorithm.
+
+To work around this problem, we had to resort to unrolling loops in C as well, which means that if you want to run
+1000 iterations of the multiplication algorithm, you have to paste the invokation of the macro
+1000 time.
+Note that this also greatly increased compile time, as macros are expanded in place, and the multiplication
+code being quite lengthy didn't help.
+
+\chapter{Conclusion}
+This project was very challenging.
+First of all, we had to learn how GPU programming worked in general.
+Then, we had to study CUDA, and its hardware, along with its constraints.
+
+Since the initial task at hand was to implement Pollard's Rho algorithm through the use of
+GPUs, we spent a lot of time trying to understand the math involved.
+It turned out that it was much more complicated than what we had initially expected.
+
+Nevertheless, we started to implement some basics of arithmetic that would be used
+by Pollard's Rho algorithm.
+But since we wanted to do generic operations, it took us much more time that expected.
+
+This project taught us how to do the basics of GPU programming. We now know how to
+transform a sequential algorithm to a parallel one.
+
+Since we had nostructure with which to work, we had to create a complete infrastructure to
+support our tests and benchmarks.
+
+We had a rough start, since we started to implement everything in C, then had to move towards
+assembly, and then towards assembly generation scripts in Python.
+The main reason we did these switches was because of all our carry issues.
+
+We have learned, perhaps in a hard way, that it may not be worth all the effort to
+produce all the code in assembly, as our benchmarks showed that C code had neglectable
+performance differences compared to assembly, in addition to being easier to write.
+
+\chapter*{Bibliography}
+% \section{Websites}
+% \begin{itemize}
+% \item Cover image: \url{http://pc-internet-zone.blogspot.ch/2011/12/nvidia-cuda-parallel-programming.html}
+% \item{ECC challenge}
+
+\section{Books}
+\begin{itemize}
+\item CUDA By Example - An Introduction to General-Purpose GPU Programming
+(Jason Sanders, Edward Kandrot), ISBN 978-0-13-138768-3
+\item Programming Massively Parallel Processors - A Hands-on Approach (David B. Kirk and Wen-mei W. Hwu), ISBN: 978-0-12-381472-2
+\item Handbook of Applied Cryptography (A. Menezes, P. van Oorschot, and S. Vanstone), CRC Press, 1996
+\end{itemize}
+
+\section{Articles}
+\begin{itemize}
+\item A Review of Modular Multiplication Methods and Respective Hardware Implementations (Nadia Nedjah and Luiza de Macedo Mourelle)
+\item{Comparison of Modular Arithmetic Algorithms on GPUs.}
+\item{Implementation of Multiple-precision Modular Multiplication on GPU (Kaiyong Zhao)}
+\end{itemize}
 
 
 %

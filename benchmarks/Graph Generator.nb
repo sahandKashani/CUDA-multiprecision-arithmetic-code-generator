@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[     14406,        364]
-NotebookOptionsPosition[     13994,        347]
-NotebookOutlinePosition[     14330,        362]
-CellTagsIndexPosition[     14287,        359]
+NotebookDataLength[     16773,        430]
+NotebookOptionsPosition[     16319,        412]
+NotebookOutlinePosition[     16655,        427]
+CellTagsIndexPosition[     16612,        424]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -304,28 +304,23 @@ Cell[BoxData[{
        RowBox[{"16", ",", "19"}], "}"}]}], "}"}]}]}], "]"}]}], "Input",
  CellChangeTimes->{{3.58039965797082*^9, 3.5803996581196823`*^9}}],
 
-Cell[BoxData[
- RowBox[{"\[IndentingNewLine]", "\[IndentingNewLine]", "\[IndentingNewLine]", 
-  "\[IndentingNewLine]"}]], "Input",
- CellChangeTimes->{{3.580399678224766*^9, 3.58039967856673*^9}}],
-
 Cell[BoxData[{
  RowBox[{
   RowBox[{"a", "=", 
    RowBox[{"multiPrecisionOperationGraph", "[", 
     RowBox[{
      RowBox[{"{", 
-      RowBox[{"\"\<add_loc_C\>\"", ",", "\"\<add_loc_assembly\>\""}], "}"}], 
-     ",", 
+      RowBox[{"\"\<add_loc_kernel\>\"", ",", "\"\<add_glo_kernel\>\""}], 
+      "}"}], ",", 
      RowBox[{"{", "kepler", "}"}], ",", 
-     RowBox[{"{", "131", "}"}], ",", "register", ",", "True"}], "]"}]}], 
+     RowBox[{"{", "239", "}"}], ",", "duration", ",", "True"}], "]"}]}], 
   ";"}], "\[IndentingNewLine]", 
  RowBox[{"Show", "[", 
   RowBox[{"a", ",", 
    RowBox[{"PlotLabel", "\[Rule]", 
     RowBox[{"{", 
-     RowBox[{"\"\<add_loc_C\>\"", ",", "\"\<add_loc_assembly\>\""}], "}"}]}], 
-   ",", 
+     RowBox[{"\"\<add_loc_kernel\>\"", ",", "\"\<add_glo_kernel\>\""}], 
+     "}"}]}], ",", 
    RowBox[{"ViewPoint", "\[Rule]", 
     RowBox[{"{", 
      RowBox[{"2.3316825699216075", ",", 
@@ -338,12 +333,82 @@ Cell[BoxData[{
     RowBox[{"{", 
      RowBox[{
      "\"\<blocks per grid\>\"", ",", "\"\<threads per block\>\"", ",", 
-      "\"\<registers\>\""}], "}"}]}], ",", " ", 
-   RowBox[{"PlotRange", "\[Rule]", 
+      "\"\<us\>\""}], "}"}]}]}], "]"}]}], "Input",
+ CellChangeTimes->{{3.58039968338164*^9, 3.580399778417028*^9}, {
+   3.580399841438274*^9, 3.580399847378846*^9}, {3.5803999596754427`*^9, 
+   3.580399964592361*^9}, 3.580403623866996*^9, {3.5804036726386147`*^9, 
+   3.580403673298085*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"a", "=", 
+   RowBox[{"multiPrecisionOperationGraph", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+      "\"\<mul_loc_kernel\>\"", ",", "\"\<mul_karatsuba_loc_kernel\>\""}], 
+      "}"}], ",", 
+     RowBox[{"{", "kepler", "}"}], ",", 
+     RowBox[{"{", "191", "}"}], ",", "duration", ",", "True"}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{"Show", "[", 
+  RowBox[{"a", ",", 
+   RowBox[{"PlotLabel", "\[Rule]", 
     RowBox[{"{", 
-     RowBox[{"Automatic", ",", "Automatic", ",", 
-      RowBox[{"{", 
-       RowBox[{"16", ",", "19"}], "}"}]}], "}"}]}]}], "]"}]}], "Input"]
+     RowBox[{
+     "\"\<mul_loc_kernel\>\"", ",", "\"\<mul_karatsuba_loc_kernel\>\""}], 
+     "}"}]}], ",", 
+   RowBox[{"ViewPoint", "\[Rule]", 
+    RowBox[{"{", 
+     RowBox[{"2.3316825699216075", ",", 
+      RowBox[{"-", "2.184876991754642"}], ",", "1.1133592969140536"}], 
+     "}"}]}], ",", 
+   RowBox[{"ImageSize", "\[Rule]", 
+    RowBox[{"{", 
+     RowBox[{"816.", ",", "662."}], "}"}]}], ",", 
+   RowBox[{"AxesLabel", "\[Rule]", 
+    RowBox[{"{", 
+     RowBox[{
+     "\"\<blocks per grid\>\"", ",", "\"\<threads per block\>\"", ",", 
+      "\"\<us\>\""}], "}"}]}]}], "]"}]}], "Input",
+ CellChangeTimes->{{3.58040410027391*^9, 3.580404114771571*^9}, {
+  3.580404258963292*^9, 3.580404267430883*^9}, {3.5804044556181192`*^9, 
+  3.580404455837171*^9}, {3.58040478329012*^9, 3.580404795100643*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"a", "=", 
+   RowBox[{"multiPrecisionOperationGraph", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+      "\"\<mul_loc_kernel\>\"", ",", "\"\<mul_karatsuba_loc_kernel\>\""}], 
+      "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"fermi", ",", " ", "kepler"}], "}"}], ",", 
+     RowBox[{"{", "239", "}"}], ",", "duration", ",", "True"}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{"Show", "[", 
+  RowBox[{"a", ",", 
+   RowBox[{"PlotLabel", "\[Rule]", 
+    RowBox[{"{", 
+     RowBox[{
+     "\"\<mul_loc_kernel\>\"", ",", "\"\<mul_karatsuba_loc_kernel\>\""}], 
+     "}"}]}], ",", 
+   RowBox[{"ViewPoint", "\[Rule]", 
+    RowBox[{"{", 
+     RowBox[{"2.3316825699216075", ",", 
+      RowBox[{"-", "2.184876991754642"}], ",", "1.1133592969140536"}], 
+     "}"}]}], ",", 
+   RowBox[{"ImageSize", "\[Rule]", 
+    RowBox[{"{", 
+     RowBox[{"816.", ",", "662."}], "}"}]}], ",", 
+   RowBox[{"AxesLabel", "\[Rule]", 
+    RowBox[{"{", 
+     RowBox[{
+     "\"\<blocks per grid\>\"", ",", "\"\<threads per block\>\"", ",", 
+      "\"\<us\>\""}], "}"}]}]}], "]"}]}], "Input",
+ CellChangeTimes->{{3.580404943415523*^9, 3.580404948307476*^9}}]
 },
 WindowSize->{1231, 776},
 WindowMargins->{{0, Automatic}, {Automatic, 0}},
@@ -364,8 +429,9 @@ Notebook[{
 Cell[557, 20, 9680, 218, 935, "Input",
  CellGroupingRules->{GroupTogetherGrouping, 10000.}],
 Cell[10240, 240, 2324, 64, 187, "Input"],
-Cell[12567, 306, 194, 3, 121, "Input"],
-Cell[12764, 311, 1226, 34, 99, "Input"]
+Cell[12567, 306, 1282, 33, 99, "Input"],
+Cell[13852, 341, 1284, 34, 99, "Input"],
+Cell[15139, 377, 1176, 33, 99, "Input"]
 }
 ]
 *)
