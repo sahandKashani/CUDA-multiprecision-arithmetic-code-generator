@@ -14,12 +14,12 @@
 \usepackage{pdfpages}
 \usepackage[toc,page]{appendix}
 
-\newcommand{\mytitle}{Implementing generic multiple precision arithmetic on GPUs}
+\newcommand{\mytitle}{\small Implementing generic multiple precision arithmetic on CUDA GPUs}
 
 \pagestyle{fancy}
 \lhead{\mytitle}
 \chead{}
-\rhead{\today}
+\rhead{\small \today}
 
 \definecolor{mystringcolor}{RGB}{0,0,255}
 \definecolor{mycommentcolor}{rgb}{0,0.4,0}
@@ -54,7 +54,7 @@ tabsize=4,                              % sets default tabsize to 2 spaces
 
 \begin{document}
 
-\title{Implementing generic multiple-precision arithmetic on CUDA GPUs}
+\title{\mytitle}
 \author{Alexandre Carlessi \and Sahand Kashani-Akhavan}
 \date{\today}
 % \maketitle
@@ -1941,24 +1941,6 @@ actually work, and are probably not providing the correct operands to the algori
 
 We belive our problem lies with the operand generation.
 
-\section{Benchmarks}
-\subsection*{Local vs. Global}
-
-\begin{figure}[h]
-\centering
-\includegraphics[scale=0.3]{figs/add_loc_vs_add_glo_kepler_131_duration}
-\caption{add\_loc\ vs add\_glo performance for 239-bit operands}
-\label{fig:shift_addition_karatsuba_final}
-\end{figure}
-
-\subsection*{Schoolbook multiplication vs. Karatsuba multiplication}
-\begin{figure}[h]
-\centering
-\includegraphics[scale=0.3]{figs/mul_loc_vs_karatsuba_loc_kepler_131_duration}
-\caption{mul\_loc\ vs mul\_karatsuba\_loc performance for 131-bit operands}
-\label{fig:shift_addition_karatsuba_final}
-\end{figure}
-
 \section{Weird Experiences}
 \subsection{Erroneus compiler optimization}
 When we wanted to launch some benchmarks, we tried to launch an operation for a
@@ -1982,6 +1964,54 @@ To work around this problem, we had to resort to unrolling loops in C as well, w
 1000 time.
 Note that this also greatly increased compile time, as macros are expanded in place, and the multiplication
 code being quite lengthy didn't help.
+
+\chapter{Benchmarks}
+\section{Local vs. Global}
+As we expected, using local vectors is much faster that performing coalesced global
+memory reads, especially if the data will be accessed multiple times.
+Figure~\ref{fig:add_m_loc_vs_add_m_glo_kepler_239_duration} shows the performance
+difference between local and global modular addition for 239-bit arithmetic.
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.45]{figs/add_m_loc_vs_add_m_glo_kepler_239_duration}
+\caption{add\_m\_loc\ vs add\_m\_glo performance for 239-bit operands (Kepler)}
+\label{fig:add_m_loc_vs_add_m_glo_kepler_239_duration}
+\end{figure}
+
+\section{Schoolbook multiplication vs. Karatsuba multiplication}
+\subsection{Kepler}
+Figure~\ref{fig:mul_loc_vs_mul_karatsuba_loc_kepler_131_vs_239_duration} shows the
+performance difference between schoolbook multiplication, and Karatsuba multiplication on Kepler GPUs.
+For 131-bit arithmetic, we can see that Karatsuba multiplication is faster for
+any grid size larger than 512 blocks, and any block size larger than 256 threads.
+Note that Karatsuba multiplication uses more registers than the schoolbook algorithm (34 vs. 25 registers), but still is slightly faster.
+
+However, for 239-bit arithmetic, the situation is the opposite, and Karatsuba's algorithm
+is slower for all combinations of grid and block sizes. This can be explained by the
+very high register usage of 49 registers, compared to the 33 registers that the schoolbook
+multiplication uses.
+There is therefore some register spilling to global memory, which affects execution time.
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.5]{figs/mul_loc_vs_mul_karatsuba_loc_kepler_131_vs_239_duration}
+\caption{mul\_loc\ vs mul\_karatsuba\_loc performance on Kepler GPUs for 131-bit and 239-bit operands}
+\label{fig:mul_loc_vs_mul_karatsuba_loc_kepler_131_vs_239_duration}
+\end{figure}
+
+\subsection{Fermi}
+Figure~\ref{fig:mul_loc_vs_mul_karatsuba_loc_fermi_131_vs_239_duration} performs the same
+performance comparisons between Karatsuba's algorithm, and the schoolbook algorithm, but on smaller
+grid and block sizes to see the effect of warp occupancy better.
+Observe the larger than average performance difference between launch configurations
+of 32 blocks of 16 threads each, and 16 blocks of 32 threads each.
+We can see that it is better to have less blocks, but where warps are fully occupied, rather than having more blocks, but where the warps are not fully occupied.
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.5]{figs/mul_loc_vs_mul_karatsuba_loc_fermi_131_vs_239_duration}
+\caption{mul\_loc\ vs mul\_karatsuba\_loc performance on Fermi GPUs for 131-bit and 239-bit operands}
+\label{fig:mul_loc_vs_mul_karatsuba_loc_fermi_131_vs_239_duration}
+\end{figure}
 
 \chapter{Conclusion}
 This project was very challenging.
@@ -2010,7 +2040,7 @@ We have learned, perhaps in a hard way, that it may not be worth all the effort 
 produce all the code in assembly, as our benchmarks showed that C code had neglectable
 performance differences compared to assembly, in addition to being easier to write.
 
-\chapter*{Bibliography}
+\chapter{Bibliography}
 \section{Websites}
 \begin{itemize}
 \item Cover image: \url{http://pc-internet-zone.blogspot.ch/2011/12/nvidia-cuda-parallel-programming.html}
@@ -2032,14 +2062,16 @@ performance differences compared to assembly, in addition to being easier to wri
 \item CUDA By Example - An Introduction to General-Purpose GPU Programming
 (Jason Sanders, Edward Kandrot), ISBN 978-0-13-138768-3
 \item Programming Massively Parallel Processors - A Hands-on Approach (David B. Kirk and Wen-mei W. Hwu), ISBN: 978-0-12-381472-2
-\item Handbook of Applied Cryptography (A. Menezes, P. van Oorschot, and S. Vanstone), CRC Press, 1996
+\item Handbook of Applied Cryptography (A. Menezes, P. van Oorschot, and S. Vanstone), ISBN: 0-8493-8523-7
 \end{itemize}
 
 \section{Articles}
 \begin{itemize}
 \item A Review of Modular Multiplication Methods and Respective Hardware Implementations (Nadia Nedjah and Luiza de Macedo Mourelle)
-\item{Comparison of Modular Arithmetic Algorithms on GPUs.}
+\item{Comparison of Modular Arithmetic Algorithms on GPUs (Pascal Giorgi, Thomas Izard, and Arnaud Tisserand)}
 \item{Implementation of Multiple-precision Modular Multiplication on GPU (Kaiyong Zhao)}
+\item{Montgomery Multiplication (Duncan A. Buell)}
+\item{Supporting Extended Precision on Graphics Processors (Mian Lu, Bingsheng He, and Qiong Luo)}
 \end{itemize}
 
 \end{document}
