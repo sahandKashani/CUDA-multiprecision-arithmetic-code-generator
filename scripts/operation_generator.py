@@ -598,14 +598,14 @@ def montgomery_reduction_generic(indent):
 
     # A = A >> precision
     complete_words_with_zeros_count = min_bignum_number_of_words
-    if min_bit_length != precision:
-        complete_words_with_zeros_count -= 1
+    # if min_bit_length != precision:
+    #     complete_words_with_zeros_count -= 1
 
-    extra_0_bit_count = precision - complete_words_with_zeros_count * bits_per_word
-    lo_mask = '0x' + hex((2**extra_0_bit_count) - 1)[2:].rjust(hex_digits_per_word, '0')
-    hi_mask = '0x' + hex((2**bits_per_word - 1) - int(lo_mask, 16))[2:].rjust(hex_digits_per_word, '0')
+    # extra_0_bit_count = precision - complete_words_with_zeros_count * bits_per_word
+    # lo_mask = '0x' + hex((2**extra_0_bit_count) - 1)[2:].rjust(hex_digits_per_word, '0')
+    # hi_mask = '0x' + hex((2**bits_per_word - 1) - int(lo_mask, 16))[2:].rjust(hex_digits_per_word, '0')
 
-    asm.append('uint32_t upper = 0;\\')
+    # asm.append('uint32_t upper = 0;\\')
 
     # asm.append("""for(uint32_t i = 0; i < 10; i++)\\
     #                {\\
@@ -613,15 +613,15 @@ def montgomery_reduction_generic(indent):
     #                }\\
     #                printf("\\n");\\""")
 
-    for i in range(complete_words_with_zeros_count, complete_words_with_zeros_count + min_bignum_number_of_words + 1):
-        asm.append('asm("and.b32 %0, %0, ' + hi_mask + ';" : "+r"(A[' + str(i) + ']) : );\\')
-        asm.append('asm("shr.b32 %0, %0, ' + str(extra_0_bit_count) + ';" : "+r"(A[' + str(i) + ']) : );\\')
-        # the very last word does not have any word after it to have to get an
-        # "upper" part
-        if i != complete_words_with_zeros_count + min_bignum_number_of_words:
-            asm.append('asm("and.b32 %0, %1, ' + lo_mask + ';" : "=r"(upper) : "r"(A[' + str(i + 1) + ']));\\')
-            asm.append('asm("shl.b32 %0, %0, ' + str(bits_per_word - extra_0_bit_count) + ';" : "+r"(upper) : );\\')
-            asm.append('asm("or.b32  %0, %0, %1;" : "+r"(A[' + str(i) + ']) : "r"(upper));\\')
+    # for i in range(complete_words_with_zeros_count, complete_words_with_zeros_count + min_bignum_number_of_words + 1):
+    #     asm.append('asm("and.b32 %0, %0, ' + hi_mask + ';" : "+r"(A[' + str(i) + ']) : );\\')
+    #     asm.append('asm("shr.b32 %0, %0, ' + str(extra_0_bit_count) + ';" : "+r"(A[' + str(i) + ']) : );\\')
+    #     # the very last word does not have any word after it to have to get an
+    #     # "upper" part
+    #     if i != complete_words_with_zeros_count + min_bignum_number_of_words:
+    #         asm.append('asm("and.b32 %0, %1, ' + lo_mask + ';" : "=r"(upper) : "r"(A[' + str(i + 1) + ']));\\')
+    #         asm.append('asm("shl.b32 %0, %0, ' + str(bits_per_word - extra_0_bit_count) + ';" : "+r"(upper) : );\\')
+    #         asm.append('asm("or.b32  %0, %0, %1;" : "+r"(A[' + str(i) + ']) : "r"(upper));\\')
 
     # asm.append("""for(uint32_t i = 0; i < 10; i++)\\
     #            {\\
@@ -636,11 +636,6 @@ def montgomery_reduction_generic(indent):
     # {
     #     A = A - m
     # }
-    # algorithm:
-    #   A = A - m
-    #   mask = 0 - borrow = mask - mask - borrow
-    #   mask = mask & m
-    #   A = A + mask
     asm.append('uint32_t mask[' + str(A_word_count) + '] = ' + str([0] * A_word_count).replace('[', '{').replace(']', '}') + ';\\')
     asm += sub_cc_loc_generic(A_precision, precision, 'A', 'm_loc', 'A', 0, 0, 0, 0)
     asm += subc_loc_generic(A_precision, A_precision, 'mask', 'mask', 'mask', 0, 0, 0, 0)
@@ -808,10 +803,6 @@ def sub_m_glo():
     asm = [re.sub(r'_loc\[(\d+)\]', r'_glo[COAL_IDX(\1, tid)]', line) for line in asm]
     return asm
 
-def report_dummy():
-    asm = add_glo_generic(131, 131, 'a_loc', 'b_loc', 'c_loc', 0, 0, 0, 0);
-    return asm;
-
 ################################################################################
 ################################# CODE GENERATOR ###############################
 ################################################################################
@@ -838,9 +829,7 @@ macros_to_print = [
                    sub_m_loc,
                    sub_m_glo,
 
-                   montgomery_reduction,
-
-                   report_dummy
+                   montgomery_reduction
                    ]
 
 all_lines = []

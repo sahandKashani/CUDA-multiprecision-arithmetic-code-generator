@@ -9,7 +9,7 @@ int main(void)
     mul_karatsuba_benchmark();
     add_m_benchmark();
     sub_m_benchmark();
-    // montgomery_reduction_benchmark();
+    montgomery_reduction_benchmark();
 
     assembly_vs_C_addition_benchmark();
 

@@ -195,15 +195,15 @@ __global__ void add_glo_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b
 
     // 10 iterations
     add_glo(dev_c, dev_a, dev_b, tid);
-    add_glo(dev_c, dev_a, dev_b, tid);
-    add_glo(dev_c, dev_a, dev_b, tid);
-    add_glo(dev_c, dev_a, dev_b, tid);
-    add_glo(dev_c, dev_a, dev_b, tid);
-    add_glo(dev_c, dev_a, dev_b, tid);
-    add_glo(dev_c, dev_a, dev_b, tid);
-    add_glo(dev_c, dev_a, dev_b, tid);
-    add_glo(dev_c, dev_a, dev_b, tid);
-    add_glo(dev_c, dev_a, dev_b, tid);
+    // add_glo(dev_c, dev_a, dev_b, tid);
+    // add_glo(dev_c, dev_a, dev_b, tid);
+    // add_glo(dev_c, dev_a, dev_b, tid);
+    // add_glo(dev_c, dev_a, dev_b, tid);
+    // add_glo(dev_c, dev_a, dev_b, tid);
+    // add_glo(dev_c, dev_a, dev_b, tid);
+    // add_glo(dev_c, dev_a, dev_b, tid);
+    // add_glo(dev_c, dev_a, dev_b, tid);
+    // add_glo(dev_c, dev_a, dev_b, tid);
 }
 
 __global__ void add_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b)
@@ -222,15 +222,15 @@ __global__ void add_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b
 
     // 10 iterations
     add_loc(c, a, b);
-    add_loc(c, a, b);
-    add_loc(c, a, b);
-    add_loc(c, a, b);
-    add_loc(c, a, b);
-    add_loc(c, a, b);
-    add_loc(c, a, b);
-    add_loc(c, a, b);
-    add_loc(c, a, b);
-    add_loc(c, a, b);
+    // add_loc(c, a, b);
+    // add_loc(c, a, b);
+    // add_loc(c, a, b);
+    // add_loc(c, a, b);
+    // add_loc(c, a, b);
+    // add_loc(c, a, b);
+    // add_loc(c, a, b);
+    // add_loc(c, a, b);
+    // add_loc(c, a, b);
 
     for (uint32_t i = 0; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
     {
@@ -244,15 +244,15 @@ __global__ void sub_glo_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b
 
     // 10 iterations
     sub_glo(dev_c, dev_a, dev_b, tid);
-    sub_glo(dev_c, dev_a, dev_b, tid);
-    sub_glo(dev_c, dev_a, dev_b, tid);
-    sub_glo(dev_c, dev_a, dev_b, tid);
-    sub_glo(dev_c, dev_a, dev_b, tid);
-    sub_glo(dev_c, dev_a, dev_b, tid);
-    sub_glo(dev_c, dev_a, dev_b, tid);
-    sub_glo(dev_c, dev_a, dev_b, tid);
-    sub_glo(dev_c, dev_a, dev_b, tid);
-    sub_glo(dev_c, dev_a, dev_b, tid);
+    // sub_glo(dev_c, dev_a, dev_b, tid);
+    // sub_glo(dev_c, dev_a, dev_b, tid);
+    // sub_glo(dev_c, dev_a, dev_b, tid);
+    // sub_glo(dev_c, dev_a, dev_b, tid);
+    // sub_glo(dev_c, dev_a, dev_b, tid);
+    // sub_glo(dev_c, dev_a, dev_b, tid);
+    // sub_glo(dev_c, dev_a, dev_b, tid);
+    // sub_glo(dev_c, dev_a, dev_b, tid);
+    // sub_glo(dev_c, dev_a, dev_b, tid);
 }
 
 __global__ void sub_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b)
@@ -271,15 +271,15 @@ __global__ void sub_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b
 
     // 10 iterations
     sub_loc(c, a, b);
-    sub_loc(c, a, b);
-    sub_loc(c, a, b);
-    sub_loc(c, a, b);
-    sub_loc(c, a, b);
-    sub_loc(c, a, b);
-    sub_loc(c, a, b);
-    sub_loc(c, a, b);
-    sub_loc(c, a, b);
-    sub_loc(c, a, b);
+    // sub_loc(c, a, b);
+    // sub_loc(c, a, b);
+    // sub_loc(c, a, b);
+    // sub_loc(c, a, b);
+    // sub_loc(c, a, b);
+    // sub_loc(c, a, b);
+    // sub_loc(c, a, b);
+    // sub_loc(c, a, b);
+    // sub_loc(c, a, b);
 
     for (uint32_t i = 0; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
     {
@@ -293,15 +293,15 @@ __global__ void mul_glo_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b
 
     // 10 iterations
     mul_glo(dev_c, dev_a, dev_b, tid);
-    mul_glo(dev_c, dev_a, dev_b, tid);
-    mul_glo(dev_c, dev_a, dev_b, tid);
-    mul_glo(dev_c, dev_a, dev_b, tid);
-    mul_glo(dev_c, dev_a, dev_b, tid);
-    mul_glo(dev_c, dev_a, dev_b, tid);
-    mul_glo(dev_c, dev_a, dev_b, tid);
-    mul_glo(dev_c, dev_a, dev_b, tid);
-    mul_glo(dev_c, dev_a, dev_b, tid);
-    mul_glo(dev_c, dev_a, dev_b, tid);
+    // mul_glo(dev_c, dev_a, dev_b, tid);
+    // mul_glo(dev_c, dev_a, dev_b, tid);
+    // mul_glo(dev_c, dev_a, dev_b, tid);
+    // mul_glo(dev_c, dev_a, dev_b, tid);
+    // mul_glo(dev_c, dev_a, dev_b, tid);
+    // mul_glo(dev_c, dev_a, dev_b, tid);
+    // mul_glo(dev_c, dev_a, dev_b, tid);
+    // mul_glo(dev_c, dev_a, dev_b, tid);
+    // mul_glo(dev_c, dev_a, dev_b, tid);
 }
 
 __global__ void mul_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b)
@@ -320,15 +320,15 @@ __global__ void mul_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b
 
     // 10 iterations
     mul_loc(c, a, b);
-    mul_loc(c, a, b);
-    mul_loc(c, a, b);
-    mul_loc(c, a, b);
-    mul_loc(c, a, b);
-    mul_loc(c, a, b);
-    mul_loc(c, a, b);
-    mul_loc(c, a, b);
-    mul_loc(c, a, b);
-    mul_loc(c, a, b);
+    // mul_loc(c, a, b);
+    // mul_loc(c, a, b);
+    // mul_loc(c, a, b);
+    // mul_loc(c, a, b);
+    // mul_loc(c, a, b);
+    // mul_loc(c, a, b);
+    // mul_loc(c, a, b);
+    // mul_loc(c, a, b);
+    // mul_loc(c, a, b);
 
     for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
     {
@@ -342,15 +342,15 @@ __global__ void mul_karatsuba_glo_kernel(uint32_t* dev_c, uint32_t* dev_a, uint3
 
     // 10 iterations
     mul_karatsuba_glo(dev_c, dev_a, dev_b, tid);
-    mul_karatsuba_glo(dev_c, dev_a, dev_b, tid);
-    mul_karatsuba_glo(dev_c, dev_a, dev_b, tid);
-    mul_karatsuba_glo(dev_c, dev_a, dev_b, tid);
-    mul_karatsuba_glo(dev_c, dev_a, dev_b, tid);
-    mul_karatsuba_glo(dev_c, dev_a, dev_b, tid);
-    mul_karatsuba_glo(dev_c, dev_a, dev_b, tid);
-    mul_karatsuba_glo(dev_c, dev_a, dev_b, tid);
-    mul_karatsuba_glo(dev_c, dev_a, dev_b, tid);
-    mul_karatsuba_glo(dev_c, dev_a, dev_b, tid);
+    // mul_karatsuba_glo(dev_c, dev_a, dev_b, tid);
+    // mul_karatsuba_glo(dev_c, dev_a, dev_b, tid);
+    // mul_karatsuba_glo(dev_c, dev_a, dev_b, tid);
+    // mul_karatsuba_glo(dev_c, dev_a, dev_b, tid);
+    // mul_karatsuba_glo(dev_c, dev_a, dev_b, tid);
+    // mul_karatsuba_glo(dev_c, dev_a, dev_b, tid);
+    // mul_karatsuba_glo(dev_c, dev_a, dev_b, tid);
+    // mul_karatsuba_glo(dev_c, dev_a, dev_b, tid);
+    // mul_karatsuba_glo(dev_c, dev_a, dev_b, tid);
 }
 
 __global__ void mul_karatsuba_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b)
@@ -369,15 +369,15 @@ __global__ void mul_karatsuba_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint3
 
     // 10 iterations
     mul_karatsuba_loc(c, a, b);
-    mul_karatsuba_loc(c, a, b);
-    mul_karatsuba_loc(c, a, b);
-    mul_karatsuba_loc(c, a, b);
-    mul_karatsuba_loc(c, a, b);
-    mul_karatsuba_loc(c, a, b);
-    mul_karatsuba_loc(c, a, b);
-    mul_karatsuba_loc(c, a, b);
-    mul_karatsuba_loc(c, a, b);
-    mul_karatsuba_loc(c, a, b);
+    // mul_karatsuba_loc(c, a, b);
+    // mul_karatsuba_loc(c, a, b);
+    // mul_karatsuba_loc(c, a, b);
+    // mul_karatsuba_loc(c, a, b);
+    // mul_karatsuba_loc(c, a, b);
+    // mul_karatsuba_loc(c, a, b);
+    // mul_karatsuba_loc(c, a, b);
+    // mul_karatsuba_loc(c, a, b);
+    // mul_karatsuba_loc(c, a, b);
 
     for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
     {
@@ -391,15 +391,15 @@ __global__ void add_m_glo_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev
 
     // 10 iterations
     add_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
-    add_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
-    add_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
-    add_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
-    add_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
-    add_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
-    add_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
-    add_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
-    add_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
-    add_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
+    // add_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
+    // add_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
+    // add_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
+    // add_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
+    // add_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
+    // add_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
+    // add_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
+    // add_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
+    // add_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
 }
 
 __global__ void add_m_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b, uint32_t* dev_m)
@@ -420,15 +420,15 @@ __global__ void add_m_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev
 
     // 10 iterations
     add_m_loc(c, a, b, m);
-    add_m_loc(c, a, b, m);
-    add_m_loc(c, a, b, m);
-    add_m_loc(c, a, b, m);
-    add_m_loc(c, a, b, m);
-    add_m_loc(c, a, b, m);
-    add_m_loc(c, a, b, m);
-    add_m_loc(c, a, b, m);
-    add_m_loc(c, a, b, m);
-    add_m_loc(c, a, b, m);
+    // add_m_loc(c, a, b, m);
+    // add_m_loc(c, a, b, m);
+    // add_m_loc(c, a, b, m);
+    // add_m_loc(c, a, b, m);
+    // add_m_loc(c, a, b, m);
+    // add_m_loc(c, a, b, m);
+    // add_m_loc(c, a, b, m);
+    // add_m_loc(c, a, b, m);
+    // add_m_loc(c, a, b, m);
 
     for (uint32_t i = 0; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
     {
@@ -442,15 +442,15 @@ __global__ void sub_m_glo_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev
 
     // 10 iterations
     sub_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
-    sub_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
-    sub_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
-    sub_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
-    sub_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
-    sub_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
-    sub_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
-    sub_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
-    sub_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
-    sub_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
+    // sub_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
+    // sub_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
+    // sub_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
+    // sub_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
+    // sub_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
+    // sub_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
+    // sub_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
+    // sub_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
+    // sub_m_glo(dev_c, dev_a, dev_b, dev_m, tid);
 }
 
 __global__ void sub_m_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev_b, uint32_t* dev_m)
@@ -471,15 +471,15 @@ __global__ void sub_m_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev
 
     // 10 iterations
     sub_m_loc(c, a, b, m);
-    sub_m_loc(c, a, b, m);
-    sub_m_loc(c, a, b, m);
-    sub_m_loc(c, a, b, m);
-    sub_m_loc(c, a, b, m);
-    sub_m_loc(c, a, b, m);
-    sub_m_loc(c, a, b, m);
-    sub_m_loc(c, a, b, m);
-    sub_m_loc(c, a, b, m);
-    sub_m_loc(c, a, b, m);
+    // sub_m_loc(c, a, b, m);
+    // sub_m_loc(c, a, b, m);
+    // sub_m_loc(c, a, b, m);
+    // sub_m_loc(c, a, b, m);
+    // sub_m_loc(c, a, b, m);
+    // sub_m_loc(c, a, b, m);
+    // sub_m_loc(c, a, b, m);
+    // sub_m_loc(c, a, b, m);
+    // sub_m_loc(c, a, b, m);
 
     for (uint32_t i = 0; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
     {
@@ -489,27 +489,27 @@ __global__ void sub_m_loc_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev
 
 __global__ void montgomery_reduction_loc_kernel(uint32_t* dev_c, uint32_t* dev_T, uint32_t* dev_m, uint32_t* dev_m_prime)
 {
-    // uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
+    uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
 
-    // uint32_t T[MAX_BIGNUM_NUMBER_OF_WORDS];
-    // uint32_t m[MIN_BIGNUM_NUMBER_OF_WORDS];
-    // uint32_t c[MIN_BIGNUM_NUMBER_OF_WORDS];
-    // uint32_t m_prime;
+    uint32_t T[MAX_BIGNUM_NUMBER_OF_WORDS];
+    uint32_t m[MIN_BIGNUM_NUMBER_OF_WORDS];
+    uint32_t c[MIN_BIGNUM_NUMBER_OF_WORDS];
+    uint32_t m_prime;
 
-    // for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
-    // {
-    //     T[i] = dev_T[COAL_IDX(i, tid)];
-    // }
+    for (uint32_t i = 0; i < MAX_BIGNUM_NUMBER_OF_WORDS; i++)
+    {
+        T[i] = dev_T[COAL_IDX(i, tid)];
+    }
 
-    // for (uint32_t i = 0; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
-    // {
-    //     m[i] = dev_m    [COAL_IDX(i, tid)];
-    // }
+    for (uint32_t i = 0; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
+    {
+        m[i] = dev_m    [COAL_IDX(i, tid)];
+    }
 
-    // m_prime = dev_m_prime[COAL_IDX(0, tid)];
+    m_prime = dev_m_prime[COAL_IDX(0, tid)];
 
-    // // 10 iterations
-    // montgomery_reduction(c, T, m, m_prime);
+    // 10 iterations
+    montgomery_reduction(c, T, m, m_prime);
     // montgomery_reduction(c, T, m, m_prime);
     // montgomery_reduction(c, T, m, m_prime);
     // montgomery_reduction(c, T, m, m_prime);
@@ -520,10 +520,10 @@ __global__ void montgomery_reduction_loc_kernel(uint32_t* dev_c, uint32_t* dev_T
     // montgomery_reduction(c, T, m, m_prime);
     // montgomery_reduction(c, T, m, m_prime);
 
-    // for (uint32_t i = 0; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
-    // {
-    //     dev_c[COAL_IDX(i, tid)] = c[i];
-    // }
+    for (uint32_t i = 0; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
+    {
+        dev_c[COAL_IDX(i, tid)] = c[i];
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -774,15 +774,15 @@ __global__ void add_loc_assembly_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32
 
     // 10 iterations
     add_loc(c, a, b);
-    add_loc(c, a, b);
-    add_loc(c, a, b);
-    add_loc(c, a, b);
-    add_loc(c, a, b);
-    add_loc(c, a, b);
-    add_loc(c, a, b);
-    add_loc(c, a, b);
-    add_loc(c, a, b);
-    add_loc(c, a, b);
+    // add_loc(c, a, b);
+    // add_loc(c, a, b);
+    // add_loc(c, a, b);
+    // add_loc(c, a, b);
+    // add_loc(c, a, b);
+    // add_loc(c, a, b);
+    // add_loc(c, a, b);
+    // add_loc(c, a, b);
+    // add_loc(c, a, b);
 
     for (uint32_t i = 0; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
     {
@@ -805,14 +805,14 @@ __global__ void add_loc_C_kernel(uint32_t* dev_c, uint32_t* dev_a, uint32_t* dev
     }
 
     // 10 iterations
-    for (uint32_t j = 0; j < 10; j++)
-    {
+    // for (uint32_t j = 0; j < 10; j++)
+    // {
         c[0] = a[0] + b[0];
         for (uint32_t i = 1; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
         {
             c[i] = a[i] + b[i] + (c[i-1] < max(a[i-1], b[i-1]));
         }
-    }
+    // }
 
     for (uint32_t i = 0; i < MIN_BIGNUM_NUMBER_OF_WORDS; i++)
     {
