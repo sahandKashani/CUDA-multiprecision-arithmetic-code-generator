@@ -1052,13 +1052,13 @@ The performance difference between the C and assembly implementations are
 negligeable.
 We performed a simple benchmark to estimate the difference in execution speed,
 and the results for different grid and block sizes are shown in
-Figure~\ref{fig:assembly_vs_c_loc_kepler_131_duration}.
+Figure~\ref{fig:assembly_vs_c_loc_kepler_131_duration_difference}.
 
 \begin{figure}[h]
 \centering
-\includegraphics[scale=0.4]{figs/assembly_vs_c_loc_kepler_131_duration}
-\caption{C vs. assembly 131-bit addition kernel execution time (local vectors)}
-\label{fig:assembly_vs_c_loc_kepler_131_duration}
+\includegraphics[scale=0.4]{figs/assembly_vs_c_loc_kepler_131_duration_difference}
+\caption{Assembly vs. C 131-bit addition kernel execution time (local vectors)}
+\label{fig:assembly_vs_c_loc_kepler_131_duration_difference}
 \end{figure}
 
 As one can see, the difference between the 2 versions is negligable.
@@ -2005,9 +2005,17 @@ There is therefore some register spilling to global memory, which affects execut
 Figure~\ref{fig:mul_loc_vs_mul_karatsuba_loc_fermi_131_vs_239_duration} performs the same
 performance comparisons between Karatsuba's algorithm, and the schoolbook algorithm, but on smaller
 grid and block sizes to see the effect of warp occupancy better.
-Observe the larger than average performance difference between launch configurations
-of 32 blocks of 16 threads each, and 16 blocks of 32 threads each.
-We can see that it is better to have less blocks, but where warps are fully occupied, rather than having more blocks, but where the warps are not fully occupied.
+Every top-right directed diagonal represents an equivalent amount of data to be
+computed, but with different launch configurations each time.
+Observe how the execution time decreases as one uses less blocks containing many threads,
+as opposed to more blocks containing few threads.
+Indeed, CUDA GPUs use warps as their basic execution block.
+If a block is not fully populated with threads, then it will have to be executed
+over multiple passes.
+One pass would be used for the threads that are actually doing some calculations,
+and another one would be used for those that are not.
+Of course, this effect accumulates, and can give the performance differences we
+see in Figure~\ref{fig:mul_loc_vs_mul_karatsuba_loc_fermi_131_vs_239_duration}.
 \begin{figure}[h]
 \centering
 \includegraphics[scale=0.5]{figs/mul_loc_vs_mul_karatsuba_loc_fermi_131_vs_239_duration}
