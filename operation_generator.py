@@ -952,9 +952,7 @@ macros_functions_to_print = [bignum_macro,
                              add_m_glo,
 
                              sub_m_loc,
-                             sub_m_glo,
-
-                             montgomery_reduction
+                             sub_m_glo
                              ]
 
 all_lines = []
