@@ -5,10 +5,10 @@ import re
 
 # change anything you want here
 precision = 131
+bits_per_word = 32
 file_name_operations_h = r'operations.h'
 
 # don't touch anything here
-bits_per_word = 32
 hex_digits_per_word = bits_per_word // 4
 min_bignum_number_of_words = math.ceil(precision / bits_per_word)
 max_bignum_number_of_words = math.ceil((2 * precision) / bits_per_word)
