@@ -1,9 +1,0 @@
-// In the following code sample, the ptx code generated is lacking a few
-// instructions in the mul_loc function if the mul_loc is in a loop. The ptx is
-// perfectly correct though if the mul_loc is not in a loop, and is repeated
-// iteratively by hand.
-
-for (uint32_t i = 0; i < BENCHMARK_ITERATIONS; i++)
-{
-    mul_loc(c_loc, a_loc, b_loc)
-}

@@ -1,7 +1,0 @@
-# LaTeX Temporary Files
-*.aux
-*.log
-*.out
-*.synctex.gz
-*.fdb_latexmk
-*.toc
