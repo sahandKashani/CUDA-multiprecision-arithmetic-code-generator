@@ -1,6 +1,28 @@
-from constants import *
+#!/usr/bin/env python3
+
 import math
 import re
+
+# change anything you want here
+precision = 131
+file_name_operations_h = r'operations.h'
+
+# don't touch anything here
+bits_per_word = 32
+hex_digits_per_word = bits_per_word // 4
+min_bignum_number_of_words = math.ceil(precision / bits_per_word)
+max_bignum_number_of_words = math.ceil((2 * precision) / bits_per_word)
+min_bit_length = min_bignum_number_of_words * bits_per_word
+max_bit_length = max_bignum_number_of_words * bits_per_word
+min_hex_length = min_bignum_number_of_words * hex_digits_per_word
+max_hex_length = max_bignum_number_of_words * hex_digits_per_word
+
+# The number of words needed to hold "precision" bits MUST be the same as the
+# number of words needed to hold "precision + 1" bits. This is needed, because
+# the addition of two n-bit numbers can give a (n + 1)-bit number, and our
+# algorithms go by the principle that this (n + 1)-bit number is representable
+# on the same number of bits as the n-bit number.
+assert min_bignum_number_of_words == math.ceil((precision + 1) / bits_per_word)
 
 # ATTENTION: all "_generic()" functions do NOT create macros. They just paste
 # the assembly code that does the wanted operation for the specified operand
@@ -32,6 +54,107 @@ def mul_res_precision(op1_precision, op2_precision):
 ################################################################################
 ################################## DOCUMENTATION ###############################
 ################################################################################
+
+def bignum_macro():
+    doc = """////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////// BIGNUM /////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// A bignum is represented as the following 2 data structures depending on its
+// size:
+// uint32_t[MIN_BIGNUM_NUMBER_OF_WORDS]
+// uint32_t[MAX_BIGNUM_NUMBER_OF_WORDS]
+
+// In the code of this project, there will be no "bignum" type. It will only be
+// referred to as a uint32_t*. This is needed, because having direct access to
+// the inner representation of a bignum will be useful for efficient operations
+// such as matrix transpositions, ...
+
+// The code of this project will not have a bignum's size as a parameter to
+// functions. This value is accessible throught the macros of this header file.
+
+// A bignum is represented in "little endian" format: the most significant bits
+// come in bignum[MAX_BIGNUM_NUMBER_OF_WORDS - 1] and the least significant bits
+// come in bignum[0].
+
+// A bignum's radix is 2^BITS_PER_WORD (words are 32 bits on our architecture).
+
+// Assume you have an array of bignums "c", then the data would be conceptually
+// represented as:
+
+//  c[0][0]   c[0][1]  ...  c[0][H-1]
+//  c[1][0]   c[1][1]  ...  c[1][H-1]
+//     .         .     .        .
+//     .         .      .       .
+//     .         .       .      .
+// c[N-1][0] c[N-1][1] ... c[N-1][H-1]
+
+// with N = NUMBER_OF_BIGNUMS
+//      H = MIN_BIGNUM_NUMBER_OF_WORDS or MAX_BIGNUM_NUMBER_OF_WORDS
+
+// A bignum is written "horizontally". The data on one "line" of a bignum
+// consists of the MIN_BIGNUM_NUMBER_OF_WORDS or MAX_BIGNUM_NUMBER_OF_WORDS
+// elements of the bignum.
+
+// For memory alignment issues, an array of bignums will not be represented as a
+// 2D array like uint32_t[N][H], but rather as a flattened 1D array like
+// uint32_t[N * H]. Index manipulation will be needed to access the array like a
+// 2D array.
+
+// Assuming the human readable 2D standard array of bignums representation
+// above, the following macro returns the index of the "j"th element of the
+// "i"th bignum from a 1D array of size N * H (N and H defined as below).
+
+// 0 <= i < N = NUMBER_OF_BIGNUMS
+// 0 <= j < H = MIN_BIGNUM_NUMBER_OF_WORDS or MAX_BIGNUM_NUMBER_OF_WORDS
+#define IDX(i, j, is_long_number) (((i) * ((is_long_number) ? (MAX_BIGNUM_NUMBER_OF_WORDS) : (MIN_BIGNUM_NUMBER_OF_WORDS))) + (j))
+"""
+    doc_list = doc.split('\n')
+    for i in range(len(doc_list)):
+        doc_list[i] = doc_list[i].strip()
+    return doc_list
+
+def coalesced_bignum_macro():
+    doc = """////////////////////////////////////////////////////////////////////////////////
+////////////////////////////// COALESCED_BIGNUM ////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// For efficient access to operands in gpu global memory, data needs to be
+// accessed in a coalesced way. This is easily achieved by transposing an array
+// of bignums to have the following representation:
+
+// Assume you have an array of bignums "c", then the data in a coalesced array
+// of bignums "c" would be:
+
+//  c[0][0]   c[1][0]  ...  c[N-1][0]
+//  c[0][1]   c[1][1]  ...  c[N-1][1]
+//     .         .     .        .
+//     .         .      .       .
+//     .         .       .      .
+// c[0][H-1] c[1][H-1] ... c[N-1][H-1]
+
+// with N = NUMBER_OF_BIGNUMS
+//      H = MIN_BIGNUM_NUMBER_OF_WORDS or MAX_BIGNUM_NUMBER_OF_WORDS
+
+// A bignum is written "vertically" instead of "horizontally" with this
+// representation. Each column represents one bignum. The data on one "line" of
+// a coalesced bignum is a mix of the j'th element of N different bignums.
+
+// As for normal bignums, a coalesced array of bignums will be represented as a
+// flattened 1D array like uint32_t[N * H], and index manipulation would be
+// neeeded to access the array like a 2D array.
+
+// Assuming the human readable 2D coalesced bignum array representation above,
+// the following macro returns the index of the "i"th element of the "j"th
+// bignum from a 1D array of size N * H (N and H defined as below).
+
+// 0 <= i < H = MIN_BIGNUM_NUMBER_OF_WORDS or MAX_BIGNUM_NUMBER_OF_WORDS
+// 0 <= j < N = NUMBER_OF_BIGNUMS
+#define COAL_IDX(i, j) (((i) * (NUMBER_OF_BIGNUMS)) + (j))"""
+    doc_list = doc.split('\n')
+    for i in range(len(doc_list)):
+        doc_list[i] = doc_list[i].strip()
+    return doc_list
 
 def add_doc():
     doc = """
@@ -807,38 +930,47 @@ def sub_m_glo():
 ################################# CODE GENERATOR ###############################
 ################################################################################
 
-macros_to_print = [
-                   add_doc,
-                   add_loc,
-                   add_glo,
+macros_functions_to_print = [bignum_macro,
+                             coalesced_bignum_macro,
 
-                   sub_doc,
-                   sub_loc,
-                   sub_glo,
+                             add_doc,
+                             add_loc,
+                             add_glo,
 
-                   mul_doc,
-                   mul_loc,
-                   mul_glo,
+                             sub_doc,
+                             sub_loc,
+                             sub_glo,
 
-                   mul_karatsuba_loc,
-                   mul_karatsuba_glo,
+                             mul_doc,
+                             mul_loc,
+                             mul_glo,
 
-                   add_m_loc,
-                   add_m_glo,
+                             mul_karatsuba_loc,
+                             mul_karatsuba_glo,
 
-                   sub_m_loc,
-                   sub_m_glo,
+                             add_m_loc,
+                             add_m_glo,
 
-                   montgomery_reduction
-                   ]
+                             sub_m_loc,
+                             sub_m_glo,
+
+                             montgomery_reduction
+                             ]
 
 all_lines = []
 
-# needed for COAL_IDX
-all_lines.append(r'#include "bignum_types.h"' + '\n')
+# header guard
+all_lines.append(r'#ifndef OPERATIONS_H')
+all_lines.append(r'#define OPERATIONS_H' + '\n')
 
-for func in macros_to_print:
+# info the application programmer will need
+all_lines.append(r'#define MIN_BIGNUM_NUMBER_OF_WORDS (' + str(min_bignum_number_of_words) + ')')
+all_lines.append(r'#define MAX_BIGNUM_NUMBER_OF_WORDS (' + str(max_bignum_number_of_words) + ')' + '\n')
+
+for func in macros_functions_to_print:
     all_lines.extend(func())
+
+all_lines.append(r'#endif' + '\n')
 
 with open(file_name_operations_h, 'w') as operations_h:
     operations_h.write('\n'.join(all_lines))
